@@ -2,7 +2,9 @@ package com._oormthon.seasonthon.domain.todo.controller;
 
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.service.TaskPlannerService;
@@ -14,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,7 +43,7 @@ public class TodoController implements TodoApiSpecification{
     @PostMapping
     public ResponseEntity<TodoResponse> addTodo(@AuthenticationPrincipal User user,
                                                 @Valid @RequestBody TodoRequest todoRequest) {
-        return ResponseEntity.status(HttpStatus.OK).body(todoService.addTodo(user, todoRequest));
+        return ResponseEntity.status(HttpStatus.CREATED ).body(todoService.addTodo(user, todoRequest));
     }
 
     // Step 계획 생성
@@ -56,16 +60,23 @@ public class TodoController implements TodoApiSpecification{
         return ResponseEntity.status(HttpStatus.OK).body(todoService.updateTodo(user, todoId, updateTodoRequest));
     }
 
-    // 감정 기록
-    @PostMapping("/emotions")
-    public ResponseEntity<Object> addEmotion() {
-        return ResponseEntity.status(HttpStatus.OK).body(todoService.addEmotion());
-    }
-
     // 캘린더 해당 달 조회
     @GetMapping("/calendar")
     public ResponseEntity<Object> findTodoCalendar() {
         return ResponseEntity.status(HttpStatus.OK).body(todoService.findTodoCalendar());
+    }
+
+    // Step 수정
+    @PutMapping("/steps/{stepId}")
+    public ResponseEntity<List<StepResponse>> updateStep(@PathVariable Long stepId,
+                                                         @Valid @RequestBody UpdateStepRequest updateStepRequest) {
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.updateStep(stepId, updateStepRequest));
+    }
+
+    // Step 삭제
+    @DeleteMapping("/steps/{stepId}")
+    public ResponseEntity<List<StepResponse>> deleteStep(@PathVariable Long stepId) {
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.deleteStep(stepId));
     }
 }
 

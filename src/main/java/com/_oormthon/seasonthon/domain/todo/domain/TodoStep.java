@@ -1,6 +1,7 @@
 package com._oormthon.seasonthon.domain.todo.domain;
 
 import com._oormthon.seasonthon.domain.todo.dto.req.StepRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateStepRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -51,5 +52,10 @@ public class TodoStep {
                 .description(stepRequest.description())
                 .isCompleted(false)
                 .build();
+    }
+
+    public void updateStep(UpdateStepRequest updateStepRequest) {
+        this.stepOrder = updateStepRequest.stepOrder();
+        this.description = updateStepRequest.description();
     }
 }
