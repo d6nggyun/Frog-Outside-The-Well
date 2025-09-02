@@ -6,7 +6,7 @@ import com._oormthon.seasonthon.domain.member.dto.response.UserResponse;
 public interface UserService {
     UserResponse kakaoLogin(KakaoLoginRequest req);
 
-    UserResponse getMemberById(Long memberId);
+    UserResponse getUserById(Long userId);
 
-    UserResponse getMemberByKakaoId(Long kakaoId);
+    UserResponse getUserByKakaoId(Long kakaoId);
 }

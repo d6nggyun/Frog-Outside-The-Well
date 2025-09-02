@@ -8,9 +8,9 @@ import java.util.Optional;
 import java.util.List;
 
 public interface DailyLogRepository extends JpaRepository<DailyLog, Long> {
-    Optional<DailyLog> findByMember_MemberIdAndLogDate(Long memberId, LocalDate logDate);
+    Optional<DailyLog> findByUser_UserIdAndLogDate(Long userId, LocalDate logDate);
 
-    List<DailyLog> findByMember_MemberIdAndLogDateBetween(Long memberId, LocalDate start, LocalDate end);
+    List<DailyLog> findByUser_UserIdAndLogDateBetween(Long userId, LocalDate start, LocalDate end);
 
-    boolean existsByMember_MemberIdAndLogDate(Long memberId, LocalDate logDate);
+    boolean existsByUser_UserIdAndLogDate(Long userId, LocalDate logDate);
 }

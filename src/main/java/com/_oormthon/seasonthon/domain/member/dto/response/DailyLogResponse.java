@@ -28,7 +28,7 @@ public class DailyLogResponse {
             return null;
         return DailyLogResponse.builder()
                 .logId(d.getLogId())
-                .memberId(d.getMember().getMemberId())
+                .memberId(d.getUser().getUserId())
                 .logDate(d.getLogDate())
                 .emotion(d.getEmotion())
                 .focusLevel(d.getFocusLevel())
