@@ -18,7 +18,7 @@ public class UserResponse {
         if (m == null)
             return null;
         return UserResponse.builder()
-                .memberId(m.getMemberId())
+                .memberId(m.getUserId())
                 .email(m.getEmail())
                 .nickname(m.getNickname())
                 .kakaoId(m.getKakaoId())

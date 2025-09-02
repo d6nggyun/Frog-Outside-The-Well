@@ -24,20 +24,20 @@ import java.util.stream.Collectors;
 public class DailyLogServiceImpl implements DailyLogService {
 
     private final DailyLogRepository dailyLogRepository;
-    private final UserRepository memberRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
-    public DailyLogResponse createDailyLog(Long memberId, DailyLogCreateRequest req) {
-        User member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ResourceNotFoundException("Member not found: " + memberId));
+    public DailyLogResponse createDailyLog(Long userId, DailyLogCreateRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
-        if (dailyLogRepository.existsByMember_MemberIdAndLogDate(memberId, req.getLogDate())) {
+        if (dailyLogRepository.existsByUser_UserIdAndLogDate(userId, req.getLogDate())) {
             throw new DuplicateResourceException("DailyLog already exists for date: " + req.getLogDate());
         }
 
         DailyLog log = DailyLog.builder()
-                .member(member)
+                .user(user)
                 .logDate(req.getLogDate())
                 .emotion(req.getEmotion())
                 .focusLevel(req.getFocusLevel())
@@ -52,23 +52,23 @@ public class DailyLogServiceImpl implements DailyLogService {
 
     @Override
     @Transactional(readOnly = true)
-    public DailyLogResponse getDailyLog(Long memberId, LocalDate date) {
-        DailyLog log = dailyLogRepository.findByMember_MemberIdAndLogDate(memberId, date)
+    public DailyLogResponse getDailyLog(Long userId, LocalDate date) {
+        DailyLog log = dailyLogRepository.findByUser_UserIdAndLogDate(userId, date)
                 .orElseThrow(() -> new ResourceNotFoundException("DailyLog not found for date: " + date));
         return DailyLogResponse.fromEntity(log);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<DailyLogResponse> listDailyLogs(Long memberId, LocalDate start, LocalDate end) {
-        List<DailyLog> list = dailyLogRepository.findByMember_MemberIdAndLogDateBetween(memberId, start, end);
+    public List<DailyLogResponse> listDailyLogs(Long userId, LocalDate start, LocalDate end) {
+        List<DailyLog> list = dailyLogRepository.findByUser_UserIdAndLogDateBetween(userId, start, end);
         return list.stream().map(DailyLogResponse::fromEntity).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public DailyLogResponse updateDailyLog(Long memberId, LocalDate date, DailyLogUpdateRequest req) {
-        DailyLog log = dailyLogRepository.findByMember_MemberIdAndLogDate(memberId, date)
+    public DailyLogResponse updateDailyLog(Long userId, LocalDate date, DailyLogUpdateRequest req) {
+        DailyLog log = dailyLogRepository.findByUser_UserIdAndLogDate(userId, date)
                 .orElseThrow(() -> new ResourceNotFoundException("DailyLog not found for date: " + date));
 
         if (req.getEmotion() != null)
@@ -88,8 +88,8 @@ public class DailyLogServiceImpl implements DailyLogService {
 
     @Override
     @Transactional
-    public void deleteDailyLog(Long memberId, LocalDate date) {
-        DailyLog log = dailyLogRepository.findByMember_MemberIdAndLogDate(memberId, date)
+    public void deleteDailyLog(Long userId, LocalDate date) {
+        DailyLog log = dailyLogRepository.findByUser_UserIdAndLogDate(userId, date)
                 .orElseThrow(() -> new ResourceNotFoundException("DailyLog not found for date: " + date));
         dailyLogRepository.delete(log);
     }

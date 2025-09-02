@@ -10,27 +10,27 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/members")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService memberService;
+    private final UserService userService;
 
     @PostMapping("/kakao-login")
     public ResponseDto<UserResponse> kakaoLogin(@Valid @RequestBody KakaoLoginRequest req) {
-        UserResponse res = memberService.kakaoLogin(req);
+        UserResponse res = userService.kakaoLogin(req);
         return DataResponseDto.of(res);
     }
 
-    @GetMapping("/{memberId}")
-    public ResponseDto<UserResponse> getMember(@PathVariable Long memberId) {
-        UserResponse res = memberService.getMemberById(memberId);
+    @GetMapping("/{userId}")
+    public ResponseDto<UserResponse> getUser(@PathVariable Long userId) {
+        UserResponse res = userService.getUserById(userId);
         return DataResponseDto.of(res);
     }
 
     @GetMapping("/kakao/{kakaoId}")
     public ResponseDto<UserResponse> getByKakao(@PathVariable Long kakaoId) {
-        UserResponse res = memberService.getMemberByKakaoId(kakaoId);
+        UserResponse res = userService.getUserByKakaoId(kakaoId);
         return DataResponseDto.of(res);
     }
 }

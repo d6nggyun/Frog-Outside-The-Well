@@ -15,46 +15,46 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/members/{memberId}/daily-logs")
+@RequestMapping("/api/users/{userId}/daily-logs")
 @RequiredArgsConstructor
 public class DailyLogController {
 
     private final DailyLogService dailyLogService;
 
     @PostMapping
-    public ResponseDto<DailyLogResponse> create(@PathVariable Long memberId,
+    public ResponseDto<DailyLogResponse> create(@PathVariable Long userId,
             @Valid @RequestBody DailyLogCreateRequest req) {
-        DailyLogResponse res = dailyLogService.createDailyLog(memberId, req);
+        DailyLogResponse res = dailyLogService.createDailyLog(userId, req);
         return DataResponseDto.of(res);
     }
 
     @GetMapping
-    public ResponseDto<List<DailyLogResponse>> list(@PathVariable Long memberId,
+    public ResponseDto<List<DailyLogResponse>> list(@PathVariable Long userId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        List<DailyLogResponse> res = dailyLogService.listDailyLogs(memberId, start, end);
+        List<DailyLogResponse> res = dailyLogService.listDailyLogs(userId, start, end);
         return DataResponseDto.of(res);
     }
 
     @GetMapping("/{date}")
-    public ResponseDto<DailyLogResponse> get(@PathVariable Long memberId,
+    public ResponseDto<DailyLogResponse> get(@PathVariable Long userId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        DailyLogResponse res = dailyLogService.getDailyLog(memberId, date);
+        DailyLogResponse res = dailyLogService.getDailyLog(userId, date);
         return DataResponseDto.of(res);
     }
 
     @PutMapping("/{date}")
-    public ResponseDto<DailyLogResponse> update(@PathVariable Long memberId,
+    public ResponseDto<DailyLogResponse> update(@PathVariable Long userId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @Valid @RequestBody DailyLogUpdateRequest req) {
-        DailyLogResponse res = dailyLogService.updateDailyLog(memberId, date, req);
+        DailyLogResponse res = dailyLogService.updateDailyLog(userId, date, req);
         return DataResponseDto.of(res);
     }
 
     @DeleteMapping("/{date}")
-    public ResponseDto<Void> delete(@PathVariable Long memberId,
+    public ResponseDto<Void> delete(@PathVariable Long userId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        dailyLogService.deleteDailyLog(memberId, date);
+        dailyLogService.deleteDailyLog(userId, date);
         return DataResponseDto.of(null);
     }
 }
