@@ -18,6 +18,13 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+        private static final String[] SWAGGER_WHITELIST = {
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/index.html",
+                        "/v3/api-docs/**"
+        };
+
         private final JwtFilter jwtFilter;
         private final JwtExceptionFilter jwtExceptionFilter;
         private final CustomOAuth2UserService oAuth2UserService;
@@ -26,27 +33,31 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
                 return http
+                                // 기본 보안 설정 비활성화
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                                 .httpBasic(AbstractHttpConfigurer::disable)
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .logout(AbstractHttpConfigurer::disable)
-                                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                                // 세션 대신 JWT 사용
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                                // 권한 설정
                                 .authorizeHttpRequests(auth -> auth
-                                                // Swagger 접근 허용
-                                                .requestMatchers(
-                                                                "/swagger-ui/**",
-                                                                "/swagger-ui.html",
-                                                                "/swagger-ui/index.html",
-                                                                "/v3/api-docs/**")
-                                                .permitAll()
-                                                // 나머지 요청은 JWT 인증 필요
+                                                .requestMatchers(SWAGGER_WHITELIST).permitAll()
                                                 .anyRequest().authenticated())
+
+                                // OAuth2 설정
                                 .oauth2Login(oauth -> oauth
-                                                .userInfoEndpoint(u -> u.userService(oAuth2UserService))
+                                                .userInfoEndpoint(user -> user.userService(oAuth2UserService))
                                                 .successHandler(oAuth2SuccessHandler))
+
+                                // JWT 필터 등록
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                                 .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
+
                                 .build();
         }
 }
