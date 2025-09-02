@@ -28,7 +28,7 @@ public record TodoResponse(
         String warmMessage,
 
         @Schema(description = "진행률", example = "50")
-        Long progress,
+        Integer progress,
 
         @Schema(description = "Step 리스트")
         List<StepResponse> stepResponses

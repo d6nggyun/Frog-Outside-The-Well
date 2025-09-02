@@ -22,7 +22,7 @@ public record TodoStepResponse(
         String progressText,
 
         @Schema(description = "진행률", example = "50")
-        Long progress,
+        Integer progress,
 
         @Schema(description = "Step 리스트")
         List<StepResponse> steps
