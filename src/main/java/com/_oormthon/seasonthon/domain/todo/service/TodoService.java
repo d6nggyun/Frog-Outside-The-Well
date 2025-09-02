@@ -49,7 +49,7 @@ public class TodoService {
                     return TodoResponse.from(todo, warmMessage, stepResponses);
                 }).toList();
 
-        return PageResponse.from(todos.getTotalElements(), todos.getTotalPages(), todoResponses);
+            return PageResponse.from(todos.getTotalPages(), todos.getTotalElements(), todoResponses);
     }
 
     @Transactional(readOnly = true)
