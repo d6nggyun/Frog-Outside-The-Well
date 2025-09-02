@@ -58,4 +58,12 @@ public class TodoStep {
         this.stepOrder = updateStepRequest.stepOrder();
         this.description = updateStepRequest.description();
     }
+
+    public Boolean isCompleted() {
+        return this.isCompleted;
+    }
+
+    public void completeStep() {
+        this.isCompleted = true;
+    }
 }

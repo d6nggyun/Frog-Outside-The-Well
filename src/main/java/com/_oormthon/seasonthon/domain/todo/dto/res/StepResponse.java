@@ -7,16 +7,16 @@ import java.time.LocalDate;
 
 public record StepResponse(
 
-        @Schema(description = "날짜")
+        @Schema(description = "날짜", example = "2025-09-02")
         LocalDate stepDate,
 
-        @Schema(description = "순서")
+        @Schema(description = "순서", example = "1")
         Integer stepOrder,
 
-        @Schema(description = "내용")
+        @Schema(description = "내용", example = "ToDo ERD 설계")
         String description,
 
-        @Schema(description = "완료 여부")
+        @Schema(description = "완료 여부", example = "false")
         Boolean isCompleted
 
 ) {

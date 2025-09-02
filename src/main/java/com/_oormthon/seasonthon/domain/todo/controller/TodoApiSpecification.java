@@ -2,12 +2,15 @@ package com._oormthon.seasonthon.domain.todo.controller;
 
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.global.exception.ErrorResponseEntity;
 import com._oormthon.seasonthon.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,12 +22,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+
 @Tag(name = "ToDo", description = "ToDo 관련 API")
 public interface TodoApiSpecification {
 
     @Operation(
             summary = "회원의 ToDo 조회",
-            description = "회원이 등록한 모든 ToDo 리스트를 조회합니다.",
+            description = "회원이 등록한 모든 ToDo 리스트를 조회합니다. <br><br>진행률(progress)는 퍼센트를 기반으로 반환됩니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "회원의 ToDo 조회 성공",
                             content = @Content(
@@ -122,4 +127,89 @@ public interface TodoApiSpecification {
             }
     )
     ResponseEntity<Object> findTodoCalendar();
+
+    @Operation(
+            summary = "Step 완료",
+            description = "Step Id 값을 기반으로 Step을 완료합니다. <br><br>해당 ToDo의 진행률을 업데이트합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Step 완료",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = StepResponse.class))
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Step을 찾을 수 없습니다.",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 404,
+                                                   "name": "STEP_NOT_FOUND",
+                                                   "message": "Step을 찾을 수 없습니다..",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
+                            )
+                    )
+            }
+    )
+    ResponseEntity<List<StepResponse>> completeStep(@PathVariable Long stepId);
+
+    @Operation(
+            summary = "Step 수정",
+            description = "Step Id 값을 기반으로 Step을 수정합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Step 수정",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = StepResponse.class))
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Step을 찾을 수 없습니다.",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 404,
+                                                   "name": "STEP_NOT_FOUND",
+                                                   "message": "Step을 찾을 수 없습니다..",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
+                            )
+                    )
+            }
+    )
+    ResponseEntity<List<StepResponse>> updateStep(@PathVariable Long stepId,
+                                                         @Valid @RequestBody UpdateStepRequest updateStepRequest);
+
+    @Operation(
+            summary = "Step 삭제",
+            description = "Step Id 값을 기반으로 Step을 삭제합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Step 삭제",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = StepResponse.class))
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Step을 찾을 수 없습니다.",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 404,
+                                                   "name": "STEP_NOT_FOUND",
+                                                   "message": "Step을 찾을 수 없습니다..",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
+                            )
+                    )
+            }
+    )
+    ResponseEntity<List<StepResponse>> deleteStep(@PathVariable Long stepId);
 }

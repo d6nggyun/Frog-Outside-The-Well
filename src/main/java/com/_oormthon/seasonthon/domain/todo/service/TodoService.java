@@ -50,7 +50,7 @@ public class TodoService {
                     return TodoResponse.from(todo, warmMessage, stepResponses);
                 }).toList();
 
-        return PageResponse.from(todos.getTotalElements(), todos.getTotalPages(), todoResponses);
+            return PageResponse.from(todos.getTotalPages(), todos.getTotalElements(), todoResponses);
     }
 
     @Transactional(readOnly = true)
@@ -89,6 +89,21 @@ public class TodoService {
     public Object findTodoCalendar() {
 
         return null;
+    }
+
+    @Transactional
+    public List<StepResponse> completeStep(Long stepId) {
+        TodoStep todoStep = getTodoStepById(stepId);
+        todoStep.completeStep();
+
+        Todo todo = getTodoById(todoStep.getTodoId());
+        List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
+
+        long completedStepsCount = todoSteps.stream().filter(TodoStep::isCompleted).count();
+        int progress = (int) ((completedStepsCount * 100) / todoSteps.size());
+        todo.updateProgress(progress);
+
+        return newTodoStepResponse(todo);
     }
 
     @Transactional

@@ -9,19 +9,19 @@ import java.util.List;
 
 public record TodoStepResponse(
 
-        @Schema(description = "D-Day")
+        @Schema(description = "D-Day", example = "D-10")
         String dDay,
 
-        @Schema(description = "제목")
+        @Schema(description = "제목", example = "우물밖개구리 프로젝트")
         String title,
 
-        @Schema(description = "마감일")
+        @Schema(description = "마감일", example = "2025-09-05")
         LocalDate endDate,
 
-        @Schema(description = "진행률 문구")
+        @Schema(description = "진행률 문구", example = "개구리가 햇빛을 보기 시작했어요!")
         String progressText,
 
-        @Schema(description = "진행률")
+        @Schema(description = "진행률", example = "50")
         Long progress,
 
         @Schema(description = "Step 리스트")

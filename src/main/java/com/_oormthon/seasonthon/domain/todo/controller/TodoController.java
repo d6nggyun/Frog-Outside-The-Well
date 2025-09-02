@@ -66,6 +66,12 @@ public class TodoController implements TodoApiSpecification{
         return ResponseEntity.status(HttpStatus.OK).body(todoService.findTodoCalendar());
     }
 
+    // Step 완료
+    @PutMapping("/steps/{stepId}/complete")
+    public ResponseEntity<List<StepResponse>> completeStep(@PathVariable Long stepId) {
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.completeStep(stepId));
+    }
+
     // Step 수정
     @PutMapping("/steps/{stepId}")
     public ResponseEntity<List<StepResponse>> updateStep(@PathVariable Long stepId,
