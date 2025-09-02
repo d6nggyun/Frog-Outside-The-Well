@@ -1,8 +1,8 @@
-package com._oormthon.seasonthon.repository;
+package com._oormthon.seasonthon.domain.member.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com._oormthon.seasonthon.entity.User;
+import com._oormthon.seasonthon.domain.member.entity.User;
 
 import java.util.Optional;
 

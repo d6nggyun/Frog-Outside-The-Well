@@ -1,8 +1,8 @@
 package com._oormthon.seasonthon.global.config.oauth;
 
 import com._oormthon.seasonthon.global.config.jwt.JwtTokenProvider;
-import com._oormthon.seasonthon.entity.User;
-import com._oormthon.seasonthon.repository.UserRepository;
+import com._oormthon.seasonthon.domain.member.entity.User;
+import com._oormthon.seasonthon.domain.member.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com._oormthon.seasonthon.global.config.jwt;
 
-import com._oormthon.seasonthon.entity.User;
+import com._oormthon.seasonthon.domain.member.entity.User;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

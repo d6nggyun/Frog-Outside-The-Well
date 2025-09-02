@@ -1,4 +1,4 @@
-package com._oormthon.seasonthon.entity;
+package com._oormthon.seasonthon.domain.member.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;

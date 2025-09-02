@@ -9,8 +9,8 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import com._oormthon.seasonthon.entity.User;
-import com._oormthon.seasonthon.repository.UserRepository;
+import com._oormthon.seasonthon.domain.member.entity.User;
+import com._oormthon.seasonthon.domain.member.repository.UserRepository;
 
 import java.util.Collections;
 import java.util.Map;
