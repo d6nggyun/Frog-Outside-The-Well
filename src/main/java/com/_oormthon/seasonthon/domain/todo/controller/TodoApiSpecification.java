@@ -129,6 +129,34 @@ public interface TodoApiSpecification {
     ResponseEntity<Object> findTodoCalendar();
 
     @Operation(
+            summary = "Step 완료",
+            description = "Step Id 값을 기반으로 Step을 완료합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Step 완료",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = StepResponse.class))
+                            )
+                    ),
+                    @ApiResponse(responseCode = "404", description = "Step을 찾을 수 없습니다.",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 404,
+                                                   "name": "STEP_NOT_FOUND",
+                                                   "message": "Step을 찾을 수 없습니다..",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
+                            )
+                    )
+            }
+    )
+    ResponseEntity<List<StepResponse>> completeStep(@PathVariable Long stepId);
+
+    @Operation(
             summary = "Step 수정",
             description = "Step Id 값을 기반으로 Step을 수정합니다.",
             responses = {

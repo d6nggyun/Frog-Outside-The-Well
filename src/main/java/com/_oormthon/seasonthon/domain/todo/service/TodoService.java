@@ -92,6 +92,16 @@ public class TodoService {
     }
 
     @Transactional
+    public List<StepResponse> completeStep(Long stepId) {
+        TodoStep todoStep = getTodoStepById(stepId);
+        todoStep.completeStep();
+
+        Todo todo = getTodoById(todoStep.getTodoId());
+
+        return newTodoStepResponse(todo);
+    }
+
+    @Transactional
     public List<StepResponse> updateStep(Long stepId, UpdateStepRequest updateStepRequest) {
         TodoStep todoStep = getTodoStepById(stepId);
         todoStep.updateStep(updateStepRequest);
