@@ -29,7 +29,7 @@ public interface TodoApiSpecification {
 
     @Operation(
             summary = "회원의 ToDo 조회",
-            description = "회원이 등록한 모든 ToDo 리스트를 조회합니다.",
+            description = "회원이 등록한 모든 ToDo 리스트를 조회합니다. <br><br>진행률(progress)는 퍼센트를 기반으로 반환됩니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "회원의 ToDo 조회 성공",
                             content = @Content(
@@ -130,7 +130,7 @@ public interface TodoApiSpecification {
 
     @Operation(
             summary = "Step 완료",
-            description = "Step Id 값을 기반으로 Step을 완료합니다.",
+            description = "Step Id 값을 기반으로 Step을 완료합니다. <br><br>해당 ToDo의 진행률을 업데이트합니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Step 완료",
                             content = @Content(
