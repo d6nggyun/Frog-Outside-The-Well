@@ -22,10 +22,10 @@ public class JwtTokenProvider {
 
     private String generateToken(User user, Long expireTime) {
         Claims claims = Jwts.claims();
-        claims.put("id", user.getId());
+        claims.put("member_id", user.getMemberId());
         claims.put("kakao_id", user.getKakaoId());
-        claims.put("name", user.getName());
-        claims.put("age", user.getAge());
+        claims.put("nickname", user.getNickname());
+        claims.put("email", user.getEmail());
 
         return Jwts.builder()
                 .setClaims(claims)
