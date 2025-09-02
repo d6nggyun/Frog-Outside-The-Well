@@ -75,5 +75,8 @@ jobs:
               --env MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }} \
               --env MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
               --env JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              --env KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
+              --env KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
+              --env KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
               -p 8080:8080 \
                 ${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_REPO}}
