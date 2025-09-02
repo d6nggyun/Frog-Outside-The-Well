@@ -1,6 +1,8 @@
 package com._oormthon.seasonthon.domain.todo.controller;
 
-import com._oormthon.seasonthon.domain.member.domain.Member;
+import com._oormthon.seasonthon.domain.member.entity.User;
+import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.global.exception.ErrorResponseEntity;
@@ -11,9 +13,11 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "ToDo", description = "ToDo 관련 API")
 public interface TodoApiSpecification {
@@ -30,7 +34,7 @@ public interface TodoApiSpecification {
                     ),
             }
     )
-    ResponseEntity<PageResponse<TodoResponse>> findTodos(@AuthenticationPrincipal Member member);
+    ResponseEntity<PageResponse<TodoResponse>> findTodos(@AuthenticationPrincipal User user);
 
     @Operation(
             summary = "ToDo의 스텝 목록 조회",
@@ -59,4 +63,49 @@ public interface TodoApiSpecification {
             }
     )
     ResponseEntity<TodoStepResponse> getTodoSteps(@PathVariable Long todoId);
+
+    @Operation(
+            summary = "ToDo 추가",
+            description = "회원이 자신의 ToDo 업무를 추가합니다. <br><br>Step까지 한꺼번에 요청 값으로 보내주세요.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "ToDo 추가",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = TodoResponse.class)
+                            )
+                    ),
+            }
+    )
+    ResponseEntity<TodoResponse> addTodo(@AuthenticationPrincipal User user,
+                                         @Valid @RequestBody TodoRequest todoRequest);
+
+    @Operation(
+            summary = "ToDo 목표 재설정",
+            description = "ToDo Id 값을 기반으로 ToDo의 목표를 재설정합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "ToDo 목표 재설정",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = TodoResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "403", description = "ToDo에 접근할 권한이 없는 회원",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 403,
+                                                   "name": "TODO_ACCESS_DENIED",
+                                                   "message": "ToDo에 접근할 권한이 없습니다.",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
+                            )
+                    )
+            }
+    )
+    ResponseEntity<TodoResponse> updateTodo(@AuthenticationPrincipal User user,
+                                            @PathVariable Long todoId,
+                                            @Valid @RequestBody UpdateTodoRequest updateTodoRequest);
 }

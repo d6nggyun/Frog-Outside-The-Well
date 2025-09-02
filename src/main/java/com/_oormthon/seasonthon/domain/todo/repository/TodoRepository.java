@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TodoRepository extends JpaRepository<Todo, Long> {
 
-    Page<Todo> findByMemberId(Long memberId, Pageable pageable);
+    Page<Todo> findByUserId(Long userId, Pageable pageable);
+    boolean existsByIdAndUserId(Long id, Long userId);
 }

@@ -1,8 +1,11 @@
 package com._oormthon.seasonthon.domain.todo.service;
 
-import com._oormthon.seasonthon.domain.member.domain.Member;
+import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.domain.TodoStep;
+import com._oormthon.seasonthon.domain.todo.dto.req.StepRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
@@ -31,9 +34,9 @@ public class TodoService {
     private final TodoStepRepository todoStepRepository;
 
     @Transactional(readOnly = true)
-    public PageResponse<TodoResponse> findTodos(Member member) {
+    public PageResponse<TodoResponse> findTodos(User user) {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("endDate").ascending());
-        Page<Todo> todos = todoRepository.findByMemberId(member.getId(), pageable);
+        Page<Todo> todos = todoRepository.findByUserId(user.getUserId(), pageable);
         String warmMessage = "힘내세요!"; // ex
 
         List<TodoResponse> todoResponses = todos.stream()
@@ -58,15 +61,27 @@ public class TodoService {
     }
 
     @Transactional
-    public Object addTodo() {
+    public TodoResponse addTodo(User user, TodoRequest todoRequest) {
+        Todo todo = Todo.createTodo(user, todoRequest);
+        todoRepository.save(todo);
 
-        return null;
+        List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), todoRequest.todoSteps());
+        List<StepResponse> stepResponses = getStepResponses(todoStepList);
+
+        return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
     }
 
     @Transactional
-    public Object updateTodo() {
+    public TodoResponse updateTodo(User user, Long todoId, UpdateTodoRequest updateTodoRequest) {
+        validateUser(user.getUserId(), todoId);
+        Todo todo = getTodoById(todoId);
+        todo.updateTodo(updateTodoRequest);
 
-        return null;
+        todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
+        List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), updateTodoRequest.todoSteps());
+        List<StepResponse> stepResponses = getStepResponses(todoStepList);
+
+        return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
     }
 
     @Transactional
@@ -87,5 +102,22 @@ public class TodoService {
                     log.warn("[ToDo 조회 실패] 존재하지 않는 ToDo Id: {}", todoId);
                     return new CustomException(ErrorCode.TODO_NOT_FOUND);
                 });
+    }
+
+    private void validateUser(Long userId, Long todoId) {
+        if (!todoRepository.existsByIdAndUserId(todoId, userId)) {
+            log.warn("[ToDo 수정 실패] ToDo Id: {}, User Id: {} - 권한 없음", todoId, userId);
+            throw new CustomException(ErrorCode.TODO_ACCESS_DENIED);
+        }
+    }
+
+    private List<TodoStep> getAndSaveTodoStep(Long todoId, List<StepRequest> stepList) {
+        return todoStepRepository.saveAll(stepList.stream()
+                .map(stepRequest -> TodoStep.createTodoStep(todoId, stepRequest)).toList()
+        );
+    }
+
+    private List<StepResponse> getStepResponses(List<TodoStep> todoStepList) {
+        return todoStepList.stream().map(StepResponse::from).toList();
     }
 }

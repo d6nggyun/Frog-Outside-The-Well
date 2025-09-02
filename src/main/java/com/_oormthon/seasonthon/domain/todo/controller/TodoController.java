@@ -1,11 +1,14 @@
 package com._oormthon.seasonthon.domain.todo.controller;
 
-import com._oormthon.seasonthon.domain.member.domain.Member;
+import com._oormthon.seasonthon.domain.member.entity.User;
+import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.service.TaskPlannerService;
 import com._oormthon.seasonthon.domain.todo.service.TodoService;
 import com._oormthon.seasonthon.global.response.PageResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +25,8 @@ public class TodoController implements TodoApiSpecification{
 
     // ToDo 조회
     @GetMapping
-    public ResponseEntity<PageResponse<TodoResponse>> findTodos(@AuthenticationPrincipal Member member) {
-        return ResponseEntity.status(HttpStatus.OK).body(todoService.findTodos(member));
+    public ResponseEntity<PageResponse<TodoResponse>> findTodos(@AuthenticationPrincipal User user) {
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.findTodos(user));
     }
 
     // 스텝 목록 조회
@@ -34,31 +37,35 @@ public class TodoController implements TodoApiSpecification{
 
     // ToDo 추가
     @PostMapping
-    public ResponseEntity<Object> addTodo() {
-        return ResponseEntity.status(HttpStatus.OK).body(todoService.addTodo());
+    public ResponseEntity<TodoResponse> addTodo(@AuthenticationPrincipal User user,
+                                                @Valid @RequestBody TodoRequest todoRequest) {
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.addTodo(user, todoRequest));
     }
 
     // Step 계획 생성
-    @GetMapping
-    public ResponseEntity<Object> generatePlan() {
-        return ResponseEntity.status(HttpStatus.OK).body(taskPlannerService.generatePlan());
-    }
+//    @GetMapping
+//    public ResponseEntity<Object> generatePlan() {
+//        return ResponseEntity.status(HttpStatus.OK).body(taskPlannerService.generatePlan());
+//    }
 
-    // ToDo 수정
-    @PutMapping
-    public ResponseEntity<Object> updateTodo() {
-        return ResponseEntity.status(HttpStatus.OK).body(todoService.updateTodo());
+    // ToDo 목표 재설정
+    @PutMapping("/{todoId}")
+    public ResponseEntity<TodoResponse> updateTodo(@AuthenticationPrincipal User user,
+                                                   @PathVariable Long todoId,
+                                                   @Valid @RequestBody UpdateTodoRequest updateTodoRequest) {
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.updateTodo(user, todoId, updateTodoRequest));
     }
 
     // 감정 기록
-    @PostMapping
+    @PostMapping("/emotions")
     public ResponseEntity<Object> addEmotion() {
         return ResponseEntity.status(HttpStatus.OK).body(todoService.addEmotion());
     }
 
     // 캘린더 해당 달 조회
-    @GetMapping
+    @GetMapping("/calendar")
     public ResponseEntity<Object> findTodoCalendar() {
         return ResponseEntity.status(HttpStatus.OK).body(todoService.findTodoCalendar());
     }
 }
+

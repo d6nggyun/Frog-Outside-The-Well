@@ -16,7 +16,7 @@ public record TodoResponse(
         Long id,
 
         @Schema(description = "회원 Id")
-        Long memberId,
+        Long userId,
 
         @Schema(description = "D-Day")
         String dDay,
@@ -37,7 +37,7 @@ public record TodoResponse(
     public static TodoResponse from(Todo todo, String warmMessage, List<StepResponse> stepResponses) {
         int dDayValue = (int) ChronoUnit.DAYS.between(LocalDate.now(), todo.getEndDate());
 
-        return new TodoResponse(LocalDate.now(), todo.getId(), todo.getMemberId(),
+        return new TodoResponse(LocalDate.now(), todo.getId(), todo.getUserId(),
                 dDayValue > 0 ? "D-" + dDayValue : dDayValue == 0 ? "D-DAY" : "D+" + Math.abs(dDayValue),
                 todo.getTitle(), warmMessage, todo.getProgress(), stepResponses);
     }
