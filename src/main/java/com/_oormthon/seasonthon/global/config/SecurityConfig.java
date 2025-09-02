@@ -33,9 +33,14 @@ public class SecurityConfig {
                                 .logout(AbstractHttpConfigurer::disable)
                                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
-                                                // Swagger 관련 경로는 인증 없이 접근 허용
-                                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                                                // 나머지 요청은 인증 필요
+                                                // Swagger 접근 허용
+                                                .requestMatchers(
+                                                                "/swagger-ui/**",
+                                                                "/swagger-ui.html",
+                                                                "/swagger-ui/index.html",
+                                                                "/v3/api-docs/**")
+                                                .permitAll()
+                                                // 나머지 요청은 JWT 인증 필요
                                                 .anyRequest().authenticated())
                                 .oauth2Login(oauth -> oauth
                                                 .userInfoEndpoint(u -> u.userService(oAuth2UserService))
