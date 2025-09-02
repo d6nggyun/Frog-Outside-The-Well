@@ -85,6 +85,21 @@ public interface TodoApiSpecification {
                                          @Valid @RequestBody TodoRequest todoRequest);
 
     @Operation(
+            summary = "ToDo 삭제",
+            description = "회원이 자신의 ToDo 업무를 삭제합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "ToDo 삭제",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = Void.class)
+                            )
+                    ),
+            }
+    )
+    ResponseEntity<Void> deleteTodo(@AuthenticationPrincipal User user,
+                                    @PathVariable Long todoId);
+
+    @Operation(
             summary = "ToDo 목표 재설정",
             description = "ToDo Id 값을 기반으로 ToDo의 목표를 재설정합니다.",
             responses = {

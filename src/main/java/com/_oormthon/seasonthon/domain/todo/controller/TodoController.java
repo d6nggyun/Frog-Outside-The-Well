@@ -46,6 +46,14 @@ public class TodoController implements TodoApiSpecification{
         return ResponseEntity.status(HttpStatus.CREATED ).body(todoService.addTodo(user, todoRequest));
     }
 
+    // ToDo 삭제
+    @DeleteMapping("/{todoId}")
+    public ResponseEntity<Void> deleteTodo(@AuthenticationPrincipal User user,
+                                           @PathVariable Long todoId) {
+        todoService.deleteTodo(user, todoId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     // Step 계획 생성
 //    @GetMapping
 //    public ResponseEntity<Object> generatePlan() {

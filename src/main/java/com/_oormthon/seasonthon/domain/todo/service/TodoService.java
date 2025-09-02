@@ -85,6 +85,12 @@ public class TodoService {
         return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
     }
 
+    @Transactional
+    public void deleteTodo(User user, Long todoId) {
+        validateUser(user.getUserId(), todoId);
+        todoRepository.deleteById(todoId);
+    }
+
     @Transactional(readOnly = true)
     public Object findTodoCalendar() {
 
