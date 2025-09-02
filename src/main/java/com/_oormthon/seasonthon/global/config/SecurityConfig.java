@@ -32,18 +32,19 @@ public class SecurityConfig {
                                 .httpBasic(AbstractHttpConfigurer::disable)
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .logout(AbstractHttpConfigurer::disable)
-                                .headers(c -> c.frameOptions(
-                                                FrameOptionsConfig::disable).disable())
+                                .headers(c -> c.frameOptions(FrameOptionsConfig::disable))
                                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .sessionManagement(
-                                                httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
-                                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
-
-                                .oauth2Login(oauth -> oauth.userInfoEndpoint(c -> c.userService(oAuth2UserService))
+                                // Swagger 및 API 문서 허용, 나머지는 인증 필요
+                                .authorizeHttpRequests(authorize -> authorize
+                                                .requestMatchers(
+                                                                "/swagger-ui/**",
+                                                                "/v3/api-docs/**",
+                                                                "/swagger-ui.html")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
+                                .oauth2Login(oauth -> oauth
+                                                .userInfoEndpoint(c -> c.userService(oAuth2UserService))
                                                 .successHandler(oAuth2SuccessHandler))
-
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                                 .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
                                 .build();
