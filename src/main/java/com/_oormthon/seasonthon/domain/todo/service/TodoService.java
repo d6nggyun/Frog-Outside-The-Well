@@ -5,6 +5,7 @@ import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.domain.TodoStep;
 import com._oormthon.seasonthon.domain.todo.dto.req.StepRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
@@ -84,16 +85,29 @@ public class TodoService {
         return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
     }
 
-    @Transactional
-    public Object addEmotion() {
-
-        return null;
-    }
-
     @Transactional(readOnly = true)
     public Object findTodoCalendar() {
 
         return null;
+    }
+
+    @Transactional
+    public List<StepResponse> updateStep(Long stepId, UpdateStepRequest updateStepRequest) {
+        TodoStep todoStep = getTodoStepById(stepId);
+        todoStep.updateStep(updateStepRequest);
+
+        Todo todo = getTodoById(todoStep.getTodoId());
+
+        return newTodoStepResponse(todo);
+    }
+
+    @Transactional
+    public List<StepResponse> deleteStep(Long stepId) {
+        TodoStep todoStep = getTodoStepById(stepId);
+        Todo todo = getTodoById(todoStep.getTodoId());
+        todoStepRepository.deleteById(stepId);
+
+        return newTodoStepResponse(todo);
     }
 
     private Todo getTodoById(Long todoId) {
@@ -101,6 +115,14 @@ public class TodoService {
                 .orElseThrow(() -> {
                     log.warn("[ToDo 조회 실패] 존재하지 않는 ToDo Id: {}", todoId);
                     return new CustomException(ErrorCode.TODO_NOT_FOUND);
+                });
+    }
+
+    private TodoStep getTodoStepById(Long stepId) {
+        return todoStepRepository.findById(stepId)
+                .orElseThrow(() -> {
+                    log.warn("[Step 조회 실패] 존재하지 않는 stepId Id: {}", stepId);
+                    return new CustomException(ErrorCode.STEP_NOT_FOUND);
                 });
     }
 
@@ -119,5 +141,10 @@ public class TodoService {
 
     private List<StepResponse> getStepResponses(List<TodoStep> todoStepList) {
         return todoStepList.stream().map(StepResponse::from).toList();
+    }
+
+    private List<StepResponse> newTodoStepResponse(Todo todo) {
+        List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
+        return todoSteps.stream().map(StepResponse::from).toList();
     }
 }
