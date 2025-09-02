@@ -24,13 +24,23 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+
+        // Swagger UI 및 API docs 경로는 JWT 필터를 건너뛰기
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (authorization != null && authorization.startsWith("Bearer ")) {
             String token = authorization.split(" ")[1];
             Long userId = jwtTokenProvider.getId(token);
-            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(userId, null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))));
+            SecurityContextHolder.getContext().setAuthentication(
+                    new UsernamePasswordAuthenticationToken(userId, null,
+                            List.of(new SimpleGrantedAuthority("ROLE_USER"))));
         }
 
         filterChain.doFilter(request, response);

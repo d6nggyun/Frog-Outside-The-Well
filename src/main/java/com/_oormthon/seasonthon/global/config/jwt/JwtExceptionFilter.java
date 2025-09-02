@@ -18,14 +18,21 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+
+        // Swagger UI 및 API docs 경로는 JWT 예외 필터를 건너뛰기
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             filterChain.doFilter(request, response);
         } catch (MalformedJwtException malformedJwtException) {
-            setResponseStatus(response, HttpStatus.FORBIDDEN.value(),
-                    "토큰이 형식에 맞지 않습니다.");
+            setResponseStatus(response, HttpStatus.FORBIDDEN.value(), "토큰이 형식에 맞지 않습니다.");
         } catch (ExpiredJwtException expiredJwtException) {
-            setResponseStatus(response, HttpStatus.FORBIDDEN.value(),
-                    "만료된 토큰입니다.");
+            setResponseStatus(response, HttpStatus.FORBIDDEN.value(), "만료된 토큰입니다.");
         }
     }
 

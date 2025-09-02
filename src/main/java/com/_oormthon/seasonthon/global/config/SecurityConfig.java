@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -25,25 +24,21 @@ public class SecurityConfig {
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
         @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-                return httpSecurity
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                return http
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .cors(Customizer.withDefaults())
                                 .httpBasic(AbstractHttpConfigurer::disable)
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .logout(AbstractHttpConfigurer::disable)
-                                .headers(c -> c.frameOptions(FrameOptionsConfig::disable))
-                                .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                // Swagger 및 API 문서 허용, 나머지는 인증 필요
-                                .authorizeHttpRequests(authorize -> authorize
-                                                .requestMatchers(
-                                                                "/swagger-ui/**",
-                                                                "/v3/api-docs/**",
-                                                                "/swagger-ui.html")
-                                                .permitAll()
+                                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> auth
+                                                // Swagger 관련 경로는 인증 없이 접근 허용
+                                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                                                // 나머지 요청은 인증 필요
                                                 .anyRequest().authenticated())
                                 .oauth2Login(oauth -> oauth
-                                                .userInfoEndpoint(c -> c.userService(oAuth2UserService))
+                                                .userInfoEndpoint(u -> u.userService(oAuth2UserService))
                                                 .successHandler(oAuth2SuccessHandler))
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                                 .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
