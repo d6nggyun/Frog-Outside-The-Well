@@ -97,6 +97,11 @@ public class TodoService {
         todoStep.completeStep();
 
         Todo todo = getTodoById(todoStep.getTodoId());
+        List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
+
+        long completedStepsCount = todoSteps.stream().filter(TodoStep::isCompleted).count();
+        int progress = (int) ((completedStepsCount * 100) / todoSteps.size());
+        todo.updateProgress(progress);
 
         return newTodoStepResponse(todo);
     }

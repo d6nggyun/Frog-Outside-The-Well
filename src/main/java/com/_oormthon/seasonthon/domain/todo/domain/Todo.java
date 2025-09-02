@@ -39,7 +39,7 @@ public class Todo {
     private LocalDate endDate;
 
     @Column(nullable = false)
-    private Long progress;
+    private Integer progress;
 
     @ElementCollection(targetClass = Day.class)
     @CollectionTable(name = "todo_days", joinColumns = @JoinColumn(name = "todo_id"))
@@ -48,7 +48,7 @@ public class Todo {
 
     @Builder
     private Todo(Long userId, String title, String content, LocalDate startDate,
-                 LocalDate endDate, Long progress, List<Day> expectedDays) {
+                 LocalDate endDate, Integer progress, List<Day> expectedDays) {
         this.userId = userId;
         this.title = title;
         this.content = content;
@@ -65,7 +65,7 @@ public class Todo {
                 .content(todoRequest.content())
                 .startDate(todoRequest.startDate())
                 .endDate(todoRequest.endDate())
-                .progress(0L)
+                .progress(0)
                 .expectedDays(todoRequest.expectedDays())
                 .build();
     }
@@ -74,5 +74,9 @@ public class Todo {
         this.title = updateTodoRequest.title();
         this.content = updateTodoRequest.content();
         this.endDate = LocalDate.now().plusDays(updateTodoRequest.addDays());
+    }
+
+    public void updateProgress(int progress) {
+        this.progress = progress;
     }
 }
