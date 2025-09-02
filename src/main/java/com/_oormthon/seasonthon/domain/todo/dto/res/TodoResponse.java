@@ -9,25 +9,25 @@ import java.util.List;
 
 public record TodoResponse(
 
-        @Schema(description = "현재 날짜")
+        @Schema(description = "현재 날짜", example = "2024-09-03")
         LocalDate currentDate,
 
-        @Schema(description = "Todo Id")
+        @Schema(description = "Todo Id", example = "1")
         Long id,
 
-        @Schema(description = "회원 Id")
+        @Schema(description = "회원 Id", example = "1")
         Long userId,
 
-        @Schema(description = "D-Day")
+        @Schema(description = "D-Day", example = "D-10")
         String dDay,
 
-        @Schema(description = "제목")
+        @Schema(description = "제목", example = "우물밖개구리 프로젝트")
         String title,
 
-        @Schema(description = "따뜻한 한마디")
+        @Schema(description = "따뜻한 한마디", example = "화이팅!")
         String warmMessage,
 
-        @Schema(description = "진행률")
+        @Schema(description = "진행률", example = "50")
         Long progress,
 
         @Schema(description = "Step 리스트")
