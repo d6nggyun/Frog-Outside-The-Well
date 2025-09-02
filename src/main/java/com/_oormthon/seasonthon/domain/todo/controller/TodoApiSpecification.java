@@ -110,20 +110,6 @@ public interface TodoApiSpecification {
                                             @Valid @RequestBody UpdateTodoRequest updateTodoRequest);
 
     @Operation(
-            summary = "(미구현) 감정 기록",
-            description = "",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "감정 기록",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = Object.class)
-                            )
-                    ),
-            }
-    )
-    ResponseEntity<Object> addEmotion();
-
-    @Operation(
             summary = "(미구현) 캘린더 해당 달 조회",
             description = "",
             responses = {
