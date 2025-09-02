@@ -47,6 +47,9 @@ server:
   port: 8080
 
 logging:
+  file:
+    name: /home/ubuntu/seasonthon/logs/spring.log
   level:
+    root: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
