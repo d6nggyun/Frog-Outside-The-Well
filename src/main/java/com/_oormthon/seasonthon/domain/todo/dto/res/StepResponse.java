@@ -14,10 +14,13 @@ public record StepResponse(
         Integer stepOrder,
 
         @Schema(description = "내용")
-        String description
+        String description,
+
+        @Schema(description = "완료 여부")
+        Boolean isCompleted
 
 ) {
     public static StepResponse from(TodoStep todoStep) {
-        return new StepResponse(todoStep.getStepDate(), todoStep.getStepOrder(), todoStep.getDescription());
+        return new StepResponse(todoStep.getStepDate(), todoStep.getStepOrder(), todoStep.getDescription(), todoStep.getIsCompleted());
     }
 }

@@ -28,4 +28,7 @@ public class TodoStep {
 
     @Column(nullable = false, length = 500)
     private String description;
+
+    @Column(nullable = false)
+    private Boolean isCompleted;
 }

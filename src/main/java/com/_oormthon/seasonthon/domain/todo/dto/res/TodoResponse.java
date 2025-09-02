@@ -38,7 +38,7 @@ public record TodoResponse(
         int dDayValue = (int) ChronoUnit.DAYS.between(LocalDate.now(), todo.getEndDate());
 
         return new TodoResponse(LocalDate.now(), todo.getId(), todo.getMemberId(),
-                dDayValue > 0 ? "D-" + dDayValue : dDayValue == 0 ? "D-Day" : "D+" + Math.abs(dDayValue),
+                dDayValue > 0 ? "D-" + dDayValue : dDayValue == 0 ? "D-DAY" : "D+" + Math.abs(dDayValue),
                 todo.getTitle(), warmMessage, todo.getProgress(), stepResponses);
     }
 }
