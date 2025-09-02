@@ -4,6 +4,7 @@ import com._oormthon.seasonthon.domain.member.domain.Member;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
 import com._oormthon.seasonthon.domain.todo.service.TaskPlannerService;
 import com._oormthon.seasonthon.domain.todo.service.TodoService;
+import com._oormthon.seasonthon.global.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,9 @@ public class TodoController implements TodoApiSpecification{
     private final TodoService todoService;
     private final TaskPlannerService taskPlannerService;
 
-    // 업무 조회
+    // ToDo 조회
     @GetMapping
-    public ResponseEntity<List<TodoResponse>> findTodos(@AuthenticationPrincipal Member member) {
+    public ResponseEntity<PageResponse<TodoResponse>> findTodos(@AuthenticationPrincipal Member member) {
         return ResponseEntity.status(HttpStatus.OK).body(todoService.findTodos(member));
     }
 
@@ -32,19 +33,19 @@ public class TodoController implements TodoApiSpecification{
         return ResponseEntity.status(HttpStatus.OK).body(todoService.getTodoSteps());
     }
 
-    // 업무 추가
+    // ToDo 추가
     @PostMapping
     public ResponseEntity<> addTodo() {
         return ResponseEntity.status(HttpStatus.OK).body(todoService.addTodo());
     }
 
-    // 할 일 나누기
+    // Step 계획 생성
     @GetMapping
-    public ResponseEntity<> divideTodoStep() {
+    public ResponseEntity<> generatePlan() {
         return ResponseEntity.status(HttpStatus.OK).body(taskPlannerService.generatePlan());
     }
 
-    // 업무 수정
+    // ToDo 수정
     @PutMapping
     public ResponseEntity<> updateTodo() {
         return ResponseEntity.status(HttpStatus.OK).body(todoService.updateTodo());

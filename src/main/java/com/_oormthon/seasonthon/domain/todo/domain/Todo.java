@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.todo.domain;
 
+import com._oormthon.seasonthon.domain.todo.enums.Day;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
