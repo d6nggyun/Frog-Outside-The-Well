@@ -42,7 +42,7 @@ public class TodoService {
                 .map(todo -> {
                     List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
                     List<StepResponse> stepResponses = todoSteps.stream()
-                            .map(StepResponse::from)
+                            .map(com._oormthon.seasonthon.domain.step.dto.res.StepResponse::from)
                             .toList();
 
                     return TodoResponse.from(todo, warmMessage, stepResponses);
@@ -56,7 +56,7 @@ public class TodoService {
         Todo todo = Todo.createTodo(user, todoRequest);
         todoRepository.save(todo);
 
-        List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), todoRequest.todoSteps());
+        List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), todoRequest.todoSteps());
         List<StepResponse> stepResponses = getStepResponses(todoStepList);
 
         return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
@@ -69,7 +69,7 @@ public class TodoService {
         todo.updateTodo(updateTodoRequest);
 
         todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
-        List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), updateTodoRequest.todoSteps());
+        List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), updateTodoRequest.todoSteps());
         List<StepResponse> stepResponses = getStepResponses(todoStepList);
 
         return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
@@ -114,13 +114,13 @@ public class TodoService {
         }
     }
 
-    private List<TodoStep> getAndSaveTodoStep(Long todoId, List<StepRequest> stepList) {
+    private List<TodoStep> getAndSaveTodoStep(Long todoId, Long userId, List<StepRequest> stepList) {
         return todoStepRepository.saveAll(stepList.stream()
-                .map(stepRequest -> TodoStep.createTodoStep(todoId, stepRequest)).toList()
+                .map(stepRequest -> TodoStep.createTodoStep(todoId, userId, stepRequest)).toList()
         );
     }
 
     private List<StepResponse> getStepResponses(List<TodoStep> todoStepList) {
-        return todoStepList.stream().map(StepResponse::from).toList();
+        return todoStepList.stream().map(com._oormthon.seasonthon.domain.step.dto.res.StepResponse::from).toList();
     }
 }

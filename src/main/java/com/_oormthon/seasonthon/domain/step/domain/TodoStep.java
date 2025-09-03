@@ -25,6 +25,9 @@ public class TodoStep {
     @Column(name = "todo_id", nullable = false)
     private Long todoId;
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     @Column(nullable = false)
     private LocalDate stepDate;
 
@@ -45,17 +48,19 @@ public class TodoStep {
     private LocalDateTime createdAt;
 
     @Builder
-    private TodoStep(Long todoId, LocalDate stepDate, Integer stepOrder, String description, Boolean isCompleted) {
+    private TodoStep(Long todoId, Long userId, LocalDate stepDate, Integer stepOrder, String description, Boolean isCompleted) {
         this.todoId = todoId;
+        this.userId = userId;
         this.stepDate = stepDate;
         this.stepOrder = stepOrder;
         this.description = description;
         this.isCompleted = isCompleted;
     }
 
-    public static TodoStep createTodoStep(Long todoId, StepRequest stepRequest) {
+    public static TodoStep createTodoStep(Long todoId, Long userId, StepRequest stepRequest) {
         return TodoStep.builder()
                 .todoId(todoId)
+                .userId(userId)
                 .stepDate(stepRequest.stepDate())
                 .stepOrder(stepRequest.stepOrder())
                 .description(stepRequest.description())

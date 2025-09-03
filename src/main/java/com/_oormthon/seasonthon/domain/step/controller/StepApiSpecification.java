@@ -1,6 +1,7 @@
 package com._oormthon.seasonthon.domain.step.controller;
 
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
+import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.global.exception.ErrorResponseEntity;
@@ -22,10 +23,10 @@ import java.util.List;
 public interface StepApiSpecification {
 
     @Operation(
-            summary = "ToDo의 스텝 목록 조회",
-            description = "ToDo Id 값을 기반으로 ToDo의 스텝 목록을 조회합니다.",
+            summary = "ToDo의 Step 목록 조회",
+            description = "ToDo Id 값을 기반으로 ToDo의 Step 목록을 조회합니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "ToDo의 스텝 목록 조회",
+                    @ApiResponse(responseCode = "200", description = "ToDo의 Step 목록 조회",
                             content = @Content(
                                     mediaType = "application/json",
                                     schema = @Schema(implementation = TodoStepResponse.class)
@@ -50,23 +51,37 @@ public interface StepApiSpecification {
     ResponseEntity<TodoStepResponse> getTodoSteps(@PathVariable Long todoId);
 
     @Operation(
-            summary = "Step 완료",
-            description = "Step Id 값을 기반으로 Step을 완료합니다. <br><br>해당 ToDo의 진행률을 업데이트합니다.",
+            summary = "Step 기록 시작",
+            description = "해당 Step의 기록을 시작합니다. <br><br>시작 시간을 기록하며, 시작 시 완료됨으로 표시합니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Step 완료",
+                    @ApiResponse(responseCode = "200", description = "Step 기록 시작",
                             content = @Content(
                                     mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = StepResponse.class))
+                                    schema = @Schema(implementation = StepRecordResponse.class)
+                            )
+                    )
+            }
+    )
+    ResponseEntity<StepRecordResponse> startStep(@PathVariable Long stepId);
+
+    @Operation(
+            summary = "Step 기록 종료",
+            description = "해당 Step의 기록을 종료합니다. <br><br>종료 시간을 기록하며, 종료 시 저장된 시작 시간을 기준으로 총 소요시간을 누적합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Step 기록 종료",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = StepRecordResponse.class)
                             )
                     ),
-                    @ApiResponse(responseCode = "404", description = "Step을 찾을 수 없습니다.",
+                    @ApiResponse(responseCode = "404", description = "시작되지 않은 Step입니다.",
                             content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
                                     examples = @ExampleObject(
                                             value = """
                                                 {
                                                    "code": 404,
-                                                   "name": "STEP_NOT_FOUND",
-                                                   "message": "Step을 찾을 수 없습니다..",
+                                                   "name": "STEP_NOT_STARTED",
+                                                   "message": "시작되지 않은 Step입니다.",
                                                    "errors": null
                                                 }
                                                 """
@@ -75,7 +90,7 @@ public interface StepApiSpecification {
                     )
             }
     )
-    ResponseEntity<List<StepResponse>> completeStep(@PathVariable Long stepId);
+    ResponseEntity<StepRecordResponse> stopStep(@PathVariable Long stepId);
 
     @Operation(
             summary = "Step 수정",
