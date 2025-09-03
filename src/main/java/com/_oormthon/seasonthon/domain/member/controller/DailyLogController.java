@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users/{userId}/daily-logs")
+@RequestMapping("/api/v1/users/{userId}/daily-logs")
 @RequiredArgsConstructor
 public class DailyLogController {
 

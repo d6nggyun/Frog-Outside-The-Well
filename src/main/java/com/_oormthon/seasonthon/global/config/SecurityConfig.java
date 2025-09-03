@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
@@ -22,39 +21,40 @@ public class SecurityConfig {
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/swagger-ui/index.html",
-                        "/v3/api-docs/**"
+                        "/v3/api-docs/**",
+                        "/swagger-resources/**",
+                        "/api/v1/**",
+                        "/login",
+                        "/oauth/callback/kakao**"
         };
 
         private final JwtFilter jwtFilter;
         private final JwtExceptionFilter jwtExceptionFilter;
         private final CustomOAuth2UserService oAuth2UserService;
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
+        private final CorsConfig corsConfig; // 👈 CorsConfig 주입받음
 
         @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 return http
-                                // 기본 보안 설정 비활성화
                                 .csrf(AbstractHttpConfigurer::disable)
-                                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                                .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource())) // 👈 직접
+                                                                                                              // 호출
                                 .httpBasic(AbstractHttpConfigurer::disable)
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .logout(AbstractHttpConfigurer::disable)
 
-                                // 세션 대신 JWT 사용
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                                // 권한 설정
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(SWAGGER_WHITELIST).permitAll()
                                                 .anyRequest().authenticated())
 
-                                // OAuth2 설정
                                 .oauth2Login(oauth -> oauth
                                                 .userInfoEndpoint(user -> user.userService(oAuth2UserService))
                                                 .successHandler(oAuth2SuccessHandler))
 
-                                // JWT 필터 등록
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                                 .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
 
