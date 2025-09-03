@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.step.controller;
 
+import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -45,10 +47,25 @@ public interface StepApiSpecification {
                                                 """
                                     )
                             )
+                    ),
+                    @ApiResponse(responseCode = "403", description = "ToDo에 접근할 권한이 없습니다.",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 403,
+                                                   "name": "TODO_ACCESS_DENIED",
+                                                   "message": "ToDo에 접근할 권한이 없습니다.",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
+                            )
                     )
             }
     )
-    ResponseEntity<TodoStepResponse> getTodoSteps(@PathVariable Long todoId);
+    ResponseEntity<TodoStepResponse> getTodoSteps(@AuthenticationPrincipal User user,
+                                                  @PathVariable Long todoId);
 
     @Operation(
             summary = "Step 기록 시작",
@@ -59,10 +76,25 @@ public interface StepApiSpecification {
                                     mediaType = "application/json",
                                     schema = @Schema(implementation = StepRecordResponse.class)
                             )
+                    ),
+                    @ApiResponse(responseCode = "403", description = "Step에 접근할 권한이 없습니다.",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 403,
+                                                   "name": "STEP_ACCESS_DENIED",
+                                                   "message": "Step에 접근할 권한이 없습니다.",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
+                            )
                     )
             }
     )
-    ResponseEntity<StepRecordResponse> startStep(@PathVariable Long stepId);
+    ResponseEntity<StepRecordResponse> startStep(@AuthenticationPrincipal User user,
+                                                 @PathVariable Long stepId);
 
     @Operation(
             summary = "Step 기록 종료",
@@ -72,6 +104,20 @@ public interface StepApiSpecification {
                             content = @Content(
                                     mediaType = "application/json",
                                     schema = @Schema(implementation = StepRecordResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = "403", description = "Step에 접근할 권한이 없습니다.",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 403,
+                                                   "name": "STEP_ACCESS_DENIED",
+                                                   "message": "Step에 접근할 권한이 없습니다.",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "시작되지 않은 Step입니다.",
@@ -90,7 +136,8 @@ public interface StepApiSpecification {
                     )
             }
     )
-    ResponseEntity<StepRecordResponse> stopStep(@PathVariable Long stepId);
+    ResponseEntity<StepRecordResponse> stopStep(@AuthenticationPrincipal User user,
+                                                @PathVariable Long stepId);
 
     @Operation(
             summary = "Step 수정",
@@ -100,6 +147,20 @@ public interface StepApiSpecification {
                             content = @Content(
                                     mediaType = "application/json",
                                     array = @ArraySchema(schema = @Schema(implementation = StepResponse.class))
+                            )
+                    ),
+                    @ApiResponse(responseCode = "403", description = "Step에 접근할 권한이 없습니다.",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 403,
+                                                   "name": "STEP_ACCESS_DENIED",
+                                                   "message": "Step에 접근할 권한이 없습니다.",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
                             )
                     ),
                     @ApiResponse(responseCode = "404", description = "Step을 찾을 수 없습니다.",
@@ -118,7 +179,8 @@ public interface StepApiSpecification {
                     )
             }
     )
-    ResponseEntity<List<StepResponse>> updateStep(@PathVariable Long stepId,
+    ResponseEntity<List<StepResponse>> updateStep(@AuthenticationPrincipal User user,
+                                                  @PathVariable Long stepId,
                                                   @Valid @RequestBody UpdateStepRequest updateStepRequest);
 
     @Operation(
@@ -131,6 +193,20 @@ public interface StepApiSpecification {
                                     array = @ArraySchema(schema = @Schema(implementation = StepResponse.class))
                             )
                     ),
+                    @ApiResponse(responseCode = "403", description = "Step에 접근할 권한이 없습니다.",
+                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
+                                    examples = @ExampleObject(
+                                            value = """
+                                                {
+                                                   "code": 403,
+                                                   "name": "STEP_ACCESS_DENIED",
+                                                   "message": "Step에 접근할 권한이 없습니다.",
+                                                   "errors": null
+                                                }
+                                                """
+                                    )
+                            )
+                    ),
                     @ApiResponse(responseCode = "404", description = "Step을 찾을 수 없습니다.",
                             content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
                                     examples = @ExampleObject(
@@ -147,5 +223,6 @@ public interface StepApiSpecification {
                     )
             }
     )
-    ResponseEntity<List<StepResponse>> deleteStep(@PathVariable Long stepId);
+    ResponseEntity<List<StepResponse>> deleteStep(@AuthenticationPrincipal User user,
+                                                  @PathVariable Long stepId);
 }

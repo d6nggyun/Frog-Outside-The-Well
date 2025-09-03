@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
+@Schema(description = "ToDo 생성 요청")
 public record TodoRequest(
 
         @Schema(description = "업무명", example = "우물밖개구리 프로젝트")

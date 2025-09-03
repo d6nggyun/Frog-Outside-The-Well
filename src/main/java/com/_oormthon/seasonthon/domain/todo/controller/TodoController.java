@@ -31,8 +31,8 @@ public class TodoController implements TodoApiSpecification{
     // ToDo 추가
     @PostMapping
     public ResponseEntity<TodoResponse> addTodo(@AuthenticationPrincipal User user,
-                                                @Valid @RequestBody TodoRequest todoRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED ).body(todoService.addTodo(user, todoRequest));
+                                                @Valid @RequestBody TodoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED ).body(todoService.addTodo(user, request));
     }
 
     // ToDo 삭제
@@ -54,14 +54,8 @@ public class TodoController implements TodoApiSpecification{
     @PutMapping("/{todoId}")
     public ResponseEntity<TodoResponse> updateTodo(@AuthenticationPrincipal User user,
                                                    @PathVariable Long todoId,
-                                                   @Valid @RequestBody UpdateTodoRequest updateTodoRequest) {
-        return ResponseEntity.status(HttpStatus.OK).body(todoService.updateTodo(user, todoId, updateTodoRequest));
-    }
-
-    // 캘린더 해당 달 조회
-    @GetMapping("/calendar")
-    public ResponseEntity<Object> findTodoCalendar() {
-        return ResponseEntity.status(HttpStatus.OK).body(todoService.findTodoCalendar());
+                                                   @Valid @RequestBody UpdateTodoRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.updateTodo(user, todoId, request));
     }
 }
 

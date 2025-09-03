@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
+@Schema(description = "Step 기록 응답")
 public record StepRecordResponse(
 
         @Schema(description = "Step Id", example = "1")

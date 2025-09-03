@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
+@Schema(description = "Step 생성 요청")
 public record StepRequest(
 
         @Schema(description = "날짜", example = "2025-09-02")
