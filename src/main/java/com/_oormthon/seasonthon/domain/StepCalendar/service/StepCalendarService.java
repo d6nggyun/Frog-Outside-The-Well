@@ -1,7 +1,6 @@
 package com._oormthon.seasonthon.domain.StepCalendar.service;
 
 import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
-import com._oormthon.seasonthon.domain.StepCalendar.dto.req.StepCalendarRequest;
 import com._oormthon.seasonthon.domain.StepCalendar.dto.res.StepCalendarResponse;
 import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarRepository;
 import com._oormthon.seasonthon.domain.member.entity.User;
@@ -20,8 +19,8 @@ public class StepCalendarService {
     private final StepCalendarRepository stepCalendarRepository;
 
     @Transactional(readOnly = true)
-    public List<StepCalendarResponse> findTodoCalendar(User user, StepCalendarRequest request) {
-        YearMonth yearMonth = YearMonth.of(request.year(), request.month());
+    public List<StepCalendarResponse> findTodoCalendar(User user, int year, int month) {
+        YearMonth yearMonth = YearMonth.of(year, month);
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 

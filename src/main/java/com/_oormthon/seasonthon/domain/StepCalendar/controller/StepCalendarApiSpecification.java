@@ -1,6 +1,5 @@
 package com._oormthon.seasonthon.domain.StepCalendar.controller;
 
-import com._oormthon.seasonthon.domain.StepCalendar.dto.req.StepCalendarRequest;
 import com._oormthon.seasonthon.domain.StepCalendar.dto.res.StepCalendarResponse;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,10 +8,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -32,5 +30,5 @@ public interface StepCalendarApiSpecification {
             }
     )
     ResponseEntity<List<StepCalendarResponse>> findTodoCalendar(@AuthenticationPrincipal User user,
-                                                                @Valid @RequestBody StepCalendarRequest request);
+                                                                @RequestParam int year, @RequestParam int month);
 }
