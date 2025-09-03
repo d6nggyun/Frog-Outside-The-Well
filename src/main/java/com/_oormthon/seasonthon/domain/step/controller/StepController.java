@@ -1,6 +1,7 @@
 package com._oormthon.seasonthon.domain.step.controller;
 
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
+import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.service.StepService;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
@@ -19,7 +20,7 @@ public class StepController implements StepApiSpecification{
 
     private final StepService stepService;
 
-    // 스텝 목록 조회
+    // Step 목록 조회
     @GetMapping("/todos/{todoId}")
     public ResponseEntity<TodoStepResponse> getTodoSteps(@PathVariable Long todoId) {
         return ResponseEntity.status(HttpStatus.OK).body(stepService.getTodoSteps(todoId));
@@ -31,10 +32,16 @@ public class StepController implements StepApiSpecification{
 //        return ResponseEntity.status(HttpStatus.OK).body(taskPlannerService.generatePlan());
 //    }
 
-    // Step 완료
-    @PutMapping("/{stepId}/complete")
-    public ResponseEntity<List<StepResponse>> completeStep(@PathVariable Long stepId) {
-        return ResponseEntity.status(HttpStatus.OK).body(stepService.completeStep(stepId));
+    // Step 기록 시작
+    @PostMapping("/{stepId}/start")
+    public ResponseEntity<StepRecordResponse> startStep(@PathVariable Long stepId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(stepService.startStep(stepId));
+    }
+
+    // Step 기록 종료
+    @PostMapping("/{stepId}/stop")
+    public ResponseEntity<StepRecordResponse> stopStep(@PathVariable Long stepId) {
+        return ResponseEntity.status(HttpStatus.OK).body(stepService.stopStep(stepId));
     }
 
     // Step 수정

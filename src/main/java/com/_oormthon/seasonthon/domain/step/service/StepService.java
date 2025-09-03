@@ -1,8 +1,11 @@
 package com._oormthon.seasonthon.domain.step.service;
 
+import com._oormthon.seasonthon.domain.step.domain.StepRecord;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
+import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
+import com._oormthon.seasonthon.domain.step.repository.StepRecordRepository;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
@@ -23,6 +26,7 @@ public class StepService {
 
     private final TodoRepository todoRepository;
     private final TodoStepRepository todoStepRepository;
+    private final StepRecordRepository stepRecordRepository;
 
     @Transactional(readOnly = true)
     public TodoStepResponse getTodoSteps(Long todoId) {
@@ -33,18 +37,23 @@ public class StepService {
     }
 
     @Transactional
-    public List<StepResponse> completeStep(Long stepId) {
+    public StepRecordResponse startStep(Long stepId) {
         TodoStep todoStep = getTodoStepById(stepId);
-        todoStep.completeStep();
 
-        Todo todo = getTodoById(todoStep.getTodoId());
-        List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
+        completeStep(todoStep);
+        todoStep.incrementCount();
 
-        long completedStepsCount = todoSteps.stream().filter(TodoStep::isCompleted).count();
-        int progress = (int) ((completedStepsCount * 100) / todoSteps.size());
-        todo.updateProgress(progress);
+        return StepRecordResponse.from(StepRecord.startStep(stepId, todoStep.getUserId()));
+    }
 
-        return newTodoStepResponse(todo);
+    @Transactional
+    public StepRecordResponse stopStep(Long stepId) {
+        TodoStep todoStep = getTodoStepById(stepId);
+        StepRecord stepRecord = getStepRecordByStepId(stepId);
+
+        stepRecord.stopStep();
+
+        return StepRecordResponse.from(stepRecord);
     }
 
     @Transactional
@@ -82,8 +91,28 @@ public class StepService {
                 });
     }
 
+    private StepRecord getStepRecordByStepId(Long stepId) {
+        return stepRecordRepository.findByStepId(stepId)
+                .orElseThrow(() -> {
+                    log.warn("[StepRecord 조회 실패] 존재하지 않는 stepId Id: {}", stepId);
+                    return new CustomException(ErrorCode.STEP_RECORD_NOT_FOUND);
+                });
+    }
+
+    private void completeStep(TodoStep todoStep) {
+        if (todoStep.isCompleted()) return;
+        todoStep.completeStep();
+
+        Todo todo = getTodoById(todoStep.getTodoId());
+        List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
+
+        long completedStepsCount = todoSteps.stream().filter(TodoStep::isCompleted).count();
+        int progress = (int) ((completedStepsCount * 100) / todoSteps.size());
+        todo.updateProgress(progress);
+    }
+
     private List<StepResponse> newTodoStepResponse(Todo todo) {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
-        return todoSteps.stream().map(StepResponse::from).toList();
+        return todoSteps.stream().map(com._oormthon.seasonthon.domain.step.dto.res.StepResponse::from).toList();
     }
 }
