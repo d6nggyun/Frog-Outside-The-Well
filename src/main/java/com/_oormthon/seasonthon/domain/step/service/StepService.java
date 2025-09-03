@@ -51,7 +51,7 @@ public class StepService {
         todoStep.incrementCount();
         saveStepCalendar(user.getUserId(), LocalDate.now());
 
-        return StepRecordResponse.from(StepRecord.startStep(stepId, todoStep.getUserId()));
+        return StepRecordResponse.from(startOrGetStepRecord(todoStep.getUserId(), stepId));
     }
 
     @Transactional
@@ -139,6 +139,15 @@ public class StepService {
     private List<StepResponse> newTodoStepResponse(Todo todo) {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
         return todoSteps.stream().map(com._oormthon.seasonthon.domain.step.dto.res.StepResponse::from).toList();
+    }
+
+    private StepRecord startOrGetStepRecord(Long userId, Long stepId) {
+        return stepRecordRepository.findByUserIdAndStepId(userId, stepId)
+                .map(existingRecord -> {
+                    existingRecord.startStep(stepId, userId);
+                    return existingRecord;
+                })
+                .orElseGet(() -> StepRecord.createStepRecord(userId, stepId));
     }
 
     private void saveStepCalendar(Long userId, LocalDate date) {

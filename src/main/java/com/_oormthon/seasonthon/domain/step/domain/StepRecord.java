@@ -43,13 +43,18 @@ public class StepRecord {
         this.endTime = endTime;
     }
 
-    public static StepRecord startStep(Long stepId, Long userId) {
+    public static StepRecord createStepRecord(Long stepId, Long userId) {
         return StepRecord.builder()
                 .stepId(stepId)
                 .userId(userId)
                 .startTime(LocalDateTime.now())
                 .endTime(null)
                 .build();
+    }
+
+    public void startStep(Long stepId, Long userId) {
+        this.startTime = LocalDateTime.now();
+        this.endTime = null;
     }
 
     public void stopStep() {

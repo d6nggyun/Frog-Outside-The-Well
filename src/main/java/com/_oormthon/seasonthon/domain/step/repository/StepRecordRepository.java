@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface StepRecordRepository extends JpaRepository<StepRecord, Long> {
 
     Optional<StepRecord> findByStepId(Long stepId);
+    Optional<StepRecord> findByUserIdAndStepId(Long userId, Long stepId);
 }
