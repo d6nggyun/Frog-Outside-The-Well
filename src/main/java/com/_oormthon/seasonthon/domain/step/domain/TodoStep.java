@@ -1,14 +1,16 @@
-package com._oormthon.seasonthon.domain.todo.domain;
+package com._oormthon.seasonthon.domain.step.domain;
 
-import com._oormthon.seasonthon.domain.todo.dto.req.StepRequest;
-import com._oormthon.seasonthon.domain.todo.dto.req.UpdateStepRequest;
+import com._oormthon.seasonthon.domain.step.dto.req.StepRequest;
+import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "todo_step")
@@ -33,7 +35,14 @@ public class TodoStep {
     private String description;
 
     @Column(nullable = false)
-    private Boolean isCompleted;
+    private Integer count = 0;
+
+    @Column(nullable = false)
+    private Boolean isCompleted = false;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     @Builder
     private TodoStep(Long todoId, LocalDate stepDate, Integer stepOrder, String description, Boolean isCompleted) {
@@ -50,13 +59,16 @@ public class TodoStep {
                 .stepDate(stepRequest.stepDate())
                 .stepOrder(stepRequest.stepOrder())
                 .description(stepRequest.description())
-                .isCompleted(false)
                 .build();
     }
 
     public void updateStep(UpdateStepRequest updateStepRequest) {
         this.stepOrder = updateStepRequest.stepOrder();
         this.description = updateStepRequest.description();
+    }
+
+    public void incrementCount() {
+        this.count += 1;
     }
 
     public Boolean isCompleted() {

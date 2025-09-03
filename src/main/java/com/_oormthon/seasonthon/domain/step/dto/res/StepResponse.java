@@ -1,6 +1,6 @@
-package com._oormthon.seasonthon.domain.todo.dto.res;
+package com._oormthon.seasonthon.domain.step.dto.res;
 
-import com._oormthon.seasonthon.domain.todo.domain.TodoStep;
+import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;

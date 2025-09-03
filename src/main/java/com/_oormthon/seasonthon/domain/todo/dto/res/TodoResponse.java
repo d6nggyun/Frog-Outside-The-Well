@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.todo.dto.res;
 
+import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -30,6 +31,9 @@ public record TodoResponse(
         @Schema(description = "진행률", example = "50")
         Integer progress,
 
+        @Schema(description = "완료 여부", example = "false")
+        Boolean isCompleted,
+
         @Schema(description = "Step 리스트")
         List<StepResponse> stepResponses
 
@@ -39,6 +43,6 @@ public record TodoResponse(
 
         return new TodoResponse(LocalDate.now(), todo.getId(), todo.getUserId(),
                 dDayValue > 0 ? "D-" + dDayValue : dDayValue == 0 ? "D-DAY" : "D+" + Math.abs(dDayValue),
-                todo.getTitle(), warmMessage, todo.getProgress(), stepResponses);
+                todo.getTitle(), warmMessage, todo.getProgress(), todo.getIsCompleted() , stepResponses);
     }
 }

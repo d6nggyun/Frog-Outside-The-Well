@@ -1,6 +1,6 @@
-package com._oormthon.seasonthon.domain.todo.repository;
+package com._oormthon.seasonthon.domain.step.repository;
 
-import com._oormthon.seasonthon.domain.todo.domain.TodoStep;
+import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
