@@ -36,7 +36,7 @@ public class JwtTokenProvider {
     }
 
     public Long getId(String token) {
-        return ((Number) parseClaims(token).get("id")).longValue();
+        return ((Number) parseClaims(token).get("user_id")).longValue();
     }
 
     private Claims parseClaims(String token) {
