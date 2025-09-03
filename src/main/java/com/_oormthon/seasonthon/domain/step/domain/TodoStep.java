@@ -28,10 +28,10 @@ public class TodoStep {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(nullable = false)
+    @Column(name = "step_date", nullable = false)
     private LocalDate stepDate;
 
-    @Column(nullable = false)
+    @Column(name = "step_order", nullable = false)
     private Integer stepOrder;
 
     @Column(nullable = false, length = 500)
@@ -40,7 +40,7 @@ public class TodoStep {
     @Column(nullable = false)
     private Integer count = 0;
 
-    @Column(nullable = false)
+    @Column(name = "is_completed", nullable = false)
     private Boolean isCompleted = false;
 
     @CreatedDate

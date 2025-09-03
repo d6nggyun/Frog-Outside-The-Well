@@ -64,7 +64,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponse updateTodo(User user, Long todoId, UpdateTodoRequest updateTodoRequest) {
-        validateUser(user.getUserId(), todoId);
+        validateTodoAndUser(user.getUserId(), todoId);
         Todo todo = getTodoById(todoId);
         todo.updateTodo(updateTodoRequest);
 
@@ -77,13 +77,13 @@ public class TodoService {
 
     @Transactional
     public void deleteTodo(User user, Long todoId) {
-        validateUser(user.getUserId(), todoId);
+        validateTodoAndUser(user.getUserId(), todoId);
         todoRepository.deleteById(todoId);
     }
 
     @Transactional
     public TodoResponse completeTodo(User user, Long todoId) {
-        validateUser(user.getUserId(), todoId);
+        validateTodoAndUser(user.getUserId(), todoId);
         Todo todo = getTodoById(todoId);
         todo.completeTodo();
 
@@ -91,12 +91,6 @@ public class TodoService {
         List<StepResponse> stepResponses = getStepResponses(todoSteps);
 
         return TodoResponse.from(todo, "업무를 모두 마쳤어요 !", stepResponses);
-    }
-
-    @Transactional(readOnly = true)
-    public Object findTodoCalendar() {
-
-        return null;
     }
 
     private Todo getTodoById(Long todoId) {
@@ -107,7 +101,7 @@ public class TodoService {
                 });
     }
 
-    private void validateUser(Long userId, Long todoId) {
+    private void validateTodoAndUser(Long userId, Long todoId) {
         if (!todoRepository.existsByIdAndUserId(todoId, userId)) {
             log.warn("[ToDo 수정 실패] ToDo Id: {}, User Id: {} - 권한 없음", todoId, userId);
             throw new CustomException(ErrorCode.TODO_ACCESS_DENIED);

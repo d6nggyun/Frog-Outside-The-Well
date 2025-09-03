@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 
+@Schema(description = "Step 정보 응답")
 public record StepResponse(
 
         @Schema(description = "날짜", example = "2025-09-02")

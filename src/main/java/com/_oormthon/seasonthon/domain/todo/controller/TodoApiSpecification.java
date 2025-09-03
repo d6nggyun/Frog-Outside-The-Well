@@ -124,18 +124,4 @@ public interface TodoApiSpecification {
     ResponseEntity<TodoResponse> updateTodo(@AuthenticationPrincipal User user,
                                             @PathVariable Long todoId,
                                             @Valid @RequestBody UpdateTodoRequest updateTodoRequest);
-
-    @Operation(
-            summary = "(미구현) 캘린더 해당 달 조회",
-            description = "",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "캘린더 해당 달 조회",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = Object.class)
-                            )
-                    ),
-            }
-    )
-    ResponseEntity<Object> findTodoCalendar();
 }

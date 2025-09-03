@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
+@Schema(description = "ToDo 수정 요청")
 public record UpdateTodoRequest(
 
         @Schema(description = "업무명", example = "우물밖개구리 프로젝트")
