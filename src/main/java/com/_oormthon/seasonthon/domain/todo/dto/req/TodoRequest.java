@@ -29,7 +29,7 @@ public record TodoRequest(
         @NotNull(message = "업무 수행 마감일이 비어있습니다.")
         LocalDate endDate,
 
-        @Schema(description = "업무 수행 예정일", example = "MONDAY, TUESDAY, ...")
+        @Schema(description = "업무 수행 예정일", example = "[\"MONDAY\", \"TUESDAY\"]")
         @NotEmpty(message = "업무 수행 예정일이 비어있습니다.")
         List<Day> expectedDays,
 
