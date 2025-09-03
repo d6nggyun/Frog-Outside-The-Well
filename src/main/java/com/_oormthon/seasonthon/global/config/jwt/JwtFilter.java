@@ -28,7 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // Swagger UI와 API docs는 인증 필터 건너뛰기
-        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/api/test/jwt")) {
             filterChain.doFilter(request, response);
             return;
         }
