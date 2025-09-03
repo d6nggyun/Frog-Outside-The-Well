@@ -21,6 +21,11 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "회원을 찾을 수 없습니다."),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, 401, "로그인이 실패하였습니다."),
 
+    // ToDo
+    TODO_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "ToDo를 찾을 수 없습니다."),
+    TODO_ACCESS_DENIED(HttpStatus.FORBIDDEN, 403, "ToDo에 접근할 권한이 없습니다."),
+    STEP_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "Step을 찾을 수 없습니다."),
+
     // Validation
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, 400, "요청한 값이 올바르지 않습니다."),
     ;
