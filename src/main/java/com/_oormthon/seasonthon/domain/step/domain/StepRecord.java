@@ -33,14 +33,15 @@ public class StepRecord {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    private Long duration = 0L;
+    private Long duration;
 
     @Builder
-    private StepRecord(Long stepId, Long userId, LocalDateTime startTime, LocalDateTime endTime) {
+    private StepRecord(Long stepId, Long userId, LocalDateTime startTime, LocalDateTime endTime, Long duration) {
         this.stepId = stepId;
         this.userId = userId;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.duration = duration;
     }
 
     public static StepRecord createStepRecord(Long stepId, Long userId) {
@@ -49,6 +50,7 @@ public class StepRecord {
                 .userId(userId)
                 .startTime(LocalDateTime.now())
                 .endTime(null)
+                .duration(0L)
                 .build();
     }
 

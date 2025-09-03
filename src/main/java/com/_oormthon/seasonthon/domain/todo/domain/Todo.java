@@ -44,7 +44,7 @@ public class Todo {
     private Integer progress;
 
     @Column(nullable = false)
-    private Boolean isCompleted = false;
+    private Boolean isCompleted;
 
     @ElementCollection(targetClass = Day.class)
     @CollectionTable(name = "todo_days", joinColumns = @JoinColumn(name = "todo_id"))
@@ -77,6 +77,7 @@ public class Todo {
                 .endDate(todoRequest.endDate())
                 .progress(0)
                 .expectedDays(todoRequest.expectedDays())
+                .isCompleted(false)
                 .build();
     }
 

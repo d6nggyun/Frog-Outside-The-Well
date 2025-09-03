@@ -29,12 +29,13 @@ public class StepCalendar {
     private LocalDate calendarDate;
 
     @Column(nullable = false)
-    private Integer count = 0;
+    private Integer count;
 
     @Builder
     private StepCalendar(Long userId, LocalDate calendarDate) {
         this.userId = userId;
         this.calendarDate = calendarDate;
+        this.count = 0;
     }
 
     public void incrementCount() {

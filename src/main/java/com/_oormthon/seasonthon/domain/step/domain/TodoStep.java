@@ -64,6 +64,7 @@ public class TodoStep {
                 .stepDate(stepRequest.stepDate())
                 .stepOrder(stepRequest.stepOrder())
                 .description(stepRequest.description())
+                .isCompleted(false)
                 .build();
     }
 
