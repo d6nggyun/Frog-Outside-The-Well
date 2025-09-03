@@ -9,8 +9,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -41,14 +43,21 @@ public class Todo {
     @Column(nullable = false)
     private Integer progress;
 
+    @Column(nullable = false)
+    private Boolean isCompleted = false;
+
     @ElementCollection(targetClass = Day.class)
     @CollectionTable(name = "todo_days", joinColumns = @JoinColumn(name = "todo_id"))
     @Enumerated(EnumType.STRING)
     private List<Day> expectedDays;
 
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
     @Builder
     private Todo(Long userId, String title, String content, LocalDate startDate,
-                 LocalDate endDate, Integer progress, List<Day> expectedDays) {
+                 LocalDate endDate, Integer progress, List<Day> expectedDays, Boolean isCompleted) {
         this.userId = userId;
         this.title = title;
         this.content = content;
@@ -56,6 +65,7 @@ public class Todo {
         this.endDate = endDate;
         this.progress = progress;
         this.expectedDays = expectedDays;
+        this.isCompleted = isCompleted;
     }
 
     public static Todo createTodo(User user, TodoRequest todoRequest) {
@@ -78,5 +88,10 @@ public class Todo {
 
     public void updateProgress(int progress) {
         this.progress = progress;
+    }
+
+    public void completeTodo() {
+        this.isCompleted = true;
+        this.progress = 100;
     }
 }

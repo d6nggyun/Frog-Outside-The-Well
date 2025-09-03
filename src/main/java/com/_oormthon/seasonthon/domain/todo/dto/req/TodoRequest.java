@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.todo.dto.req;
 
+import com._oormthon.seasonthon.domain.step.dto.req.StepRequest;
 import com._oormthon.seasonthon.domain.todo.enums.Day;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

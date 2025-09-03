@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.todo.dto.res;
 
+import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import io.swagger.v3.oas.annotations.media.Schema;
 
