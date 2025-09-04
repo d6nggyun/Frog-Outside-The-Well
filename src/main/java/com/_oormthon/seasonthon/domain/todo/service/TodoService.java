@@ -65,9 +65,9 @@ public class TodoService {
 
     @Transactional
     public TodoResponse updateTodo(User user, Long todoId, UpdateTodoRequest updateTodoRequest) {
-        todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
-
         Todo todo = todoQueryService.getTodoById(todoId);
+
+        todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         todo.updateTodo(updateTodoRequest);
 
@@ -81,6 +81,7 @@ public class TodoService {
 
     @Transactional
     public void deleteTodo(User user, Long todoId) {
+        todoQueryService.getTodoById(todoId);
         todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         todoRepository.deleteById(todoId);
@@ -88,6 +89,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponse completeTodo(User user, Long todoId) {
+        todoQueryService.getTodoById(todoId);
         todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         Todo todo = todoQueryService.getTodoById(todoId);

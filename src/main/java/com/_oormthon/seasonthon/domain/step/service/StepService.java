@@ -44,6 +44,7 @@ public class StepService {
 
     @Transactional
     public StepRecordResponse startStep(User user, Long stepId) {
+        stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
@@ -57,6 +58,7 @@ public class StepService {
 
     @Transactional
     public StepRecordResponse stopStep(User user, Long stepId) {
+        stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
@@ -69,6 +71,7 @@ public class StepService {
 
     @Transactional
     public List<StepResponse> updateStep(User user, Long stepId, UpdateStepRequest updateStepRequest) {
+        stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
@@ -80,6 +83,7 @@ public class StepService {
 
     @Transactional
     public List<StepResponse> deleteStep(User user, Long stepId) {
+        stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
