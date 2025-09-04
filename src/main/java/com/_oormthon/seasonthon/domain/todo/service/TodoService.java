@@ -10,8 +10,6 @@ import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
-import com._oormthon.seasonthon.global.exception.CustomException;
-import com._oormthon.seasonthon.global.exception.ErrorCode;
 import com._oormthon.seasonthon.global.response.PageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +29,7 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
     private final TodoStepRepository todoStepRepository;
+    private final TodoQueryService todoQueryService;
 
     @Transactional(readOnly = true)
     public PageResponse<TodoResponse> findTodos(User user) {
@@ -42,7 +41,7 @@ public class TodoService {
                 .map(todo -> {
                     List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
                     List<StepResponse> stepResponses = todoSteps.stream()
-                            .map(com._oormthon.seasonthon.domain.step.dto.res.StepResponse::from)
+                            .map(StepResponse::from)
                             .toList();
 
                     return TodoResponse.from(todo, warmMessage, stepResponses);
@@ -57,64 +56,45 @@ public class TodoService {
         todoRepository.save(todo);
 
         List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), todoRequest.todoSteps());
-        List<StepResponse> stepResponses = getStepResponses(todoStepList);
+        List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
 
         return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
     }
 
     @Transactional
     public TodoResponse updateTodo(User user, Long todoId, UpdateTodoRequest updateTodoRequest) {
-        validateTodoAndUser(user.getUserId(), todoId);
-        Todo todo = getTodoById(todoId);
+        todoQueryService.validateUserInTodo(user.getUserId(), todoId);
+        Todo todo = todoQueryService.getTodoById(todoId);
         todo.updateTodo(updateTodoRequest);
 
         todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
         List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), updateTodoRequest.todoSteps());
-        List<StepResponse> stepResponses = getStepResponses(todoStepList);
+        List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
 
         return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
     }
 
     @Transactional
     public void deleteTodo(User user, Long todoId) {
-        validateTodoAndUser(user.getUserId(), todoId);
+        todoQueryService.validateUserInTodo(user.getUserId(), todoId);
         todoRepository.deleteById(todoId);
     }
 
     @Transactional
     public TodoResponse completeTodo(User user, Long todoId) {
-        validateTodoAndUser(user.getUserId(), todoId);
-        Todo todo = getTodoById(todoId);
+        todoQueryService.validateUserInTodo(user.getUserId(), todoId);
+        Todo todo = todoQueryService.getTodoById(todoId);
         todo.completeTodo();
 
-        List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todoId);
-        List<StepResponse> stepResponses = getStepResponses(todoSteps);
+        List<TodoStep> todoStepList = todoStepRepository.findByTodoId(todoId);
+        List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
 
         return TodoResponse.from(todo, "업무를 모두 마쳤어요 !", stepResponses);
-    }
-
-    private Todo getTodoById(Long todoId) {
-        return todoRepository.findById(todoId)
-                .orElseThrow(() -> {
-                    log.warn("[ToDo 조회 실패] 존재하지 않는 ToDo Id: {}", todoId);
-                    return new CustomException(ErrorCode.TODO_NOT_FOUND);
-                });
-    }
-
-    private void validateTodoAndUser(Long userId, Long todoId) {
-        if (!todoRepository.existsByIdAndUserId(todoId, userId)) {
-            log.warn("[ToDo 수정 실패] ToDo Id: {}, User Id: {} - 권한 없음", todoId, userId);
-            throw new CustomException(ErrorCode.TODO_ACCESS_DENIED);
-        }
     }
 
     private List<TodoStep> getAndSaveTodoStep(Long todoId, Long userId, List<StepRequest> stepList) {
         return todoStepRepository.saveAll(stepList.stream()
                 .map(stepRequest -> TodoStep.createTodoStep(todoId, userId, stepRequest)).toList()
         );
-    }
-
-    private List<StepResponse> getStepResponses(List<TodoStep> todoStepList) {
-        return todoStepList.stream().map(com._oormthon.seasonthon.domain.step.dto.res.StepResponse::from).toList();
     }
 }

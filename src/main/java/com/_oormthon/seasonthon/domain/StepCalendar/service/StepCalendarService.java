@@ -29,4 +29,16 @@ public class StepCalendarService {
 
         return stepCalendars.stream().map(StepCalendarResponse::from).toList();
     }
+
+    public void saveStepCalendar(Long userId, LocalDate date) {
+        StepCalendar stepCalendar = stepCalendarRepository.findByUserIdAndCalendarDate(userId, date)
+                .orElseGet(() -> {
+                    StepCalendar newStepCalendar = StepCalendar.builder()
+                            .userId(userId)
+                            .calendarDate(date)
+                            .build();
+                    return stepCalendarRepository.save(newStepCalendar);
+                });
+        stepCalendar.incrementCount();
+    }
 }
