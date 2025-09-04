@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
@@ -25,18 +26,26 @@ public class SecurityConfig {
         private final CorsConfig corsConfig;
 
         @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
+                        CorsConfigurationSource corsConfigurationSource) throws Exception {
                 return httpSecurity
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
                                 .httpBasic(AbstractHttpConfigurer::disable)
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .logout(AbstractHttpConfigurer::disable)
-                                .headers(c -> c.frameOptions(FrameOptionsConfig::disable).disable())
+                                .headers(c -> c.frameOptions(
+                                                FrameOptionsConfig::disable).disable())
                                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .sessionManagement(
+                                                httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
+                                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
+
                                 .oauth2Login(oauth -> oauth.userInfoEndpoint(c -> c.userService(oAuth2UserService))
                                                 .successHandler(oAuth2SuccessHandler))
+
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                                 .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
                                 .build();
