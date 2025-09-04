@@ -43,7 +43,9 @@ public class SecurityConfig {
 
                                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
 
-                                .oauth2Login(oauth -> oauth.userInfoEndpoint(c -> c.userService(oAuth2UserService))
+                                .oauth2Login(oauth -> oauth
+                                                .redirectionEndpoint(redir -> redir.baseUri("/auth/login/*"))
+                                                .userInfoEndpoint(c -> c.userService(oAuth2UserService))
                                                 .successHandler(oAuth2SuccessHandler))
 
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

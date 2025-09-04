@@ -1,5 +1,9 @@
 package com._oormthon.seasonthon.global.config.jwt;
 
+import com._oormthon.seasonthon.domain.member.entity.User;
+import com._oormthon.seasonthon.domain.member.repository.UserRepository;
+import com._oormthon.seasonthon.global.exception.CustomException;
+import com._oormthon.seasonthon.global.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +24,7 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -38,8 +43,12 @@ public class JwtFilter extends OncePerRequestFilter {
         if (authorization != null && authorization.startsWith("Bearer ")) {
             String token = authorization.split(" ")[1];
             Long userId = jwtTokenProvider.getId(token);
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
             SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(userId, null,
+                    new UsernamePasswordAuthenticationToken(user, null,
                             List.of(new SimpleGrantedAuthority("ROLE_USER"))));
         }
 
