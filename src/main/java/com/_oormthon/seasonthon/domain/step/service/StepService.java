@@ -33,6 +33,7 @@ public class StepService {
 
     @Transactional(readOnly = true)
     public TodoStepResponse getTodoSteps(User user, Long todoId) {
+        todoQueryService.getTodoById(todoId);
         todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         Todo todo = todoQueryService.getTodoById(todoId);
