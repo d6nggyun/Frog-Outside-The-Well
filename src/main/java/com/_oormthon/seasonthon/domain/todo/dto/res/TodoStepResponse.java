@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+@Schema(description = "ToDo / Step 리스트 정보 응답")
 public record TodoStepResponse(
 
         @Schema(description = "D-Day", example = "D-10")
