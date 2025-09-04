@@ -8,4 +8,5 @@ import java.util.List;
 public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
 
     List<TodoStep> findByTodoId(Long todoId);
+    boolean existsByIdAndUserId(Long id, Long userId);
 }

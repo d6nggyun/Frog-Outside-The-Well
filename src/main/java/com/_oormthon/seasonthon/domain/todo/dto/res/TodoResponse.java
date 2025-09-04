@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+@Schema(description = "ToDo 정보 응답")
 public record TodoResponse(
 
         @Schema(description = "현재 날짜", example = "2024-09-03")

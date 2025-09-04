@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ import java.util.List;
 @Table(name = "todo")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class Todo {
 
     @Id
@@ -44,7 +46,7 @@ public class Todo {
     private Integer progress;
 
     @Column(nullable = false)
-    private Boolean isCompleted = false;
+    private Boolean isCompleted;
 
     @ElementCollection(targetClass = Day.class)
     @CollectionTable(name = "todo_days", joinColumns = @JoinColumn(name = "todo_id"))
@@ -77,6 +79,7 @@ public class Todo {
                 .endDate(todoRequest.endDate())
                 .progress(0)
                 .expectedDays(todoRequest.expectedDays())
+                .isCompleted(false)
                 .build();
     }
 

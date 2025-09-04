@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com._oormthon.seasonthon.domain.member.enums.PlaceType;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -42,6 +44,10 @@ public class DailyLog {
 
     @Column(name = "photo_url")
     private String photoUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "place_type")
+    private PlaceType placeType;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

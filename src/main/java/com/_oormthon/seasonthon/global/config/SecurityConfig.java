@@ -7,18 +7,28 @@ import com._oormthon.seasonthon.global.config.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+        <<<<<<<HEAD=======
+        private static final String[] SWAGGER_WHITELIST = {
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/index.html",
+                        "/v3/api-docs/**",
+                        "/api/test/jwt"
+        };
+
+        >>>>>>>origin/main
         private final JwtFilter jwtFilter;
         private final JwtExceptionFilter jwtExceptionFilter;
         private final CustomOAuth2UserService oAuth2UserService;
@@ -26,11 +36,11 @@ public class SecurityConfig {
         private final CorsConfig corsConfig;
 
         @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
-                        CorsConfigurationSource corsConfigurationSource) throws Exception {
-                return httpSecurity
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                return http
+                                // 기본 보안 설정 비활성화
                                 .csrf(AbstractHttpConfigurer::disable)
-                                .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
+                                .cors(Customizer.withDefaults())
                                 .httpBasic(AbstractHttpConfigurer::disable)
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .logout(AbstractHttpConfigurer::disable)
