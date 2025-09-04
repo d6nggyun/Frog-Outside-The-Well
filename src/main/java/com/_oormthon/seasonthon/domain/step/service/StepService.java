@@ -114,7 +114,7 @@ public class StepService {
 
                     return existingRecord;
                 })
-                .orElseGet(() -> StepRecord.createStepRecord(userId, stepId));
+                .orElseGet(() -> stepRecordRepository.save(StepRecord.createStepRecord(userId, stepId)));
     }
 
     private List<StepResponse> newTodoStepResponse(Todo todo) {
