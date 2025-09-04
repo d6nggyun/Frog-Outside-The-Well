@@ -23,7 +23,7 @@ public class TodoQueryService {
                 });
     }
 
-    public void validateUserInTodo(Long userId, Long todoId) {
+    public void validateTodoOwnership(Long userId, Long todoId) {
         if (!todoRepository.existsByIdAndUserId(todoId, userId)) {
             log.warn("[ToDo 수정 실패] ToDo Id: {}, User Id: {} - 권한 없음", todoId, userId);
             throw new CustomException(ErrorCode.TODO_ACCESS_DENIED);

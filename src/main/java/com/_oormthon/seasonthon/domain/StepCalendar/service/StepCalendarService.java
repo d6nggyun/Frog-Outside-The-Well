@@ -37,8 +37,10 @@ public class StepCalendarService {
                             .userId(userId)
                             .calendarDate(date)
                             .build();
+
                     return stepCalendarRepository.save(newStepCalendar);
                 });
+
         stepCalendar.incrementCount();
     }
 }

@@ -34,7 +34,7 @@ public class StepQueryService {
                 });
     }
 
-    public void validateUserInStep(Long userId, Long stepId) {
+    public void validateStepOwnership(Long userId, Long stepId) {
         if (!todoStepRepository.existsByIdAndUserId(stepId, userId)) {
             log.warn("[Step 작업 실패] Step Id: {}, User Id: {} - 권한 없음", stepId, userId);
             throw new CustomException(ErrorCode.STEP_ACCESS_DENIED);

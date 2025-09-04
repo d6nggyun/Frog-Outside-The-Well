@@ -35,6 +35,7 @@ public class TodoService {
     public PageResponse<TodoResponse> findTodos(User user) {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("endDate").ascending());
         Page<Todo> todos = todoRepository.findByUserId(user.getUserId(), pageable);
+
         String warmMessage = "힘내세요!"; // ex
 
         List<TodoResponse> todoResponses = todos.stream()
@@ -53,6 +54,7 @@ public class TodoService {
     @Transactional
     public TodoResponse addTodo(User user, TodoRequest todoRequest) {
         Todo todo = Todo.createTodo(user, todoRequest);
+
         todoRepository.save(todo);
 
         List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), todoRequest.todoSteps());
@@ -63,11 +65,14 @@ public class TodoService {
 
     @Transactional
     public TodoResponse updateTodo(User user, Long todoId, UpdateTodoRequest updateTodoRequest) {
-        todoQueryService.validateUserInTodo(user.getUserId(), todoId);
+        todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
+
         Todo todo = todoQueryService.getTodoById(todoId);
+
         todo.updateTodo(updateTodoRequest);
 
         todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
+
         List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), updateTodoRequest.todoSteps());
         List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
 
@@ -76,14 +81,17 @@ public class TodoService {
 
     @Transactional
     public void deleteTodo(User user, Long todoId) {
-        todoQueryService.validateUserInTodo(user.getUserId(), todoId);
+        todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
+
         todoRepository.deleteById(todoId);
     }
 
     @Transactional
     public TodoResponse completeTodo(User user, Long todoId) {
-        todoQueryService.validateUserInTodo(user.getUserId(), todoId);
+        todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
+
         Todo todo = todoQueryService.getTodoById(todoId);
+
         todo.completeTodo();
 
         List<TodoStep> todoStepList = todoStepRepository.findByTodoId(todoId);

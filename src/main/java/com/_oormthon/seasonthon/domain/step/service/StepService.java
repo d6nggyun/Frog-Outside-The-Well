@@ -33,7 +33,8 @@ public class StepService {
 
     @Transactional(readOnly = true)
     public TodoStepResponse getTodoSteps(User user, Long todoId) {
-        todoQueryService.validateUserInTodo(user.getUserId(), todoId);
+        todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
+
         Todo todo = todoQueryService.getTodoById(todoId);
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todoId);
 
@@ -42,7 +43,8 @@ public class StepService {
 
     @Transactional
     public StepRecordResponse startStep(User user, Long stepId) {
-        stepQueryService.validateUserInStep(user.getUserId(), stepId);
+        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
+
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
 
         completeStep(todoStep);
@@ -54,7 +56,8 @@ public class StepService {
 
     @Transactional
     public StepRecordResponse stopStep(User user, Long stepId) {
-        stepQueryService.validateUserInStep(user.getUserId(), stepId);
+        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
+
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
         StepRecord stepRecord = stepQueryService.getStepRecordByStepId(stepId);
 
@@ -65,10 +68,10 @@ public class StepService {
 
     @Transactional
     public List<StepResponse> updateStep(User user, Long stepId, UpdateStepRequest updateStepRequest) {
-        stepQueryService.validateUserInStep(user.getUserId(), stepId);
+        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
+
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
         todoStep.updateStep(updateStepRequest);
-
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
         return newTodoStepResponse(todo);
@@ -76,9 +79,11 @@ public class StepService {
 
     @Transactional
     public List<StepResponse> deleteStep(User user, Long stepId) {
-        stepQueryService.validateUserInStep(user.getUserId(), stepId);
+        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
+
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
+
         todoStepRepository.deleteById(stepId);
 
         return newTodoStepResponse(todo);
@@ -93,6 +98,7 @@ public class StepService {
 
         long completedStepsCount = todoSteps.stream().filter(TodoStep::isCompleted).count();
         int progress = (int) ((completedStepsCount * 100) / todoSteps.size());
+
         todo.updateProgress(progress);
     }
 
@@ -100,6 +106,7 @@ public class StepService {
         return stepRecordRepository.findByUserIdAndStepId(userId, stepId)
                 .map(existingRecord -> {
                     existingRecord.startStep(stepId, userId);
+
                     return existingRecord;
                 })
                 .orElseGet(() -> StepRecord.createStepRecord(userId, stepId));
@@ -107,6 +114,7 @@ public class StepService {
 
     private List<StepResponse> newTodoStepResponse(Todo todo) {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
+
         return todoSteps.stream().map(StepResponse::from).toList();
     }
 }
