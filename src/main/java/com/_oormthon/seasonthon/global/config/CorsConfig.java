@@ -2,6 +2,7 @@ package com._oormthon.seasonthon.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary; // 👈 추가
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -12,6 +13,7 @@ import java.util.List;
 public class CorsConfig {
 
     @Bean
+    @Primary // 👈 Primary로 지정
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
@@ -20,8 +22,7 @@ public class CorsConfig {
                 "https://54.180.82.195.nip.io",
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "https://2025-seasonthon-team-36-fe.vercel.app"
-        ));
+                "https://2025-seasonthon-team-36-fe.vercel.app"));
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
 
