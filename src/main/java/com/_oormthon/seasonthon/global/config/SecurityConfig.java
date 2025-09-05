@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -34,7 +34,6 @@ public class SecurityConfig {
         private final JwtExceptionFilter jwtExceptionFilter;
         private final CustomOAuth2UserService oAuth2UserService;
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
-        private final CorsConfig corsConfig;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -60,8 +59,11 @@ public class SecurityConfig {
                                                 .redirectionEndpoint(redirect -> redirect.baseUri("/oauth2/callback/*"))
                                                 .userInfoEndpoint(user -> user.userService(oAuth2UserService))
                                                 .successHandler(oAuth2SuccessHandler))
+
+                                // JWT 필터 등록
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                                 .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
+
                                 .build();
         }
 }
