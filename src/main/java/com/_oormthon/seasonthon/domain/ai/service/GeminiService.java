@@ -13,6 +13,7 @@ import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
+import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -128,9 +130,9 @@ public class GeminiService {
 
                         String cleanedDescription = cleanJsonResponse(description);
 
-                        TodoStepResponse todoStepResponses;
+                        TodoStepResponse todoStepResponse;
                         try {
-                                todoStepResponses = objectMapper.readValue(cleanedDescription,
+                                todoStepResponse = objectMapper.readValue(cleanedDescription,
                                                 TodoStepResponse.class);
                         } catch (JsonProcessingException e) {
                                 log.error("Gemini 응답을 TodoStepResponse 리스트로 변환 실패. description={}", cleanedDescription,
@@ -140,7 +142,7 @@ public class GeminiService {
                         // todoRepository.save(todo);
 
                         // ✅ StepResponse -> TodoStep 변환 후 저장
-                        List<TodoStep> todoSteps = todoStepResponses.steps().stream()
+                        List<TodoStep> todoSteps = todoStepResponse.steps().stream()
                                         .map(step -> TodoStep.builder()
                                                         .todoId(todo.getId())
                                                         .userId(user.getUserId())
@@ -149,12 +151,19 @@ public class GeminiService {
                                                         .isCompleted(step.isCompleted())
                                                         .build())
                                         .toList();
-                        todoStepRepository.saveAll(todoSteps);
-                        return todoStepResponses;
+                        List<TodoStep> savedSteps = todoStepRepository.saveAll(todoSteps);
+                        // 4. 저장된 Step -> StepResponse 다시 생성 (stepId 포함)
+                        List<StepResponse> stepResponses = savedSteps.stream()
+                                        .map(savedStep -> StepResponse.from(todo, savedStep))
+                                        .toList();
+
+                        // 5. 최종 응답 DTO 반환 (todoId, todoTitle 반영됨)
+                        return TodoStepResponse.from(todo, todoStepResponse.progressText(), stepResponses);
 
                 } catch (Exception e) {
                         log.error("GeminiService breakdownTask 내부 오류", e);
                         throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
                 }
         }
+
 }
