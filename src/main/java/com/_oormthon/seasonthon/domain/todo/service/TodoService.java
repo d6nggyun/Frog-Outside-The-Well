@@ -57,10 +57,7 @@ public class TodoService {
 
         todoRepository.save(todo);
 
-        List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), todoRequest.todoSteps());
-        List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
-
-        return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
+        return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", null);
     }
 
     @Transactional
