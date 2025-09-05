@@ -45,7 +45,7 @@ dependencies {
 	// HTTP 요청
 	implementation 'com.squareup.okhttp3:okhttp:4.12.0' 
 	
-	implementation 'com.google.genai:google-genai:1.15.0'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
 	//swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'

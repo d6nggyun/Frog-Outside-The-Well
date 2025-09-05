@@ -12,17 +12,18 @@ import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
-import com._oormthon.seasonthon.global.config.RestTemplateConfig;
+import com._oormthon.seasonthon.domain.step.domain.TodoStep;
+import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
-import com._oormthon.seasonthon.global.response.PageResponse;
 import com._oormthon.seasonthon.domain.ai.dto.GeminiReqDto;
 import com._oormthon.seasonthon.domain.ai.dto.GeminiResDto;
 import com._oormthon.seasonthon.domain.member.entity.User;
-import okhttp3.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -33,44 +34,84 @@ import java.util.List;
 @Slf4j
 public class GeminiService {
 
-        // private final OkHttpClient client = new OkHttpClient();
-        private final ObjectMapper objectMapper = new ObjectMapper();
-
+        private final ObjectMapper objectMapper;
+        private final TodoStepRepository todoStepRepository;
         private final TodoRepository todoRepository;
-
-        @Autowired
         private final RestTemplate restTemplate;
 
-        @Value("${openai.api-key}")
+        @Value("${gemini.api.key}")
         private String apiKey;
 
-        private final String GEMINI_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
-                        + apiKey;
-        // "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+        @Value("${gemini.model.name}")
+        private String modelName; // ex) models/gemini-2.5-flash
+
+        private String cleanJsonResponse(String response) {
+                if (response == null)
+                        return "";
+                return response
+                                .replaceAll("(?s)```json", "") // ```json 제거
+                                .replaceAll("(?s)```", "") // ``` 제거
+                                .trim();
+        }
 
         @Transactional
-        public List<TodoStepResponse> breakdownTask(User user, TodoRequest todoRequest) throws Exception {
+        public List<TodoStepResponse> breakdownTask(User user, TodoRequest todoRequest) {
+                // Todo 엔티티 생성
                 Todo todo = Todo.createTodo(user, todoRequest);
-                todoRepository.save(todo);
 
-                String prompt = "당신은 일정 관리 보조 AI입니다. " +
-                                "주어진 큰 업무를 실천 가능한 작은 Todo 항목들로 나누세요. " +
-                                "각 Todo는 JSON 배열 형식으로 반환해야 합니다. " +
-                                "형식은 [{\"description\": \"작업 설명\", \"stepDate\": \"YYYY-MM-DD\", \"stepOrder\": 번호}, ...] 입니다. "
-                                +
-                                "큰 업무명: " + todoRequest.title() + "\n" +
-                                "업무 설명: " + todoRequest.content() + "\n" +
-                                "시작일: " + todoRequest.startDate() + "\n" +
-                                "마감일: " + todoRequest.endDate() + "\n";
+                String prompt = """
+                                당신은 일정 관리 보조 AI입니다.
+                                주어진 큰 업무를 실천 가능한 작은 Todo 항목들로 나누세요.
+
+                                반드시 아래 JSON 스키마를 따르세요.
+                                마크다운 코드블록(````json`) 없이 순수 JSON만 반환하세요.
+
+                                [
+                                  {
+                                    "dDay": "D-3",
+                                    "title": "큰 업무 제목",
+                                    "endDate": "2025-09-05",
+                                    "progressText": "진행 상황 설명",
+                                    "progress": 0,
+                                    "steps": [
+                                      {
+                                        "stepDate": "2025-09-02",
+                                        "stepOrder": 1,
+                                        "description": "세부 작업 설명",
+                                        "count": 0,
+                                        "isCompleted": false
+                                      }
+                                    ]
+                                  }
+                                ]
+
+                                큰 업무명: %s
+                                업무 설명: %s
+                                시작일: %s
+                                마감일: %s
+                                """.formatted(
+                                todoRequest.title(),
+                                todoRequest.content(),
+                                todoRequest.startDate(),
+                                todoRequest.endDate());
 
                 GeminiReqDto request = new GeminiReqDto();
                 request.createGeminiReqDto(prompt);
+
                 try {
-                        // String url = String.format(GEMINI_URL_TEMPLATE, apiKey);
-                        log.info("Url: {}", GEMINI_URL_TEMPLATE);
-                        GeminiResDto response = restTemplate.postForObject(GEMINI_URL_TEMPLATE, request,
-                                        GeminiResDto.class);
-                        // ✅ API 응답 null 체크
+                        String url = String.format(
+                                        "https://generativelanguage.googleapis.com/v1beta/%s:generateContent",
+                                        modelName);
+                        log.info("Gemini API 요청 URL: {}", url);
+
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        headers.add("X-goog-api-key", apiKey);
+
+                        HttpEntity<GeminiReqDto> entity = new HttpEntity<>(request, headers);
+
+                        GeminiResDto response = restTemplate.postForObject(url, entity, GeminiResDto.class);
+
                         if (response == null || response.getCandidates() == null
                                         || response.getCandidates().isEmpty()) {
                                 log.error("Gemini API 응답이 비어있습니다. response={}", response);
@@ -85,19 +126,38 @@ public class GeminiService {
                                 throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
                         }
 
-                        List<TodoStepResponse> steps;
+                        String cleanedDescription = cleanJsonResponse(description);
+
+                        List<TodoStepResponse> todoStepResponses;
                         try {
-                                steps = objectMapper.readValue(description,
+                                todoStepResponses = objectMapper.readValue(cleanedDescription,
                                                 new TypeReference<List<TodoStepResponse>>() {
                                                 });
                         } catch (JsonProcessingException e) {
-                                log.error("Gemini 응답을 TodoStepResponse 리스트로 변환 실패. description={}", description, e);
+                                log.error("Gemini 응답을 TodoStepResponse 리스트로 변환 실패. description={}", cleanedDescription,
+                                                e);
                                 throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
                         }
+                        todoRepository.save(todo);
 
-                        return steps; // 클라이언트에는 Response DTO 반환
+                        // ✅ StepResponse -> TodoStep 변환 후 저장
+                        todoStepResponses.forEach(tsr -> {
+                                tsr.steps().forEach(step -> {
+                                        TodoStep todoStep = TodoStep.builder()
+                                                        .todoId(todo.getId())
+                                                        .userId(user.getUserId())
+                                                        .stepDate(step.stepDate())
+                                                        .stepOrder(step.stepOrder())
+                                                        .description(step.description())
+                                                        .isCompleted(step.isCompleted())
+                                                        .build();
+                                        todoStepRepository.save(todoStep);
+                                });
+                        });
+
+                        return todoStepResponses;
+
                 } catch (Exception e) {
-                        // ✅ 전체 예외 로깅 강화
                         log.error("GeminiService breakdownTask 내부 오류", e);
                         throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
                 }
