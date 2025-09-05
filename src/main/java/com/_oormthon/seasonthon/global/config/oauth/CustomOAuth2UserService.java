@@ -27,7 +27,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
                 System.out.println(">>> Kakao Attributes: " + oAuth2User.getAttributes());
                 Map<String, Object> attributes = oAuth2User.getAttributes();
-                System.out.println("Kakao Attributes: " + attributes);
                 Long kakaoId = (Long) attributes.get("id");
 
                 userRepository.findByKakaoId(kakaoId).orElseGet(() -> {
