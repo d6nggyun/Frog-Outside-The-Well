@@ -42,6 +42,11 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
+	// HTTP 요청
+	implementation 'com.squareup.okhttp3:okhttp:4.12.0' 
+	
+	implementation 'com.google.genai:google-genai:1.15.0'
+
 	//swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
 

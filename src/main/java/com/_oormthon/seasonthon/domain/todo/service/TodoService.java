@@ -104,7 +104,6 @@ public class TodoService {
 
     private List<TodoStep> getAndSaveTodoStep(Long todoId, Long userId, List<StepRequest> stepList) {
         return todoStepRepository.saveAll(stepList.stream()
-                .map(stepRequest -> TodoStep.createTodoStep(todoId, userId, stepRequest)).toList()
-        );
+                .map(stepRequest -> TodoStep.createTodoStep(todoId, userId, stepRequest)).toList());
     }
 }
