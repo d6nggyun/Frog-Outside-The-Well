@@ -1,5 +1,7 @@
 package com._oormthon.seasonthon.global.response;
 
+import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
@@ -13,7 +15,7 @@ public record PageResponse<T>(
         @Schema(description = "총 게시글 수")
         Long total,
 
-        @Schema(description = "게시글 리스트")
+        @ArraySchema(schema = @Schema(implementation = TodoResponse.class))
         List<T> contents
 
 ) {

@@ -13,7 +13,7 @@ public class TaskPlannerService {
 
     private final RestTemplate restTemplate;
 
-    @Value("${openai.api-key}")
+    @Value("${gemini.api-key}")
     private String apiKey;
 
 //    public List<Task> generatePlan(String startDate, String taskDescription) {
