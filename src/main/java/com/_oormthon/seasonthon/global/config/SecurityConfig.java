@@ -22,8 +22,12 @@ public class SecurityConfig {
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/swagger-ui/index.html",
-                        "/v3/api-docs/**",
-                        "/api/test/jwt"
+                        "/v3/api-docs/**"
+        };
+
+        private static final String[] JWT_WHITELIST = {
+                "/api/test/jwt",
+                "/oauth2/callback/kakao"
         };
 
         private final JwtFilter jwtFilter;
@@ -48,6 +52,7 @@ public class SecurityConfig {
                                 // 권한 설정
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                                                .requestMatchers(JWT_WHITELIST).permitAll()
                                                 .anyRequest().authenticated())
 
                                 // OAuth2 설정

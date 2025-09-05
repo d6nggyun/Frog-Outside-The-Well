@@ -33,7 +33,8 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // Swagger UI와 API docs는 인증 필터 건너뛰기
-        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/api/test/jwt")) {
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/api/test/jwt")
+                || path.startsWith("/oauth2/callback/kakao")) {
             filterChain.doFilter(request, response);
             return;
         }
