@@ -1,6 +1,5 @@
 package com._oormthon.seasonthon.domain.todo.dto.req;
 
-import com._oormthon.seasonthon.domain.step.dto.req.StepRequest;
 import com._oormthon.seasonthon.domain.todo.enums.Day;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -31,11 +30,7 @@ public record TodoRequest(
 
         @Schema(description = "업무 수행 예정일", example = "[\"MONDAY\", \"TUESDAY\"]")
         @NotEmpty(message = "업무 수행 예정일이 비어있습니다.")
-        List<Day> expectedDays,
-
-        @Schema(description = "ToDo Step 리스트")
-        @NotEmpty(message = "ToDo Step 리스트가 비어있습니다.")
-        List<StepRequest> todoSteps
+        List<Day> expectedDays
 
 ) {
 }

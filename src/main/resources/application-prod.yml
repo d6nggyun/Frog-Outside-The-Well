@@ -35,13 +35,13 @@ spring:
             user-name-attribute: id
 
 oauth:
-  client-redirect-uri: ${KAKAO_REDIRECT_URI}
+  client-redirect-uri: ${KAKAO_CLIENT_REDIRECT_URI}
 
 jwt:
   secret: ${JWT_SECRET}
 
-openai:
-  api-key: ${OPENAI_API_KEY}
+gemini:
+  apiKey: ${GEMINI_API_KEY}
 
 server:
   port: 8080

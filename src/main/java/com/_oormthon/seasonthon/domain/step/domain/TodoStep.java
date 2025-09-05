@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Table(name = "todo_step")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class TodoStep {
 
     @Id
@@ -31,14 +33,8 @@ public class TodoStep {
     @Column(name = "step_date", nullable = false)
     private LocalDate stepDate;
 
-    @Column(name = "step_order", nullable = false)
-    private Integer stepOrder;
-
     @Column(nullable = false, length = 500)
     private String description;
-
-    @Column(nullable = false)
-    private Integer count = 0;
 
     @Column(name = "is_completed", nullable = false)
     private Boolean isCompleted = false;
@@ -48,11 +44,10 @@ public class TodoStep {
     private LocalDateTime createdAt;
 
     @Builder
-    private TodoStep(Long todoId, Long userId, LocalDate stepDate, Integer stepOrder, String description, Boolean isCompleted) {
+    private TodoStep(Long todoId, Long userId, LocalDate stepDate, String description, Boolean isCompleted) {
         this.todoId = todoId;
         this.userId = userId;
         this.stepDate = stepDate;
-        this.stepOrder = stepOrder;
         this.description = description;
         this.isCompleted = isCompleted;
     }
@@ -62,19 +57,13 @@ public class TodoStep {
                 .todoId(todoId)
                 .userId(userId)
                 .stepDate(stepRequest.stepDate())
-                .stepOrder(stepRequest.stepOrder())
                 .description(stepRequest.description())
                 .isCompleted(false)
                 .build();
     }
 
     public void updateStep(UpdateStepRequest updateStepRequest) {
-        this.stepOrder = updateStepRequest.stepOrder();
         this.description = updateStepRequest.description();
-    }
-
-    public void incrementCount() {
-        this.count += 1;
     }
 
     public Boolean isCompleted() {

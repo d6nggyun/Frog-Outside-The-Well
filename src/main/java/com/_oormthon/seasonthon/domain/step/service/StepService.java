@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.step.service;
 
+import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
 import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarService;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.StepRecord;
@@ -33,29 +34,33 @@ public class StepService {
 
     @Transactional(readOnly = true)
     public TodoStepResponse getTodoSteps(User user, Long todoId) {
+        todoQueryService.getTodoById(todoId);
         todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         Todo todo = todoQueryService.getTodoById(todoId);
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todoId);
 
-        return TodoStepResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", todoSteps.stream().map(StepResponse::from).toList());
+        return TodoStepResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!",
+                todoSteps.stream().map(todoStep ->  StepResponse.from(todo, todoStep)).toList());
     }
 
     @Transactional
     public StepRecordResponse startStep(User user, Long stepId) {
+        stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
 
         completeStep(todoStep);
-        todoStep.incrementCount();
-        stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
+        StepCalendar stepCalendar = stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
+        stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
 
         return StepRecordResponse.from(startOrGetStepRecord(todoStep.getUserId(), stepId));
     }
 
     @Transactional
     public StepRecordResponse stopStep(User user, Long stepId) {
+        stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
@@ -68,6 +73,7 @@ public class StepService {
 
     @Transactional
     public List<StepResponse> updateStep(User user, Long stepId, UpdateStepRequest updateStepRequest) {
+        stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
@@ -79,6 +85,7 @@ public class StepService {
 
     @Transactional
     public List<StepResponse> deleteStep(User user, Long stepId) {
+        stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
@@ -109,12 +116,12 @@ public class StepService {
 
                     return existingRecord;
                 })
-                .orElseGet(() -> StepRecord.createStepRecord(userId, stepId));
+                .orElseGet(() -> stepRecordRepository.save(StepRecord.createStepRecord(stepId, userId)));
     }
 
     private List<StepResponse> newTodoStepResponse(Todo todo) {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
 
-        return todoSteps.stream().map(StepResponse::from).toList();
+        return todoSteps.stream().map(todoStep ->StepResponse.from(todo, todoStep)).toList();
     }
 }

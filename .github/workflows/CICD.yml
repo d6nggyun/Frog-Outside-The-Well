@@ -78,6 +78,7 @@ jobs:
               --env KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
               --env KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
               --env KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
-              --env OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+              --env KAKAO_CLIENT_REDIRECT_URI=${{ secrets.KAKAO_CLIENT_REDIRECT_URI }} \
+              --env GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
               -p 8080:8080 \
                 ${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_REPO}}

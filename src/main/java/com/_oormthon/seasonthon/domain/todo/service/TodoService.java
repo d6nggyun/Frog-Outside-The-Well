@@ -42,7 +42,7 @@ public class TodoService {
                 .map(todo -> {
                     List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
                     List<StepResponse> stepResponses = todoSteps.stream()
-                            .map(StepResponse::from)
+                            .map(todoStep -> StepResponse.from(todo, todoStep))
                             .toList();
 
                     return TodoResponse.from(todo, warmMessage, stepResponses);
@@ -57,30 +57,28 @@ public class TodoService {
 
         todoRepository.save(todo);
 
-        List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), todoRequest.todoSteps());
-        List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
-
-        return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
+        return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", null);
     }
 
     @Transactional
     public TodoResponse updateTodo(User user, Long todoId, UpdateTodoRequest updateTodoRequest) {
-        todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
-
         Todo todo = todoQueryService.getTodoById(todoId);
+
+        todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         todo.updateTodo(updateTodoRequest);
 
         todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
 
         List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), updateTodoRequest.todoSteps());
-        List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
+        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.from(todo, todoStep)).toList();
 
         return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
     }
 
     @Transactional
     public void deleteTodo(User user, Long todoId) {
+        todoQueryService.getTodoById(todoId);
         todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         todoRepository.deleteById(todoId);
@@ -88,6 +86,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponse completeTodo(User user, Long todoId) {
+        todoQueryService.getTodoById(todoId);
         todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         Todo todo = todoQueryService.getTodoById(todoId);
@@ -95,7 +94,7 @@ public class TodoService {
         todo.completeTodo();
 
         List<TodoStep> todoStepList = todoStepRepository.findByTodoId(todoId);
-        List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
+        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.from(todo, todoStep)).toList();
 
         return TodoResponse.from(todo, "업무를 모두 마쳤어요 !", stepResponses);
     }

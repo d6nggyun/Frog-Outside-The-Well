@@ -29,16 +29,16 @@ public class StepCalendar {
     private LocalDate calendarDate;
 
     @Column(nullable = false)
-    private Integer count;
+    private Integer percentage;
 
     @Builder
     private StepCalendar(Long userId, LocalDate calendarDate) {
         this.userId = userId;
         this.calendarDate = calendarDate;
-        this.count = 0;
+        this.percentage = 0;
     }
 
-    public void incrementCount() {
-        this.count++;
+    public void updatePercentage(Integer percentage) {
+        this.percentage = percentage;
     }
 }

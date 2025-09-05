@@ -19,29 +19,30 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final UserRepository userRepository;
+        private final UserRepository userRepository;
 
-    @Override
-    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2User oAuth2User = super.loadUser(userRequest);
+        @Override
+        public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+                OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        System.out.println(">>> Kakao Attributes: " + oAuth2User.getAttributes());
-        Map<String, Object> attributes = oAuth2User.getAttributes();
-        Long kakaoId = ((Number) attributes.get("id")).longValue();
+                System.out.println(">>> Kakao Attributes: " + oAuth2User.getAttributes());
+                Map<String, Object> attributes = oAuth2User.getAttributes();
+                System.out.println("Kakao Attributes: " + attributes);
+                Long kakaoId = (Long) attributes.get("id");
 
-        userRepository.findByKakaoId(kakaoId).orElseGet(() -> {
-            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
-            User newUser = User.builder()
-                    .kakaoId(kakaoId)
-                    .email(email)
-                    .build();
-            return userRepository.save(newUser);
-        });
+                userRepository.findByKakaoId(kakaoId).orElseGet(() -> {
+                        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+                        String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
+                        User newUser = User.builder()
+                                        .kakaoId(kakaoId)
+                                        .email(email)
+                                        .build();
+                        return userRepository.save(newUser);
+                });
 
-        return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                attributes,
-                "id");
-    }
+                return new DefaultOAuth2User(
+                                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
+                                attributes,
+                                "id");
+        }
 }
