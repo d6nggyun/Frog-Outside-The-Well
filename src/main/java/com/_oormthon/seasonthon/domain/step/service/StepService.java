@@ -50,7 +50,6 @@ public class StepService {
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
 
         completeStep(todoStep);
-        todoStep.incrementCount();
         stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
 
         return StepRecordResponse.from(startOrGetStepRecord(todoStep.getUserId(), stepId));

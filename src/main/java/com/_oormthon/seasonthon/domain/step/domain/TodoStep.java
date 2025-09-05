@@ -39,9 +39,6 @@ public class TodoStep {
     @Column(nullable = false, length = 500)
     private String description;
 
-    @Column(nullable = false)
-    private Integer count = 0;
-
     @Column(name = "is_completed", nullable = false)
     private Boolean isCompleted = false;
 
@@ -73,10 +70,6 @@ public class TodoStep {
     public void updateStep(UpdateStepRequest updateStepRequest) {
         this.stepOrder = updateStepRequest.stepOrder();
         this.description = updateStepRequest.description();
-    }
-
-    public void incrementCount() {
-        this.count += 1;
     }
 
     public Boolean isCompleted() {

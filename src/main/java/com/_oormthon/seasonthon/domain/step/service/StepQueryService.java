@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -39,5 +41,13 @@ public class StepQueryService {
             log.warn("[Step 작업 실패] Step Id: {}, User Id: {} - 권한 없음", stepId, userId);
             throw new CustomException(ErrorCode.STEP_ACCESS_DENIED);
         }
+    }
+
+    public int countTodoStepsByUserIdAndDate(Long userId, LocalDate date) {
+        return todoStepRepository.countByUserIdAndStepDate(userId, date);
+    }
+
+    public int countCompletedTodoStepsByUserIdAndDate(Long userId, LocalDate date) {
+        return todoStepRepository.countByUserIdAndIsCompletedTrueAndStepDate(userId, date);
     }
 }

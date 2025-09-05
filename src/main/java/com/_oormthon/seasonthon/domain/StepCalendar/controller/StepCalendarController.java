@@ -16,13 +16,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/steps")
+@RequestMapping("/api/v1/calendars")
 public class StepCalendarController implements StepCalendarApiSpecification{
 
     private final StepCalendarService stepCalendarService;
 
     // 캘린더 조회
-    @GetMapping("/calendar")
+    @GetMapping
     public ResponseEntity<List<StepCalendarResponse>> findTodoCalendar(@AuthenticationPrincipal User user,
                                                                        @RequestParam int year, @RequestParam int month) {
         return ResponseEntity.status(HttpStatus.OK).body(stepCalendarService.findTodoCalendar(user, year, month));
