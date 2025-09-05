@@ -141,20 +141,18 @@ public class GeminiService {
                         todoRepository.save(todo);
 
                         // ✅ StepResponse -> TodoStep 변환 후 저장
-                        todoStepResponses.forEach(tsr -> {
-                                tsr.steps().forEach(step -> {
-                                        TodoStep todoStep = TodoStep.builder()
-                                                        .todoId(todo.getId())
-                                                        .userId(user.getUserId())
-                                                        .stepDate(step.stepDate())
-                                                        .stepOrder(step.stepOrder())
-                                                        .description(step.description())
-                                                        .isCompleted(step.isCompleted())
-                                                        .build();
-                                        todoStepRepository.save(todoStep);
-                                });
-                        });
-
+                        List<TodoStep> todoSteps = todoStepResponses.stream()
+                                        .flatMap(tsr -> tsr.steps().stream()
+                                                        .map(step -> TodoStep.builder()
+                                                                        .todoId(todo.getId())
+                                                                        .userId(user.getUserId())
+                                                                        .stepDate(step.stepDate())
+                                                                        .stepOrder(step.stepOrder())
+                                                                        .description(step.description())
+                                                                        .isCompleted(step.isCompleted())
+                                                                        .build()))
+                                        .toList();
+                        todoStepRepository.saveAll(todoSteps);
                         return todoStepResponses;
 
                 } catch (Exception e) {
