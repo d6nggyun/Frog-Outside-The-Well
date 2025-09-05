@@ -27,7 +27,7 @@ public class SecurityConfig {
 
         private static final String[] JWT_WHITELIST = {
                 "/api/test/jwt",
-                "/oauth2/**"
+                "/login/oauth2/**"
         };
 
         private final JwtFilter jwtFilter;
