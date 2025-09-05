@@ -1,5 +1,7 @@
 package com._oormthon.seasonthon.domain.todo.service;
 
+import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendarTodoStep;
+import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarTodoStepRepository;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.dto.req.StepRequest;
@@ -30,6 +32,7 @@ public class TodoService {
     private final TodoRepository todoRepository;
     private final TodoStepRepository todoStepRepository;
     private final TodoQueryService todoQueryService;
+    private final StepCalendarTodoStepRepository stepCalendarTodoStepRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<TodoResponse> findTodos(User user) {
@@ -82,6 +85,14 @@ public class TodoService {
         todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         todoRepository.deleteById(todoId);
+
+        List<TodoStep> todoStepList = todoStepRepository.findByTodoId(todoId);
+
+        List<StepCalendarTodoStep> stepCalendarTodoSteps =
+                stepCalendarTodoStepRepository.findByTodoStepIdIn(todoStepList.stream().map(TodoStep::getId).toList());
+        stepCalendarTodoStepRepository.deleteAll(stepCalendarTodoSteps);
+
+        todoStepRepository.deleteAll(todoStepList);
     }
 
     @Transactional
