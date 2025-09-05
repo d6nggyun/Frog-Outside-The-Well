@@ -8,4 +8,6 @@ import java.util.List;
 public interface StepCalendarTodoStepRepository extends JpaRepository<StepCalendarTodoStep, Long> {
 
     List<StepCalendarTodoStep> findAllByStepCalendarId(Long stepCalendarId);
+
+    boolean existsByStepCalendarIdAndTodoStepId(Long stepCalendarId, Long todoStepId);
 }

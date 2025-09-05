@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.step.service;
 
+import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
 import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarService;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.StepRecord;
@@ -50,7 +51,8 @@ public class StepService {
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
 
         completeStep(todoStep);
-        stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
+        StepCalendar stepCalendar = stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
+        stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
 
         return StepRecordResponse.from(startOrGetStepRecord(todoStep.getUserId(), stepId));
     }

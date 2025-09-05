@@ -1,6 +1,7 @@
 package com._oormthon.seasonthon.domain.StepCalendar.service;
 
 import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
+import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendarTodoStep;
 import com._oormthon.seasonthon.domain.StepCalendar.dto.res.StepCalendarResponse;
 import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarRepository;
 import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarTodoStepRepository;
@@ -37,7 +38,7 @@ public class StepCalendarService {
                 StepCalendarResponse.from(stepCalendar, responseCalendarSteps(stepCalendar))).toList();
     }
 
-    public void saveStepCalendar(Long userId, LocalDate date) {
+    public StepCalendar saveStepCalendar(Long userId, LocalDate date) {
         StepCalendar stepCalendar = stepCalendarRepository.findByUserIdAndCalendarDate(userId, date)
                 .orElseGet(() -> {
                     StepCalendar newStepCalendar = StepCalendar.builder()
@@ -53,6 +54,18 @@ public class StepCalendarService {
         int percentage = totalDailySteps == 0 ? 0 : (completedDailySteps * 100 / totalDailySteps);
 
         stepCalendar.updatePercentage(percentage);
+
+        return stepCalendar;
+    }
+
+    public void saveStepCalendarTodoStep(Long stepCalendarId, Long todoStepId) {
+        boolean exists = stepCalendarTodoStepRepository
+                .existsByStepCalendarIdAndTodoStepId(stepCalendarId, todoStepId);
+
+        if (!exists) {
+            stepCalendarTodoStepRepository
+                    .save(StepCalendarTodoStep.builder().stepCalendarId(stepCalendarId).todoStepId(todoStepId).build());
+        }
     }
 
     private List<StepResponse> responseCalendarSteps(StepCalendar stepCalendar) {

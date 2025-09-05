@@ -2,6 +2,7 @@ package com._oormthon.seasonthon.domain.StepCalendar.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,4 +21,10 @@ public class StepCalendarTodoStep {
 
     @Column(name = "todo_step_id", nullable = false)
     private Long todoStepId;
+
+    @Builder
+    private StepCalendarTodoStep(Long stepCalendarId, Long todoStepId) {
+        this.stepCalendarId = stepCalendarId;
+        this.todoStepId = todoStepId;
+    }
 }
