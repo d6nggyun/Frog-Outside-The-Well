@@ -43,6 +43,7 @@ jwt:
 gemini:
   api-key: ${GEMINI_API_KEY}
   model-name: ${GEMINI_MODEL}
+
 server:
   port: 8080
 

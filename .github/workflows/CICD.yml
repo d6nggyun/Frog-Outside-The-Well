@@ -80,5 +80,6 @@ jobs:
               --env BASE_URL=${{ secrets.BASE_URL }} \
               --env KAKAO_CLIENT_REDIRECT_URI=${{ secrets.KAKAO_CLIENT_REDIRECT_URI }} \
               --env GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+              --env GEMINI_MODEL=${{ secrets.GEMINI_MODEL }} \
               -p 8080:8080 \
                 ${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_REPO}}
