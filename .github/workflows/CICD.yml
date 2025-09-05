@@ -77,7 +77,6 @@ jobs:
               --env JWT_SECRET=${{ secrets.JWT_SECRET }} \
               --env KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
               --env KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
-              --env KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
               --env KAKAO_CLIENT_REDIRECT_URI=${{ secrets.KAKAO_CLIENT_REDIRECT_URI }} \
               --env GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
               -p 8080:8080 \
