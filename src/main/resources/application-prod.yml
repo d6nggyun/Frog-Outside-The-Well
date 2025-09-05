@@ -35,7 +35,7 @@ spring:
             user-name-attribute: id
 
 oauth:
-  client-redirect-uri: ${KAKAO_REDIRECT_URI}
+  client-redirect-uri: ${KAKAO_CLIENT_REDIRECT_URI}
 
 jwt:
   secret: ${JWT_SECRET}
