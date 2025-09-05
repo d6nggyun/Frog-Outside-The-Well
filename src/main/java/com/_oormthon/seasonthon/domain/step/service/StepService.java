@@ -40,7 +40,8 @@ public class StepService {
         Todo todo = todoQueryService.getTodoById(todoId);
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todoId);
 
-        return TodoStepResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", todoSteps.stream().map(StepResponse::from).toList());
+        return TodoStepResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!",
+                todoSteps.stream().map(todoStep ->  StepResponse.from(todo, todoStep)).toList());
     }
 
     @Transactional
@@ -121,6 +122,6 @@ public class StepService {
     private List<StepResponse> newTodoStepResponse(Todo todo) {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
 
-        return todoSteps.stream().map(StepResponse::from).toList();
+        return todoSteps.stream().map(todoStep ->StepResponse.from(todo, todoStep)).toList();
     }
 }

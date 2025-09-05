@@ -42,7 +42,7 @@ public class TodoService {
                 .map(todo -> {
                     List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
                     List<StepResponse> stepResponses = todoSteps.stream()
-                            .map(StepResponse::from)
+                            .map(todoStep -> StepResponse.from(todo, todoStep))
                             .toList();
 
                     return TodoResponse.from(todo, warmMessage, stepResponses);
@@ -71,7 +71,7 @@ public class TodoService {
         todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
 
         List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), updateTodoRequest.todoSteps());
-        List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
+        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.from(todo, todoStep)).toList();
 
         return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
     }
@@ -94,7 +94,7 @@ public class TodoService {
         todo.completeTodo();
 
         List<TodoStep> todoStepList = todoStepRepository.findByTodoId(todoId);
-        List<StepResponse> stepResponses = todoStepList.stream().map(StepResponse::from).toList();
+        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.from(todo, todoStep)).toList();
 
         return TodoResponse.from(todo, "업무를 모두 마쳤어요 !", stepResponses);
     }
