@@ -8,6 +8,9 @@ import java.time.LocalDate;
 @Schema(description = "Step 정보 응답")
 public record StepResponse(
 
+        @Schema(description = "Step Id", example = "0")
+        Long stepId,
+
         @Schema(description = "날짜", example = "2025-09-02")
         LocalDate stepDate,
 
@@ -25,7 +28,7 @@ public record StepResponse(
 
 ) {
     public static StepResponse from(TodoStep todoStep) {
-        return new StepResponse(todoStep.getStepDate(), todoStep.getStepOrder(),
+        return new StepResponse(todoStep.getId(), todoStep.getStepDate(), todoStep.getStepOrder(),
                 todoStep.getDescription(), todoStep.getCount(), todoStep.getIsCompleted());
     }
 }
