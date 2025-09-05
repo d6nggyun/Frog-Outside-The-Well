@@ -4,7 +4,7 @@ import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
-import com._oormthon.seasonthon.domain.todo.service.TaskPlannerService;
+import com._oormthon.seasonthon.domain.step.service.TaskPlannerService;
 import com._oormthon.seasonthon.domain.todo.service.TodoService;
 import com._oormthon.seasonthon.global.response.PageResponse;
 import jakarta.validation.Valid;
