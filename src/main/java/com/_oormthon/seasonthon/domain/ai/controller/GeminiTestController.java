@@ -24,7 +24,7 @@ public class GeminiTestController {
      * Gemini로 분해된 TodoStepResponse 리스트를 반환
      */
     @PostMapping
-    public ResponseEntity<List<TodoStepResponse>> testBreakdownTodo(
+    public ResponseEntity<TodoStepResponse> testBreakdownTodo(
             @Valid @RequestBody TodoRequest request) throws Exception {
 
         // 테스트용 User 생성 (빌더 방식)
@@ -36,7 +36,7 @@ public class GeminiTestController {
                 .build();
 
         // Todo 저장 + Gemini Step 리스트 반환
-        List<TodoStepResponse> steps = aiService.breakdownTask(testUser, request);
+        TodoStepResponse steps = aiService.breakdownTask(testUser, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(steps);
     }

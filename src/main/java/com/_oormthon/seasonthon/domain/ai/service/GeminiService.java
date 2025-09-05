@@ -39,10 +39,10 @@ public class GeminiService {
         private final TodoRepository todoRepository;
         private final RestTemplate restTemplate;
 
-        @Value("${gemini.api.key}")
+        @Value("${gemini.api-key}")
         private String apiKey;
 
-        @Value("${gemini.model.name}")
+        @Value("${gemini.model-name}")
         private String modelName; // ex) models/gemini-2.5-flash
 
         private String cleanJsonResponse(String response) {
@@ -55,9 +55,10 @@ public class GeminiService {
         }
 
         @Transactional
-        public List<TodoStepResponse> breakdownTask(User user, TodoRequest todoRequest) {
+        public TodoStepResponse breakdownTask(User user, TodoRequest todoRequest) {
                 // Todo 엔티티 생성
                 Todo todo = Todo.createTodo(user, todoRequest);
+                todoRepository.save(todo);
 
                 String prompt = """
                                 당신은 일정 관리 보조 AI입니다.
@@ -66,8 +67,7 @@ public class GeminiService {
                                 반드시 아래 JSON 스키마를 따르세요.
                                 마크다운 코드블록(````json`) 없이 순수 JSON만 반환하세요.
 
-                                [
-                                  {
+                                {
                                     "dDay": "D-3",
                                     "title": "큰 업무 제목",
                                     "endDate": "2025-09-05",
@@ -82,8 +82,8 @@ public class GeminiService {
                                         "isCompleted": false
                                       }
                                     ]
-                                  }
-                                ]
+                                }
+
 
                                 큰 업무명: %s
                                 업무 설명: %s
@@ -128,29 +128,26 @@ public class GeminiService {
 
                         String cleanedDescription = cleanJsonResponse(description);
 
-                        List<TodoStepResponse> todoStepResponses;
+                        TodoStepResponse todoStepResponses;
                         try {
                                 todoStepResponses = objectMapper.readValue(cleanedDescription,
-                                                new TypeReference<List<TodoStepResponse>>() {
-                                                });
+                                                TodoStepResponse.class);
                         } catch (JsonProcessingException e) {
                                 log.error("Gemini 응답을 TodoStepResponse 리스트로 변환 실패. description={}", cleanedDescription,
                                                 e);
                                 throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
                         }
-                        todoRepository.save(todo);
+                        // todoRepository.save(todo);
 
                         // ✅ StepResponse -> TodoStep 변환 후 저장
-                        List<TodoStep> todoSteps = todoStepResponses.stream()
-                                        .flatMap(tsr -> tsr.steps().stream()
-                                                        .map(step -> TodoStep.builder()
-                                                                        .todoId(todo.getId())
-                                                                        .userId(user.getUserId())
-                                                                        .stepDate(step.stepDate())
-                                                                        .stepOrder(step.stepOrder())
-                                                                        .description(step.description())
-                                                                        .isCompleted(step.isCompleted())
-                                                                        .build()))
+                        List<TodoStep> todoSteps = todoStepResponses.steps().stream()
+                                        .map(step -> TodoStep.builder()
+                                                        .todoId(todo.getId())
+                                                        .userId(user.getUserId())
+                                                        .stepDate(step.stepDate())
+                                                        .description(step.description())
+                                                        .isCompleted(step.isCompleted())
+                                                        .build())
                                         .toList();
                         todoStepRepository.saveAll(todoSteps);
                         return todoStepResponses;

@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.List;
-
 @Tag(name = "AI ToDo", description = "AI 기반 ToDo 분해 API")
 public interface GeminiApiSpecification {
 
@@ -25,7 +23,7 @@ public interface GeminiApiSpecification {
                                         @ApiResponse(responseCode = "201", description = "AI ToDo 분해 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TodoStepResponse.class))),
                                         @ApiResponse(responseCode = "500", description = "서버 오류 발생", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseEntity.class)))
                         })
-        ResponseEntity<List<TodoStepResponse>> breakdownTodo(@AuthenticationPrincipal User user,
+        ResponseEntity<TodoStepResponse> breakdownTodo(@AuthenticationPrincipal User user,
                         @Valid @RequestBody TodoRequest request);
 
 }
