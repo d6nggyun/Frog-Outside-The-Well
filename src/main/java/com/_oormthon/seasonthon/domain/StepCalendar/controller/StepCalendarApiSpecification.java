@@ -1,6 +1,6 @@
 package com._oormthon.seasonthon.domain.StepCalendar.controller;
 
-import com._oormthon.seasonthon.domain.StepCalendar.dto.res.StepCalendarResponse;
+import com._oormthon.seasonthon.domain.StepCalendar.dto.res.ListStepCalendarResponse;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -12,23 +12,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
-
 @Tag(name = "StepCalendar", description = "캘린더 관련 API")
 public interface StepCalendarApiSpecification {
 
     @Operation(
             summary = "캘린더 조회",
-            description = "캘린더를 년 / 월 단위로 조회합니다. <br><br>반한된 날짜에 대한 ToDo 실행 수를 반환합니다.",
+            description = "캘린더를 년 / 월 단위로 조회합니다. <br><br> " +
+                    "calendar: 해당 월의 모든 캘린더 일정 <br>" +
+                    "todayToDo: 오늘의 할 일",
             responses = {
                     @ApiResponse(responseCode = "200", description = "캘린더 조회",
                             content = @Content(
                                     mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = StepCalendarResponse.class))
+                                    array = @ArraySchema(schema = @Schema(implementation = ListStepCalendarResponse.class))
                             )
                     ),
             }
     )
-    ResponseEntity<List<StepCalendarResponse>> findTodoCalendar(@AuthenticationPrincipal User user,
-                                                                @RequestParam int year, @RequestParam int month);
+    ResponseEntity<ListStepCalendarResponse> findTodoCalendar(@AuthenticationPrincipal User user,
+                                                              @RequestParam int year, @RequestParam int month);
 }
