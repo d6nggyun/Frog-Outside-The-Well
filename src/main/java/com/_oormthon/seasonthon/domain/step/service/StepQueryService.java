@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,10 @@ public class StepQueryService {
                     log.warn("[StepRecord 조회 실패] 존재하지 않는 stepId Id: {}", stepId);
                     return new CustomException(ErrorCode.STEP_RECORD_NOT_FOUND);
                 });
+    }
+
+    public List<TodoStep> findAllByUserIdAndStepDate(Long userId, LocalDate now) {
+        return todoStepRepository.findAllByUserIdAndStepDate(userId, now);
     }
 
     public void validateStepOwnership(Long userId, Long stepId) {

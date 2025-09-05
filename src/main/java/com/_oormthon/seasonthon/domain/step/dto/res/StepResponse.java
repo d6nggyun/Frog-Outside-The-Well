@@ -21,9 +21,6 @@ public record StepResponse(
         @Schema(description = "날짜", example = "2025-09-02")
         LocalDate stepDate,
 
-        @Schema(description = "순서", example = "1")
-        Integer stepOrder,
-
         @Schema(description = "내용", example = "ToDo ERD 설계")
         String description,
 
@@ -33,7 +30,7 @@ public record StepResponse(
 ) {
     public static StepResponse from(Todo todo, TodoStep todoStep) {
         return new StepResponse(todo.getId(), todo.getTitle(),
-                todoStep.getId(), todoStep.getStepDate(), todoStep.getStepOrder(),
+                todoStep.getId(), todoStep.getStepDate(),
                 todoStep.getDescription(), todoStep.getIsCompleted());
     }
 }

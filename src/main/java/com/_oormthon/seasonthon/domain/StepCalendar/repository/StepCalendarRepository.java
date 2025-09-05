@@ -11,6 +11,4 @@ public interface StepCalendarRepository extends JpaRepository<StepCalendar, Long
 
     List<StepCalendar> findAllByUserIdAndCalendarDateBetween(Long userId, LocalDate calendarDateAfter, LocalDate calendarDateBefore);
     Optional<StepCalendar> findByUserIdAndCalendarDate(Long userId, LocalDate calendarDate);
-
-    List<StepCalendar> findAllByUserIdAndCalendarDate(Long userId, LocalDate calendarDate);
 }
