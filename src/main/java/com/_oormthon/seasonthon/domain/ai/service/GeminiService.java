@@ -66,6 +66,7 @@ public class GeminiService {
 
                                 description의 내용은 항상 ~하기나 명사형으로 마무리하세요.
 
+                                시작일과 마감일은 항상 고려해섬
                                 {
                                     "dDay": "D-3",
                                     "title": "큰 업무 제목",
