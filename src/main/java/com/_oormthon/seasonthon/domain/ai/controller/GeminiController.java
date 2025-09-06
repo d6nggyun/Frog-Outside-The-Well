@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/ai")
@@ -20,10 +19,10 @@ public class GeminiController implements GeminiApiSpecification {
     private final GeminiService aiService;
 
     @Override
-    @PostMapping
+    @PostMapping("/{todoId}/generate")
     public ResponseEntity<TodoStepResponse> breakdownTodo(@AuthenticationPrincipal User user,
-            @Valid @RequestBody TodoRequest request) {
-        TodoStepResponse steps = aiService.breakdownTask(user, request);
+            @PathVariable Long todoId) {
+        TodoStepResponse steps = aiService.breakdownTask(user, todoId);
         return ResponseEntity.status(HttpStatus.CREATED).body(steps);
     }
 
