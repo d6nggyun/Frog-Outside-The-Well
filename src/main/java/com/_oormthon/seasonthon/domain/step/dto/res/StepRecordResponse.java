@@ -21,11 +21,14 @@ public record StepRecordResponse(
         LocalDateTime endTime,
 
         @Schema(description = "총 수행 시간(단위: 초)", example = "3600")
-        Long duration
+        Long duration,
+
+        @Schema(description = "Todo 완료 여부", example = "true")
+        Boolean isCompleted
 
 ) {
-        public static StepRecordResponse from(StepRecord stepRecord) {
+        public static StepRecordResponse from(StepRecord stepRecord, Boolean isCompleted) {
                 return new StepRecordResponse(stepRecord.getStepId(), stepRecord.getUserId(),
-                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration());
+                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(), isCompleted);
         }
 }

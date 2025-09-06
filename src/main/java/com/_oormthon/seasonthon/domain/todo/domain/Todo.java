@@ -95,6 +95,5 @@ public class Todo {
 
     public void completeTodo() {
         this.isCompleted = true;
-        this.progress = 100;
     }
 }

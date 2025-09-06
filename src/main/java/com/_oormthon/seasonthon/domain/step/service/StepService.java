@@ -62,25 +62,27 @@ public class StepService {
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
+        Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
         completeStep(todoStep);
         StepCalendar stepCalendar = stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
         stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
 
-        return StepRecordResponse.from(startOrGetStepRecord(todoStep.getUserId(), stepId));
+        return StepRecordResponse.from(startOrGetStepRecord(todoStep.getUserId(), stepId), todo.getIsCompleted());
     }
 
     @Transactional
     public StepRecordResponse stopStep(User user, Long stepId) {
-        stepQueryService.getTodoStepById(stepId);
+        TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
-        // TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
         StepRecord stepRecord = stepQueryService.getStepRecordByStepId(stepId);
+
+        Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
         stepRecord.stopStep();
 
-        return StepRecordResponse.from(stepRecord);
+        return StepRecordResponse.from(stepRecord, todo.getIsCompleted());
     }
 
     @Transactional
@@ -166,6 +168,7 @@ public class StepService {
         int progress = (int) ((completedStepsCount * 100) / todoSteps.size());
 
         todo.updateProgress(progress);
+        if (progress == 100) todo.completeTodo();
     }
 
     private StepRecord startOrGetStepRecord(Long userId, Long stepId) {
