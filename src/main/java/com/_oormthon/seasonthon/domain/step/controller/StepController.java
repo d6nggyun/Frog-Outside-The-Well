@@ -52,8 +52,8 @@ public class StepController implements StepApiSpecification {
         return ResponseEntity.status(HttpStatus.OK).body(stepService.updateStep(user, stepId, request));
     }
 
-    // Step 수정
-    @PutMapping("/{todoId}")
+    // Step 전체 수정
+    @PutMapping("/todo/{todoId}")
     public ResponseEntity<List<StepResponse>> updateSteps(@AuthenticationPrincipal User user,
             @PathVariable Long todoId,
             @Valid @RequestBody List<UpdateStepRequestId> request) {
