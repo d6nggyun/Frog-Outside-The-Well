@@ -86,7 +86,7 @@ public class Todo {
     public void updateTodo(UpdateTodoRequest updateTodoRequest) {
         this.title = updateTodoRequest.title();
         this.content = updateTodoRequest.content();
-        this.endDate = LocalDate.now().plusDays(updateTodoRequest.addDays());
+        this.endDate = this.endDate.plusDays(updateTodoRequest.addDays());
     }
 
     public void updateProgress(int progress) {
