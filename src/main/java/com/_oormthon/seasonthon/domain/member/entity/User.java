@@ -28,6 +28,4 @@ public class User {
     @Column(unique = true)
     private Long kakaoId;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DailyLog> dailyLogs;
 }

@@ -1,97 +1,123 @@
 package com._oormthon.seasonthon.domain.member.service.impl;
 
-import com._oormthon.seasonthon.domain.member.dto.request.DailyLogCreateRequest;
-import com._oormthon.seasonthon.domain.member.dto.request.DailyLogUpdateRequest;
-import com._oormthon.seasonthon.domain.member.dto.response.DailyLogResponse;
-import com._oormthon.seasonthon.domain.member.entity.DailyLog;
-import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.member.repository.DailyLogRepository;
-import com._oormthon.seasonthon.domain.member.repository.UserRepository;
+import com._oormthon.seasonthon.domain.member.dto.response.*;
+import com._oormthon.seasonthon.domain.member.dto.request.*;
+import com._oormthon.seasonthon.domain.member.entity.*;
+import com._oormthon.seasonthon.domain.member.repository.*;
 import com._oormthon.seasonthon.domain.member.service.DailyLogService;
-import com._oormthon.seasonthon.global.exception.DuplicateResourceException;
-import com._oormthon.seasonthon.global.exception.ResourceNotFoundException;
-
+import com._oormthon.seasonthon.domain.member.enums.PlaceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Optional;
+import java.time.LocalDate;
+import java.time.DayOfWeek;
+import java.time.YearMonth;
 
 @Service
 @RequiredArgsConstructor
 public class DailyLogServiceImpl implements DailyLogService {
 
-    private final DailyLogRepository dailyLogRepository;
-    private final UserRepository userRepository;
+        private final DailyLogBeforeRepository dailyLogBeforeRepository;
+        private final DailyLogAfterRepository dailyLogAfterRepository;
 
-    @Override
-    @Transactional
-    public DailyLogResponse createDailyLog(Long userId, DailyLogCreateRequest req) {
+        // ===== DailyLogBefore =====
+        @Override
+        public DailyLogBeforeResponse createBefore(DailyLogBeforeRequest request) {
+                DailyLogBefore entity = DailyLogBefore.builder()
+                                .emotion(request.getEmotion())
+                                .userId(request.getUserId())
+                                .energy(request.getEnergy())
+                                .place(request.getPlace())
+                                .build();
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+                DailyLogBefore saved = dailyLogBeforeRepository.save(entity);
 
-        if (dailyLogRepository.existsByUser_UserIdAndLogDate(userId, req.getLogDate())) {
-            throw new DuplicateResourceException("DailyLog already exists for date: " + req.getLogDate());
+                return DailyLogBeforeResponse.builder()
+                                .id(saved.getId())
+                                .emotion(saved.getEmotion())
+                                .userId(saved.getUserId())
+                                .energy(saved.getEnergy())
+                                .place(saved.getPlace())
+                                .createdAt(saved.getCreatedAt())
+                                .build();
         }
 
-        DailyLog log = DailyLog.builder()
-                .user(user)
-                .logDate(req.getLogDate())
-                .emotion(req.getEmotion())
-                .focusLevel(req.getFocusLevel())
-                .completionLevel(req.getCompletionLevel())
-                .memo(req.getMemo())
-                .photoUrl(req.getPhotoUrl())
-                .build();
+        // ===== DailyLogAfter =====
+        @Override
+        public DailyLogAfterResponse createAfter(DailyLogAfterRequest request) {
+                DailyLogAfter entity = DailyLogAfter.builder()
+                                .mood(request.getMood())
+                                .userId(request.getUserId())
+                                .focusLevel(request.getFocusLevel())
+                                .completionLevel(request.getCompletionLevel())
+                                .memo(request.getMemo())
+                                .photoUrl(request.getPhotoUrl())
+                                .build();
 
-        DailyLog saved = dailyLogRepository.save(log);
-        return DailyLogResponse.fromEntity(saved);
-    }
+                DailyLogAfter saved = dailyLogAfterRepository.save(entity);
 
-    @Override
-    @Transactional(readOnly = true)
-    public DailyLogResponse getDailyLog(Long userId, LocalDate date) {
-        DailyLog log = dailyLogRepository.findByUser_UserIdAndLogDate(userId, date)
-                .orElseThrow(() -> new ResourceNotFoundException("DailyLog not found for date: " + date));
-        return DailyLogResponse.fromEntity(log);
-    }
+                return DailyLogAfterResponse.builder()
+                                .id(saved.getId())
+                                .mood(saved.getMood())
+                                .userId(saved.getUserId())
+                                .focusLevel(saved.getFocusLevel())
+                                .completionLevel(saved.getCompletionLevel())
+                                .memo(saved.getMemo())
+                                .photoUrl(saved.getPhotoUrl())
+                                .createdAt(saved.getCreatedAt())
+                                .build();
+        }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<DailyLogResponse> listDailyLogs(Long userId, LocalDate start, LocalDate end) {
-        List<DailyLog> list = dailyLogRepository.findByUser_UserIdAndLogDateBetween(userId, start, end);
-        return list.stream().map(DailyLogResponse::fromEntity).collect(Collectors.toList());
-    }
+        @Override
+        public Map<PlaceType, Long> getThisWeekPlaceTypeCount(Long userId) {
+                LocalDate today = LocalDate.now();
+                LocalDate start = today.with(DayOfWeek.MONDAY);
+                LocalDate end = today.with(DayOfWeek.SUNDAY);
 
-    @Override
-    @Transactional
-    public DailyLogResponse updateDailyLog(Long userId, LocalDate date, DailyLogUpdateRequest req) {
-        DailyLog log = dailyLogRepository.findByUser_UserIdAndLogDate(userId, date)
-                .orElseThrow(() -> new ResourceNotFoundException("DailyLog not found for date: " + date));
+                List<DailyLogBefore> logs = dailyLogBeforeRepository.findByUserIdAndCreatedAtBetween(userId, start,
+                                end);
 
-        if (req.getEmotion() != null)
-            log.setEmotion(req.getEmotion());
-        if (req.getFocusLevel() != null)
-            log.setFocusLevel(req.getFocusLevel());
-        if (req.getCompletionLevel() != null)
-            log.setCompletionLevel(req.getCompletionLevel());
-        if (req.getMemo() != null)
-            if (req.getPhotoUrl() != null)
-                log.setPhotoUrl(req.getPhotoUrl());
+                return calculatePlaceTypeCount(logs);
+        }
 
-        DailyLog saved = dailyLogRepository.save(log);
-        return DailyLogResponse.fromEntity(saved);
-    }
+        @Override
+        public Map<PlaceType, Long> getThisMonthPlaceTypeCount(Long userId) {
+                YearMonth month = YearMonth.now();
+                LocalDate start = month.atDay(1);
+                LocalDate end = month.atEndOfMonth();
 
-    @Override
-    @Transactional
-    public void deleteDailyLog(Long userId, LocalDate date) {
-        DailyLog log = dailyLogRepository.findByUser_UserIdAndLogDate(userId, date)
-                .orElseThrow(() -> new ResourceNotFoundException("DailyLog not found for date: " + date));
-        dailyLogRepository.delete(log);
-    }
+                List<DailyLogBefore> logs = dailyLogBeforeRepository.findByUserIdAndCreatedAtBetween(userId, start,
+                                end);
 
+                return calculatePlaceTypeCount(logs);
+        }
+
+        // ===== 오늘의 DailyLogBefore =====
+        @Override
+        public Optional<DailyLogBeforeResponse> getTodayBefore(Long userId) {
+                LocalDate today = LocalDate.now();
+                return dailyLogBeforeRepository.findByUserIdAndCreatedAtBetween(userId, today, today)
+                                .stream()
+                                .findFirst()
+                                .map(DailyLogBeforeResponse::fromEntity);
+        }
+
+        // ===== 오늘의 DailyLogAfter =====
+        @Override
+        public Optional<DailyLogAfterResponse> getTodayAfter(Long userId) {
+                LocalDate today = LocalDate.now();
+                return dailyLogAfterRepository.findByUserIdAndCreatedAtBetween(userId, today, today)
+                                .stream()
+                                .findFirst()
+                                .map(DailyLogAfterResponse::fromEntity);
+        }
+
+        private Map<PlaceType, Long> calculatePlaceTypeCount(List<DailyLogBefore> logs) {
+                return logs.stream()
+                                .collect(Collectors.groupingBy(DailyLogBefore::getPlace, Collectors.counting()));
+        }
 }

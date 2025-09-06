@@ -1,20 +1,26 @@
 package com._oormthon.seasonthon.domain.member.service;
 
-import com._oormthon.seasonthon.domain.member.dto.request.DailyLogCreateRequest;
-import com._oormthon.seasonthon.domain.member.dto.request.DailyLogUpdateRequest;
-import com._oormthon.seasonthon.domain.member.dto.response.DailyLogResponse;
+import com._oormthon.seasonthon.domain.member.dto.response.*;
+import com._oormthon.seasonthon.domain.member.dto.request.*;
+import com._oormthon.seasonthon.domain.member.enums.PlaceType;
 
-import java.time.LocalDate;
-import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public interface DailyLogService {
-    DailyLogResponse createDailyLog(Long memberId, DailyLogCreateRequest req);
 
-    DailyLogResponse getDailyLog(Long memberId, LocalDate date);
+    // DailyLogBefore
+    DailyLogBeforeResponse createBefore(DailyLogBeforeRequest request);
 
-    List<DailyLogResponse> listDailyLogs(Long memberId, LocalDate start, LocalDate end);
+    // DailyLogAfter
+    DailyLogAfterResponse createAfter(DailyLogAfterRequest request);
 
-    DailyLogResponse updateDailyLog(Long memberId, LocalDate date, DailyLogUpdateRequest req);
+    Optional<DailyLogBeforeResponse> getTodayBefore(Long userId);
 
-    void deleteDailyLog(Long memberId, LocalDate date);
+    Optional<DailyLogAfterResponse> getTodayAfter(Long userId);
+
+    // ===== PlaceType 합계 (userId별) =====
+    Map<PlaceType, Long> getThisWeekPlaceTypeCount(Long userId);
+
+    Map<PlaceType, Long> getThisMonthPlaceTypeCount(Long userId);
 }
