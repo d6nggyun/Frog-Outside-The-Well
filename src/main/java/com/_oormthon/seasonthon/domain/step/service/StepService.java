@@ -7,6 +7,7 @@ import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.StepRecord;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
+import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequestId;
 import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.repository.StepRecordRepository;
@@ -19,11 +20,16 @@ import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -69,7 +75,7 @@ public class StepService {
         stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
 
-        TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
+        // TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
         StepRecord stepRecord = stepQueryService.getStepRecordByStepId(stepId);
 
         stepRecord.stopStep();
@@ -90,6 +96,50 @@ public class StepService {
     }
 
     @Transactional
+    public List<StepResponse> updateSteps(User user, Long todoId, List<UpdateStepRequestId> updateStepRequestIdList) {
+        // 1) 입력 검사
+        if (updateStepRequestIdList == null || updateStepRequestIdList.isEmpty()) {
+            log.warn("updateSteps called with empty request by user {}", user.getUserId());
+            throw new CustomException(ErrorCode.STEP_NOT_FOUND);
+        }
+
+        // 2) id 목록 수집
+        List<Long> ids = updateStepRequestIdList.stream()
+                .map(UpdateStepRequestId::stepId)
+                .toList();
+
+        // 3) TodoId + UserId 기반으로 Step 조회 → 다른 Todo/사용자의 Step은 애초에 안 불러옴
+        List<TodoStep> steps = todoStepRepository.findByTodoId(todoId);
+
+        // 4) 존재 여부 확인
+        if (steps.size() != ids.size()) {
+            Set<Long> found = steps.stream().map(TodoStep::getId).collect(Collectors.toSet());
+            List<Long> missing = ids.stream().filter(id -> !found.contains(id)).toList();
+            log.warn("updateSteps - missing step ids {} requested by user {}", missing, user.getUserId());
+            throw new CustomException(ErrorCode.STEP_NOT_FOUND);
+        }
+
+        // 5) id -> entity 맵 생성
+        Map<Long, TodoStep> stepMap = steps.stream()
+                .collect(Collectors.toMap(TodoStep::getId, Function.identity()));
+
+        // 6) 순서대로 업데이트
+        for (UpdateStepRequestId usri : updateStepRequestIdList) {
+            TodoStep step = stepMap.get(usri.stepId());
+            step.updateStepwithId(usri); // 내부 validation 필요
+        }
+
+        // 7) Dirty Checking으로 flush (명시적으로 saveAll 해도 무방)
+        todoStepRepository.saveAll(steps);
+
+        // 8) Todo 조회
+        Todo todo = todoQueryService.getTodoById(todoId);
+
+        // 9) 응답 생성
+        return newTodoStepResponse(todo);
+    }
+
+    @Transactional
     public List<StepResponse> deleteStep(User user, Long stepId) {
         stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
@@ -105,7 +155,8 @@ public class StepService {
     }
 
     private void completeStep(TodoStep todoStep) {
-        if (todoStep.isCompleted()) return;
+        if (todoStep.isCompleted())
+            return;
         todoStep.completeStep();
 
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
@@ -130,7 +181,7 @@ public class StepService {
     private List<StepResponse> newTodoStepResponse(Todo todo) {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
 
-        return todoSteps.stream().map(todoStep ->StepResponse.from(todo, todoStep)).toList();
+        return todoSteps.stream().map(todoStep -> StepResponse.from(todo, todoStep)).toList();
     }
 
     private String createProgressText(Integer progress) {

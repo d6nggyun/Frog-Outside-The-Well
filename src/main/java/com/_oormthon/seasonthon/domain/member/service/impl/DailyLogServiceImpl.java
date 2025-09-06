@@ -29,9 +29,9 @@ public class DailyLogServiceImpl implements DailyLogService {
     @Override
     @Transactional
     public DailyLogResponse createDailyLog(Long userId, DailyLogCreateRequest req) {
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
-
         if (dailyLogRepository.existsByUser_UserIdAndLogDate(userId, req.getLogDate())) {
             throw new DuplicateResourceException("DailyLog already exists for date: " + req.getLogDate());
         }
