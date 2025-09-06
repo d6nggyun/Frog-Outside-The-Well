@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class StepCalendarTodoStep {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "step_calendar_id", nullable = false)

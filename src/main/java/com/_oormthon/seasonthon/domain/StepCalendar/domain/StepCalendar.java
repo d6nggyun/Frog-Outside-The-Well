@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "step_calendar",
         uniqueConstraints = {
-           @UniqueConstraint(columnNames = {"user_id", "step_date"})
+           @UniqueConstraint(columnNames = {"user_id", "calendar_date"})
        }
 )
 @Getter

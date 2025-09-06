@@ -79,9 +79,8 @@ public class DailyLogServiceImpl implements DailyLogService {
         if (req.getCompletionLevel() != null)
             log.setCompletionLevel(req.getCompletionLevel());
         if (req.getMemo() != null)
-            log.setMemo(req.getMemo());
-        if (req.getPhotoUrl() != null)
-            log.setPhotoUrl(req.getPhotoUrl());
+            if (req.getPhotoUrl() != null)
+                log.setPhotoUrl(req.getPhotoUrl());
 
         DailyLog saved = dailyLogRepository.save(log);
         return DailyLogResponse.fromEntity(saved);
@@ -94,4 +93,5 @@ public class DailyLogServiceImpl implements DailyLogService {
                 .orElseThrow(() -> new ResourceNotFoundException("DailyLog not found for date: " + date));
         dailyLogRepository.delete(log);
     }
+
 }
