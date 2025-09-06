@@ -1,6 +1,7 @@
 package com._oormthon.seasonthon.domain.step.service;
 
 import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
+import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarQueryService;
 import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarService;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.StepRecord;
@@ -31,6 +32,7 @@ public class StepService {
     private final StepQueryService stepQueryService;
     private final TodoQueryService todoQueryService;
     private final StepCalendarService stepCalendarService;
+    private final StepCalendarQueryService stepCalendarQueryService;
 
     @Transactional(readOnly = true)
     public TodoStepResponse getTodoSteps(User user, Long todoId) {
@@ -90,6 +92,8 @@ public class StepService {
 
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
+
+        stepCalendarQueryService.deleteByTodoSteps(List.of(todoStep));
 
         todoStepRepository.deleteById(stepId);
 
