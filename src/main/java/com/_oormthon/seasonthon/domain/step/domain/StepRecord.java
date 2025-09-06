@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class StepRecord {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "step_id", nullable = false)
