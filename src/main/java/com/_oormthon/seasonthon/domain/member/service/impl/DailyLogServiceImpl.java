@@ -24,54 +24,25 @@ public class DailyLogServiceImpl implements DailyLogService {
         private final DailyLogBeforeRepository dailyLogBeforeRepository;
         private final DailyLogAfterRepository dailyLogAfterRepository;
 
-        // ===== DailyLogBefore =====
+        // ===== DailyLogBefore 생성 =====
         @Override
-        public DailyLogBeforeResponse createBefore(DailyLogBeforeRequest request) {
-                DailyLogBefore entity = DailyLogBefore.builder()
-                                .emotion(request.getEmotion())
-                                .userId(request.getUserId())
-                                .energy(request.getEnergy())
-                                .place(request.getPlace())
-                                .build();
+        public DailyLogBeforeResponse createBefore(User user, DailyLogBeforeRequest request) {
+                DailyLogBefore entity = DailyLogBefore.createDailyLogBefore(user, request);
 
                 DailyLogBefore saved = dailyLogBeforeRepository.save(entity);
-
-                return DailyLogBeforeResponse.builder()
-                                .id(saved.getId())
-                                .emotion(saved.getEmotion())
-                                .userId(saved.getUserId())
-                                .energy(saved.getEnergy())
-                                .place(saved.getPlace())
-                                .createdAt(saved.getCreatedAt())
-                                .build();
+                return DailyLogBeforeResponse.fromEntity(saved);
         }
 
-        // ===== DailyLogAfter =====
+        // ===== DailyLogAfter 생성 =====
         @Override
-        public DailyLogAfterResponse createAfter(DailyLogAfterRequest request) {
-                DailyLogAfter entity = DailyLogAfter.builder()
-                                .mood(request.getMood())
-                                .userId(request.getUserId())
-                                .focusLevel(request.getFocusLevel())
-                                .completionLevel(request.getCompletionLevel())
-                                .memo(request.getMemo())
-                                .photoUrl(request.getPhotoUrl())
-                                .build();
+        public DailyLogAfterResponse createAfter(User user, DailyLogAfterRequest request) {
+                DailyLogAfter entity = DailyLogAfter.createDailyLogAfter(user, request);
 
                 DailyLogAfter saved = dailyLogAfterRepository.save(entity);
-
-                return DailyLogAfterResponse.builder()
-                                .id(saved.getId())
-                                .mood(saved.getMood())
-                                .userId(saved.getUserId())
-                                .focusLevel(saved.getFocusLevel())
-                                .completionLevel(saved.getCompletionLevel())
-                                .memo(saved.getMemo())
-                                .photoUrl(saved.getPhotoUrl())
-                                .createdAt(saved.getCreatedAt())
-                                .build();
+                return DailyLogAfterResponse.fromEntity(saved);
         }
 
+        // ===== 이번 주 PlaceType 합계 =====
         @Override
         public Map<PlaceType, Long> getThisWeekPlaceTypeCount(Long userId) {
                 LocalDate today = LocalDate.now();
@@ -80,10 +51,10 @@ public class DailyLogServiceImpl implements DailyLogService {
 
                 List<DailyLogBefore> logs = dailyLogBeforeRepository.findByUserIdAndCreatedAtBetween(userId, start,
                                 end);
-
                 return calculatePlaceTypeCount(logs);
         }
 
+        // ===== 이번 달 PlaceType 합계 =====
         @Override
         public Map<PlaceType, Long> getThisMonthPlaceTypeCount(Long userId) {
                 YearMonth month = YearMonth.now();
@@ -92,7 +63,6 @@ public class DailyLogServiceImpl implements DailyLogService {
 
                 List<DailyLogBefore> logs = dailyLogBeforeRepository.findByUserIdAndCreatedAtBetween(userId, start,
                                 end);
-
                 return calculatePlaceTypeCount(logs);
         }
 
@@ -116,6 +86,7 @@ public class DailyLogServiceImpl implements DailyLogService {
                                 .map(DailyLogAfterResponse::fromEntity);
         }
 
+        // ===== Helper =====
         private Map<PlaceType, Long> calculatePlaceTypeCount(List<DailyLogBefore> logs) {
                 return logs.stream()
                                 .collect(Collectors.groupingBy(DailyLogBefore::getPlace, Collectors.counting()));

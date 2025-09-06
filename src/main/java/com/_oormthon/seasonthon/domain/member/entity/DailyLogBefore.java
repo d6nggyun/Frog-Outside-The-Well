@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import com._oormthon.seasonthon.domain.member.dto.request.DailyLogBeforeRequest;
 import com._oormthon.seasonthon.domain.member.enums.PlaceType;
 
 import java.time.LocalDate;
@@ -47,5 +48,14 @@ public class DailyLogBefore {
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private LocalDate createdAt;
+
+    public static DailyLogBefore createDailyLogBefore(User user, DailyLogBeforeRequest dailyLogBeforeRequest) {
+        return DailyLogBefore.builder()
+                .userId(user.getUserId())
+                .emotion(dailyLogBeforeRequest.emotion())
+                .energy(dailyLogBeforeRequest.energy())
+                .place(dailyLogBeforeRequest.place())
+                .build();
+    }
 
 }

@@ -1,6 +1,7 @@
 package com._oormthon.seasonthon.domain.member.service;
 
 import com._oormthon.seasonthon.domain.member.dto.response.*;
+import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.member.dto.request.*;
 import com._oormthon.seasonthon.domain.member.enums.PlaceType;
 
@@ -10,10 +11,10 @@ import java.util.Optional;
 public interface DailyLogService {
 
     // DailyLogBefore
-    DailyLogBeforeResponse createBefore(DailyLogBeforeRequest request);
+    DailyLogBeforeResponse createBefore(User user, DailyLogBeforeRequest request);
 
     // DailyLogAfter
-    DailyLogAfterResponse createAfter(DailyLogAfterRequest request);
+    DailyLogAfterResponse createAfter(User user, DailyLogAfterRequest request);
 
     Optional<DailyLogBeforeResponse> getTodayBefore(Long userId);
 

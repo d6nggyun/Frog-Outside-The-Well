@@ -26,8 +26,7 @@ public class DailyLogController {
             @AuthenticationPrincipal User user,
             @RequestBody DailyLogBeforeRequest request) {
 
-        request.setUserId(user.getUserId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(dailyLogService.createBefore(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(dailyLogService.createBefore(user, request));
     }
 
     // ===== DailyLogAfter =====
@@ -36,8 +35,7 @@ public class DailyLogController {
             @AuthenticationPrincipal User user,
             @RequestBody DailyLogAfterRequest request) {
 
-        request.setUserId(user.getUserId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(dailyLogService.createAfter(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(dailyLogService.createAfter(user, request));
     }
 
     // 오늘의 DailyLogBefore 조회

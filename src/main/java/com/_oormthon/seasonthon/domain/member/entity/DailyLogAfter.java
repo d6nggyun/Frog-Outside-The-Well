@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 
+import com._oormthon.seasonthon.domain.member.dto.request.DailyLogAfterRequest;
 import com._oormthon.seasonthon.domain.member.enums.CompletionLevel;
 import com._oormthon.seasonthon.domain.member.enums.Mood;
 
@@ -50,9 +51,20 @@ public class DailyLogAfter {
     // 사진 (파일 경로나 URL)
     private String photoUrl;
 
-    // 작성날날 (자동 저장)
+    // 작성날 (자동 저장)
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private LocalDate createdAt;
+
+    public static DailyLogAfter createDailyLogAfter(User user, DailyLogAfterRequest dailyLogAfterRequest) {
+        return DailyLogAfter.builder()
+                .userId(user.getUserId())
+                .mood(dailyLogAfterRequest.mood())
+                .focusLevel(dailyLogAfterRequest.focusLevel())
+                .completionLevel(dailyLogAfterRequest.completionLevel())
+                .memo(dailyLogAfterRequest.memo())
+                .photoUrl(dailyLogAfterRequest.photoUrl())
+                .build();
+    }
 
 }

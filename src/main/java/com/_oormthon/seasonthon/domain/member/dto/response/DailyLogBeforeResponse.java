@@ -2,31 +2,34 @@ package com._oormthon.seasonthon.domain.member.dto.response;
 
 import com._oormthon.seasonthon.domain.member.entity.DailyLogBefore;
 import com._oormthon.seasonthon.domain.member.enums.PlaceType;
-import lombok.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class DailyLogBeforeResponse {
-    private Long id;
-    private int emotion;
-    private Long userId;
-    private int energy;
-    private PlaceType place;
-    private LocalDate createdAt;
+@Schema(description = "DailyLogBefore 응답")
+public record DailyLogBeforeResponse(
 
+        @Schema(description = "DailyLogBefore Id", example = "1") Long id,
+
+        @Schema(description = "감정 (1~5)", example = "3") int emotion,
+
+        @Schema(description = "사용자 ID", example = "1") Long userId,
+
+        @Schema(description = "에너지 (1~5)", example = "4") int energy,
+
+        @Schema(description = "장소", example = "HOME") PlaceType place,
+
+        @Schema(description = "작성 날짜", example = "2025-09-07") LocalDate createdAt
+
+) {
+    // ===== Entity → DTO 변환 메서드 =====
     public static DailyLogBeforeResponse fromEntity(DailyLogBefore entity) {
-        return DailyLogBeforeResponse.builder()
-                .id(entity.getId())
-                .emotion(entity.getEmotion())
-                .userId(entity.getUserId())
-                .energy(entity.getEnergy())
-                .place(entity.getPlace())
-                .createdAt(entity.getCreatedAt())
-                .build();
+        return new DailyLogBeforeResponse(
+                entity.getId(),
+                entity.getEmotion(),
+                entity.getUserId(),
+                entity.getEnergy(),
+                entity.getPlace(),
+                entity.getCreatedAt());
     }
 }
