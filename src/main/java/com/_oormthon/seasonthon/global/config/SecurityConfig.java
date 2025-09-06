@@ -31,10 +31,6 @@ public class SecurityConfig {
                         "/login/oauth2/**"
         };
 
-        private static final String[] APIURL_TEST = {
-                        "api/v1/ai/test"
-        };
-
         private final JwtFilter jwtFilter;
         private final JwtExceptionFilter jwtExceptionFilter;
         private final CustomOAuth2UserService oAuth2UserService;
@@ -58,7 +54,6 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(SWAGGER_WHITELIST).permitAll()
                                                 .requestMatchers(JWT_WHITELIST).permitAll()
-                                                .requestMatchers(APIURL_TEST).permitAll()
                                                 .anyRequest().authenticated())
 
                                 // OAuth2 설정

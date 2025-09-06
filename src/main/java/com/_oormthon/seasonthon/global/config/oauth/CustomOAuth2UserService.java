@@ -32,9 +32,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 userRepository.findByKakaoId(kakaoId).orElseGet(() -> {
                         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
                         String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
+                        String nickname = kakaoAccount != null ? (String) kakaoAccount.get("nickname") : null;
                         User newUser = User.builder()
                                         .kakaoId(kakaoId)
                                         .email(email)
+                                        .nickname(nickname)
                                         .build();
                         return userRepository.save(newUser);
                 });
