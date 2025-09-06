@@ -25,6 +25,7 @@ public enum ErrorCode {
     TODO_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "ToDo를 찾을 수 없습니다."),
     TODO_ACCESS_DENIED(HttpStatus.FORBIDDEN, 403, "ToDo에 접근할 권한이 없습니다."),
     TODO_NOT_SAME(HttpStatus.NOT_ACCEPTABLE, 401, "같은 ToDo가 아닙니다."),
+    TODO_PROGRESS_NOT_VALID(HttpStatus.BAD_REQUEST, 400, "유효하지 않은 ToDo 진행률 값입니다."),
 
     // Step
     STEP_ACCESS_DENIED(HttpStatus.FORBIDDEN, 403, "Step에 접근할 권한이 없습니다."),
