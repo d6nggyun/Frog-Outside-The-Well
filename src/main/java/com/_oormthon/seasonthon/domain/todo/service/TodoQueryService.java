@@ -1,6 +1,5 @@
 package com._oormthon.seasonthon.domain.todo.service;
 
-import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
 import com._oormthon.seasonthon.global.exception.CustomException;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 public class TodoQueryService {
 
     private final TodoRepository todoRepository;
-    private final TodoStepRepository todoStepRepository;
 
     public Todo getTodoById(Long todoId) {
         return todoRepository.findById(todoId)
@@ -24,7 +22,6 @@ public class TodoQueryService {
                     return new CustomException(ErrorCode.TODO_NOT_FOUND);
                 });
     }
-
 
     public void validateTodoOwnership(Long userId, Long todoId) {
         if (!todoRepository.existsByIdAndUserId(todoId, userId)) {

@@ -23,12 +23,15 @@ public record StepRecordResponse(
         @Schema(description = "총 수행 시간(단위: 초)", example = "3600")
         Long duration,
 
-        @Schema(description = "Todo 완료 여부", example = "true")
-        Boolean isCompleted
+        @Schema(description = "Todo 진행률", example = "100")
+        Integer progress,
+
+        @Schema(description = "Today Step 완료 여부", example = "true")
+        Boolean isCompletedTodaySteps
 
 ) {
-        public static StepRecordResponse from(StepRecord stepRecord, Boolean isCompleted) {
+        public static StepRecordResponse from(StepRecord stepRecord, Integer progress, Boolean isCompletedTodaySteps) {
                 return new StepRecordResponse(stepRecord.getStepId(), stepRecord.getUserId(),
-                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(), isCompleted);
+                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(), progress, isCompletedTodaySteps);
         }
 }
