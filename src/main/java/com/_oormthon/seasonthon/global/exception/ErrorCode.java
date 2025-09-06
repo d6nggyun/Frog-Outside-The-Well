@@ -24,6 +24,7 @@ public enum ErrorCode {
     // ToDo
     TODO_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "ToDo를 찾을 수 없습니다."),
     TODO_ACCESS_DENIED(HttpStatus.FORBIDDEN, 403, "ToDo에 접근할 권한이 없습니다."),
+    TODO_NOT_SAME(HttpStatus.NOT_ACCEPTABLE, 401, "같은 ToDo가 아닙니다."),
 
     // Step
     STEP_ACCESS_DENIED(HttpStatus.FORBIDDEN, 403, "Step에 접근할 권한이 없습니다."),
@@ -32,11 +33,9 @@ public enum ErrorCode {
     STEP_NOT_STARTED(HttpStatus.BAD_REQUEST, 400, "시작되지 않은 Step입니다."),
 
     // Validation
-    VALIDATION_FAILED(HttpStatus.BAD_REQUEST, 400, "요청한 값이 올바르지 않습니다."),
-    ;
+    VALIDATION_FAILED(HttpStatus.BAD_REQUEST, 400, "요청한 값이 올바르지 않습니다.");
 
     private final HttpStatus httpStatus;
     private final Integer code;
     private final String message;
 }
-
