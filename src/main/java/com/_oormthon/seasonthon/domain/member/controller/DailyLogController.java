@@ -55,14 +55,14 @@ public class DailyLogController {
     }
 
     @GetMapping("/before/place/this-week")
-    public ResponseEntity<Map<PlaceType, Long>> getThisWeekPlaceType(@RequestParam Long userId) {
-        return ResponseEntity.ok(dailyLogService.getThisWeekPlaceTypeCount(userId));
+    public ResponseEntity<Map<PlaceType, Long>> getThisWeekPlaceType(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(dailyLogService.getThisWeekPlaceTypeCount(user.getUserId()));
     }
 
     // 이번 달 PlaceType 합계
     @GetMapping("/before/place/this-month")
-    public ResponseEntity<Map<PlaceType, Long>> getThisMonthPlaceType(@RequestParam Long userId) {
-        return ResponseEntity.ok(dailyLogService.getThisMonthPlaceTypeCount(userId));
+    public ResponseEntity<Map<PlaceType, Long>> getThisMonthPlaceType(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(dailyLogService.getThisMonthPlaceTypeCount(user.getUserId()));
     }
 
 }
