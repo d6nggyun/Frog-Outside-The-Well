@@ -13,7 +13,10 @@ import com._oormthon.seasonthon.domain.step.repository.StepRecordRepository;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
+import com._oormthon.seasonthon.domain.todo.enums.TodoText;
 import com._oormthon.seasonthon.domain.todo.service.TodoQueryService;
+import com._oormthon.seasonthon.global.exception.CustomException;
+import com._oormthon.seasonthon.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,8 +44,9 @@ public class StepService {
 
         Todo todo = todoQueryService.getTodoById(todoId);
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todoId);
+        String progressText = createProgressText(todo.getProgress());
 
-        return TodoStepResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!",
+        return TodoStepResponse.from(todo, progressText,
                 todoSteps.stream().map(todoStep ->  StepResponse.from(todo, todoStep)).toList());
     }
 
@@ -127,5 +131,14 @@ public class StepService {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
 
         return todoSteps.stream().map(todoStep ->StepResponse.from(todo, todoStep)).toList();
+    }
+
+    private String createProgressText(Integer progress) {
+        if (progress == 100) return TodoText.PROGRESS_100.getText();
+        else if (progress > 80) return TodoText.PROGRESS_80.getText();
+        else if (progress > 50) return TodoText.PROGRESS_50.getText();
+        else if (progress > 20) return TodoText.PROGRESS_20.getText();
+        else if (progress > 0) return TodoText.PROGRESS_0.getText();
+        else throw new CustomException(ErrorCode.TODO_PROGRESS_NOT_VALID);
     }
 }

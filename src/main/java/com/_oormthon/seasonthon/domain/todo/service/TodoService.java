@@ -10,6 +10,7 @@ import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
+import com._oormthon.seasonthon.domain.todo.enums.TodoText;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
 import com._oormthon.seasonthon.global.response.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +42,8 @@ public class TodoService {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("endDate").ascending());
         Page<Todo> todos = todoRepository.findByUserId(user.getUserId(), pageable);
 
-        String warmMessage = "힘내세요!"; // ex
+        List<String> warmTexts = getWarmText();
+        List<String> usedTexts = new ArrayList<>();
 
         List<TodoResponse> todoResponses = todos.stream()
                 .map(todo -> {
@@ -46,6 +51,7 @@ public class TodoService {
                     List<StepResponse> stepResponses = todoSteps.stream()
                             .map(todoStep -> StepResponse.from(todo, todoStep))
                             .toList();
+                    String warmMessage = createWarmText(usedTexts, warmTexts);
 
                     return TodoResponse.from(todo, warmMessage, stepResponses);
                 }).toList();
@@ -59,7 +65,7 @@ public class TodoService {
 
         todoRepository.save(todo);
 
-        return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", null);
+        return TodoResponse.from(todo, randomWarmText(getWarmText()), null);
     }
 
     @Transactional
@@ -75,7 +81,7 @@ public class TodoService {
         List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), updateTodoRequest.todoSteps());
         List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.from(todo, todoStep)).toList();
 
-        return TodoResponse.from(todo, "개구리가 햇빛을 보기 시작했어요!", stepResponses);
+        return TodoResponse.from(todo, randomWarmText(getWarmText()), stepResponses);
     }
 
     @Transactional
@@ -104,11 +110,36 @@ public class TodoService {
         List<TodoStep> todoStepList = todoStepRepository.findByTodoId(todoId);
         List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.from(todo, todoStep)).toList();
 
-        return TodoResponse.from(todo, "업무를 모두 마쳤어요 !", stepResponses);
+        return TodoResponse.from(todo, "개구리가 우물 탈출에 성공했어요!", stepResponses);
     }
 
     private List<TodoStep> getAndSaveTodoStep(Long todoId, Long userId, List<StepRequest> stepList) {
         return todoStepRepository.saveAll(stepList.stream()
                 .map(stepRequest -> TodoStep.createTodoStep(todoId, userId, stepRequest)).toList());
+    }
+
+    private List<String> getWarmText() {
+        return Arrays.stream(TodoText.values())
+                .filter(text -> text.name().startsWith("WARM_TEXT"))
+                .map(TodoText::getText).toList();
+    }
+
+    private String createWarmText(List<String> usedTexts, List<String> allTexts) {
+        List<String> availableTexts = new ArrayList<>(allTexts);
+        availableTexts.removeAll(usedTexts);
+
+        if (availableTexts.isEmpty()) {
+            usedTexts.clear();
+            availableTexts = new ArrayList<>(allTexts);
+        }
+
+        String selectedText = availableTexts.get(ThreadLocalRandom.current().nextInt(availableTexts.size()));
+        usedTexts.add(selectedText);
+
+        return selectedText;
+    }
+
+    private String randomWarmText(List<String> warmTexts) {
+        return warmTexts.get(ThreadLocalRandom.current().nextInt(warmTexts.size()));
     }
 }
