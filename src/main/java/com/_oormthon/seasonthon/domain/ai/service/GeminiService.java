@@ -64,6 +64,8 @@ public class GeminiService {
                                 반드시 아래 JSON 스키마를 따르세요.
                                 마크다운 코드블록(````json`) 없이 순수 JSON만 반환하세요.
 
+                                description의 내용은 항상 ~하기나 명사형으로 마무리하세요.
+
                                 {
                                     "dDay": "D-3",
                                     "title": "큰 업무 제목",
