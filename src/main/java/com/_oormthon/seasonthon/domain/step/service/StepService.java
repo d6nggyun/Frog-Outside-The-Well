@@ -138,7 +138,7 @@ public class StepService {
         else if (progress > 80) return TodoText.PROGRESS_80.getText();
         else if (progress > 50) return TodoText.PROGRESS_50.getText();
         else if (progress > 20) return TodoText.PROGRESS_20.getText();
-        else if (progress > 0) return TodoText.PROGRESS_0.getText();
+        else if (progress >= 0) return TodoText.PROGRESS_0.getText();
         else throw new CustomException(ErrorCode.TODO_PROGRESS_NOT_VALID);
     }
 }
