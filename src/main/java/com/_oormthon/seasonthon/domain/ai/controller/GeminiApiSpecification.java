@@ -1,7 +1,6 @@
 package com._oormthon.seasonthon.domain.ai.controller;
 
 import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.global.exception.ErrorResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,10 +8,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Tag(name = "AI ToDo", description = "AI 기반 ToDo 분해 API")
 public interface GeminiApiSpecification {
@@ -23,7 +21,6 @@ public interface GeminiApiSpecification {
                                         @ApiResponse(responseCode = "201", description = "AI ToDo 분해 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TodoStepResponse.class))),
                                         @ApiResponse(responseCode = "500", description = "서버 오류 발생", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseEntity.class)))
                         })
-        ResponseEntity<TodoStepResponse> breakdownTodo(@AuthenticationPrincipal User user,
-                        @Valid @RequestBody TodoRequest request);
+        ResponseEntity<TodoStepResponse> breakdownTodo(@AuthenticationPrincipal User user, @PathVariable Long todoId);
 
 }
