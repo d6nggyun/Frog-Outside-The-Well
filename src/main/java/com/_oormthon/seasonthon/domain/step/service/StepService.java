@@ -18,10 +18,6 @@ import com._oormthon.seasonthon.domain.todo.enums.TodoText;
 import com._oormthon.seasonthon.domain.todo.service.TodoQueryService;
 import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
