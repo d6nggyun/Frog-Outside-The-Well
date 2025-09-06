@@ -16,5 +16,5 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
 
     List<TodoStep> findAllByUserIdAndStepDate(Long userId, LocalDate stepDate);
 
-    List<TodoStep> findAllByStepDate(LocalDate stepDate);
+    List<TodoStep> findAllByStepDateAndUserId(LocalDate stepDate, Long userId);
 }

@@ -56,7 +56,7 @@ public class StepQueryService {
         return todoStepRepository.countByUserIdAndIsCompletedTrueAndStepDate(userId, date);
     }
 
-    public List<TodoStep> findAllByStepDate(LocalDate localDate) {
-        return todoStepRepository.findAllByStepDate(localDate);
+    public List<TodoStep> findAllByStepDateAndUserId(LocalDate localDate, Long userId) {
+        return todoStepRepository.findAllByStepDateAndUserId(localDate, userId);
     }
 }

@@ -68,7 +68,7 @@ public class StepService {
         StepCalendar stepCalendar = stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
         stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
 
-        List<TodoStep> todoSteps = stepQueryService.findAllByStepDate(LocalDate.now());
+        List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(LocalDate.now(), user.getUserId());
         Boolean isCompletedTodaySteps = todoSteps.stream().allMatch(TodoStep::getIsCompleted);
 
         return StepRecordResponse.from(startOrGetStepRecord(todoStep.getUserId(), stepId), todo.getProgress(), isCompletedTodaySteps);
@@ -85,7 +85,7 @@ public class StepService {
 
         stepRecord.stopStep();
 
-        List<TodoStep> todoSteps = stepQueryService.findAllByStepDate(LocalDate.now());
+        List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(LocalDate.now(), user.getUserId());
         Boolean isCompletedTodaySteps = todoSteps.stream().allMatch(TodoStep::getIsCompleted);
 
         return StepRecordResponse.from(stepRecord, todo.getProgress(), isCompletedTodaySteps);
