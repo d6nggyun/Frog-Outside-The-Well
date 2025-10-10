@@ -3,8 +3,6 @@ package com._oormthon.seasonthon.domain.member.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "users")
 @Getter
@@ -27,5 +25,4 @@ public class User {
 
     @Column(unique = true)
     private Long kakaoId;
-
 }
