@@ -30,7 +30,7 @@ public record StepRecordResponse(
         Boolean isCompletedTodaySteps
 
 ) {
-        public static StepRecordResponse from(StepRecord stepRecord, Integer progress, Boolean isCompletedTodaySteps) {
+        public static StepRecordResponse of(StepRecord stepRecord, Integer progress, Boolean isCompletedTodaySteps) {
                 return new StepRecordResponse(stepRecord.getStepId(), stepRecord.getUserId(),
                         stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(), progress, isCompletedTodaySteps);
         }

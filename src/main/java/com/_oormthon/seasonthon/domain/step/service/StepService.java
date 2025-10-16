@@ -52,8 +52,8 @@ public class StepService {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todoId);
         String progressText = createProgressText(todo.getProgress());
 
-        return TodoStepResponse.from(todo, progressText,
-                todoSteps.stream().map(todoStep ->  StepResponse.from(todo, todoStep)).toList());
+        return TodoStepResponse.of(todo, progressText,
+                todoSteps.stream().map(todoStep ->  StepResponse.of(todo, todoStep)).toList());
     }
 
     @Transactional
@@ -71,7 +71,7 @@ public class StepService {
         List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(LocalDate.now(), user.getUserId());
         Boolean isCompletedTodaySteps = todoSteps.stream().allMatch(TodoStep::getIsCompleted);
 
-        return StepRecordResponse.from(startOrGetStepRecord(todoStep.getUserId(), stepId), todo.getProgress(), isCompletedTodaySteps);
+        return StepRecordResponse.of(startOrGetStepRecord(todoStep.getUserId(), stepId), todo.getProgress(), isCompletedTodaySteps);
     }
 
     @Transactional
@@ -88,7 +88,7 @@ public class StepService {
         List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(LocalDate.now(), user.getUserId());
         Boolean isCompletedTodaySteps = todoSteps.stream().allMatch(TodoStep::getIsCompleted);
 
-        return StepRecordResponse.from(stepRecord, todo.getProgress(), isCompletedTodaySteps);
+        return StepRecordResponse.of(stepRecord, todo.getProgress(), isCompletedTodaySteps);
     }
 
     @Transactional
@@ -190,7 +190,7 @@ public class StepService {
     private List<StepResponse> newTodoStepResponse(Todo todo) {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
 
-        return todoSteps.stream().map(todoStep -> StepResponse.from(todo, todoStep)).toList();
+        return todoSteps.stream().map(todoStep -> StepResponse.of(todo, todoStep)).toList();
     }
 
     private String createProgressText(Integer progress) {
