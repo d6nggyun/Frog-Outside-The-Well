@@ -49,11 +49,11 @@ public class TodoService {
                 .map(todo -> {
                     List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
                     List<StepResponse> stepResponses = todoSteps.stream()
-                            .map(todoStep -> StepResponse.from(todo, todoStep))
+                            .map(todoStep -> StepResponse.of(todo, todoStep))
                             .toList();
                     String warmMessage = createWarmText(usedTexts, warmTexts);
 
-                    return TodoResponse.from(todo, warmMessage, stepResponses);
+                    return TodoResponse.of(todo, warmMessage, stepResponses);
                 }).toList();
 
         return PageResponse.from(todos.getTotalPages(), todos.getTotalElements(), todoResponses);
@@ -65,7 +65,7 @@ public class TodoService {
 
         todoRepository.save(todo);
 
-        return TodoResponse.from(todo, randomWarmText(getWarmText()), null);
+        return TodoResponse.of(todo, randomWarmText(getWarmText()), null);
     }
 
     @Transactional
@@ -79,10 +79,10 @@ public class TodoService {
         todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
 
         List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), updateTodoRequest.todoSteps());
-        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.from(todo, todoStep))
+        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.of(todo, todoStep))
                 .toList();
 
-        return TodoResponse.from(todo, randomWarmText(getWarmText()), stepResponses);
+        return TodoResponse.of(todo, randomWarmText(getWarmText()), stepResponses);
     }
 
     @Transactional
@@ -109,10 +109,10 @@ public class TodoService {
         todo.completeTodo();
 
         List<TodoStep> todoStepList = todoStepRepository.findByTodoId(todoId);
-        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.from(todo, todoStep))
+        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.of(todo, todoStep))
                 .toList();
 
-        return TodoResponse.from(todo, "개구리가 우물 탈출에 성공했어요!", stepResponses);
+        return TodoResponse.of(todo, "개구리가 우물 탈출에 성공했어요!", stepResponses);
     }
 
     private List<TodoStep> getAndSaveTodoStep(Long todoId, Long userId, List<StepRequest> stepList) {

@@ -39,7 +39,7 @@ public record TodoResponse(
         List<StepResponse> stepResponses
 
 ) {
-    public static TodoResponse from(Todo todo, String warmMessage, List<StepResponse> stepResponses) {
+    public static TodoResponse of(Todo todo, String warmMessage, List<StepResponse> stepResponses) {
         int dDayValue = (int) ChronoUnit.DAYS.between(LocalDate.now(), todo.getEndDate());
 
         return new TodoResponse(LocalDate.now(), todo.getId(), todo.getUserId(),

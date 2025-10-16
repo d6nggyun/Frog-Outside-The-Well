@@ -30,7 +30,7 @@ public record TodoStepResponse(
         List<StepResponse> steps
 
 ) {
-    public static TodoStepResponse from(Todo todo, String progressText, List<StepResponse> stepResponses) {
+    public static TodoStepResponse of(Todo todo, String progressText, List<StepResponse> stepResponses) {
         int dDayValue = (int) ChronoUnit.DAYS.between(LocalDate.now(), todo.getEndDate());
 
         return new TodoStepResponse(dDayValue > 0 ? "D-" + dDayValue : dDayValue == 0 ? "D-DAY" : "D+" + Math.abs(dDayValue),

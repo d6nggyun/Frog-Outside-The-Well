@@ -28,7 +28,7 @@ public record StepResponse(
         Boolean isCompleted
 
 ) {
-    public static StepResponse from(Todo todo, TodoStep todoStep) {
+    public static StepResponse of(Todo todo, TodoStep todoStep) {
         return new StepResponse(todo.getId(), todo.getTitle(),
                 todoStep.getId(), todoStep.getStepDate(),
                 todoStep.getDescription(), todoStep.getIsCompleted());

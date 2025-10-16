@@ -137,11 +137,11 @@ public class GeminiService {
                         List<TodoStep> savedSteps = todoStepRepository.saveAll(todoSteps);
                         // 4. 저장된 Step -> StepResponse 다시 생성 (stepId 포함)
                         List<StepResponse> stepResponses = savedSteps.stream()
-                                        .map(savedStep -> StepResponse.from(todo, savedStep))
+                                        .map(savedStep -> StepResponse.of(todo, savedStep))
                                         .toList();
 
                         // 5. 최종 응답 DTO 반환 (todoId, todoTitle 반영됨)
-                        return TodoStepResponse.from(todo, todoStepResponse.progressText(), stepResponses);
+                        return TodoStepResponse.of(todo, todoStepResponse.progressText(), stepResponses);
 
                 } catch (Exception e) {
                         log.error("GeminiService breakdownTask 내부 오류", e);

@@ -81,7 +81,7 @@ public class StepCalendarService {
     private List<StepResponse> createStepResponses(List<TodoStep> todoSteps) {
         return todoSteps.stream().map(todoStep -> {
             Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
-            return StepResponse.from(todo, todoStep);
+            return StepResponse.of(todo, todoStep);
         }).toList();
     }
 
@@ -93,7 +93,7 @@ public class StepCalendarService {
                     TodoStep todoStep = stepQueryService.getTodoStepById(stepCalendarTodoStep.getTodoStepId());
                     Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
-                    return StepResponse.from(todo, todoStep);
+                    return StepResponse.of(todo, todoStep);
                 })
                 .toList();
     }
