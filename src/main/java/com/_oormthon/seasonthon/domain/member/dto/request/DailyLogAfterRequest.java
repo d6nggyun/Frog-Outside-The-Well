@@ -14,8 +14,6 @@ public record DailyLogAfterRequest(
                                 "HAPPY", "EXCITED", "CALM", "NORMAL", "THRILLING", "FRUSTRATED", "DEPRESSED", "EMPTY",
                                 "ANGRY", "DISAPPOINTED" }) @NotNull Mood mood,
 
-                @Schema(description = "사용자 ID", example = "1") @NotNull Long userId,
-
                 @Schema(description = "집중도 (1~5)", example = "3", minimum = "1", maximum = "5") @Min(1) @Max(5) @NotNull int focusLevel,
 
                 @Schema(description = "완성도", example = "FIFTY", allowableValues = { "ZERO", "TWENTY_FIVE", "FIFTY",

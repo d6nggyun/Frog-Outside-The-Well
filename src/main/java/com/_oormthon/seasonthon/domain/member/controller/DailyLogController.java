@@ -16,7 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/daily-log")
 @RequiredArgsConstructor
-public class DailyLogController {
+public class DailyLogController implements DailyLogApiSpecification{
 
     private final DailyLogService dailyLogService;
 
