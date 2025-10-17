@@ -33,6 +33,10 @@ public enum ErrorCode {
     STEP_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "Step 기록을 찾을 수 없습니다."),
     STEP_NOT_STARTED(HttpStatus.BAD_REQUEST, 400, "시작되지 않은 Step입니다."),
 
+    // Daily Log
+    DAILY_LOG_AFTER_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "Daily Log After을 찾을 수 없습니다."),
+    DAILY_LOG_BEFORE_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "Daily Log Before을 찾을 수 없습니다."),
+
     // Validation
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, 400, "요청한 값이 올바르지 않습니다.");
 

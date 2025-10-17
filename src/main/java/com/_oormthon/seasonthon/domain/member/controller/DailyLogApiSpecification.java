@@ -46,7 +46,7 @@ public interface DailyLogApiSpecification {
     ResponseEntity<Map<PlaceType, Long>> getThisMonthPlaceType(@AuthenticationPrincipal User user);
 
     // ===== DailyLogAfter =====
-    @Operation(summary = "오늘 DailyLogAfter 생성", description = "사용자의 DailyLogAfter를 생성합니다.", responses = {
+    @Operation(summary = "오늘 DailyLogAfter 생성", description = "사용자의 DailyLogAfter를 생성합니다. (Diary 작성 시 사용됩니다.)", responses = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "DailyLogAfter 생성 완료", content = @Content(schema = @Schema(implementation = DailyLogAfterResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한이 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class)))
     })

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface DailyLogAfterRepository extends JpaRepository<DailyLogAfter, Long> {
     List<DailyLogAfter> findByUserIdAndCreatedAtBetween(Long userId, LocalDate start, LocalDate end);
@@ -21,4 +22,6 @@ public interface DailyLogAfterRepository extends JpaRepository<DailyLogAfter, Lo
 """)
     List<DiaryResponse> findAllMoodByUserIdAndCreatedAtBetween(
             @Param("userId") Long userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    Optional<DailyLogAfter> findByUserIdAndCreatedAt(Long userId, LocalDate createdAt);
 }
