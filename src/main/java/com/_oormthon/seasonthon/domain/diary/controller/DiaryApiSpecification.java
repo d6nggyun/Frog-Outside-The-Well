@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.diary.controller;
 
+import com._oormthon.seasonthon.domain.diary.dto.res.DiaryDetailResponse;
 import com._oormthon.seasonthon.domain.diary.dto.res.DiaryResponse;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -33,4 +35,19 @@ public interface DiaryApiSpecification {
     )
     ResponseEntity<List<DiaryResponse>> findDiaries(@AuthenticationPrincipal User user,
                                                     @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth);
+
+    @Operation(
+            summary = "특정 달의 Diary 상세 조회",
+            description = "LocalDate 값을 기반으로 해당 일의 Diary 상세 정보를 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "특정 달의 Diary 상세 조회",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = DiaryDetailResponse.class)
+                            )
+                    ),
+            }
+    )
+    ResponseEntity<DiaryDetailResponse> getDiaryDetail(@AuthenticationPrincipal User user,
+                                                       @RequestParam LocalDate date);
 }

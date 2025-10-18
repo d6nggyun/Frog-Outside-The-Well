@@ -5,7 +5,7 @@ import com._oormthon.seasonthon.domain.member.entity.DailyLogBefore;
 import com._oormthon.seasonthon.domain.member.enums.CompletionLevel;
 import com._oormthon.seasonthon.domain.member.enums.Mood;
 import com._oormthon.seasonthon.domain.member.enums.PlaceType;
-import com._oormthon.seasonthon.domain.todo.dto.res.TodoRatioByDay;
+import com._oormthon.seasonthon.domain.todo.dto.res.TodayCompletedTodoResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,7 +14,7 @@ public record DiaryDetailResponse(
 
         LocalDate date,
 
-        List<TodoRatioByDay> todoRatios,
+        List<TodayCompletedTodoResponse> todayCompletedTodoResponses,
 
         Integer emotion,
 
@@ -35,13 +35,13 @@ public record DiaryDetailResponse(
 ) {
     public static DiaryDetailResponse of(
             LocalDate date,
-            List<TodoRatioByDay> todoRatios,
+            List<TodayCompletedTodoResponse> todayCompletedTodoResponses,
             DailyLogBefore dailyLogBefore,
             DailyLogAfter dailyLogAfter
     ) {
         return new DiaryDetailResponse(
                 date,
-                todoRatios,
+                todayCompletedTodoResponses,
                 dailyLogBefore.getEmotion(),
                 dailyLogBefore.getEnergy(),
                 dailyLogBefore.getPlace(),

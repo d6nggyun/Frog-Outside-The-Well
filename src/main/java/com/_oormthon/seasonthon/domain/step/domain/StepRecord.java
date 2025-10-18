@@ -7,8 +7,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,6 +36,10 @@ public class StepRecord {
     private LocalDateTime endTime;
 
     private Long duration;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDate createdAt;
 
     @Builder
     private StepRecord(Long stepId, Long userId, LocalDateTime startTime, LocalDateTime endTime, Long duration) {
