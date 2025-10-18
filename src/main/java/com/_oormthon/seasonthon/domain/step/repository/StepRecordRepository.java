@@ -18,10 +18,10 @@ public interface StepRecordRepository extends JpaRepository<StepRecord, Long> {
     @Query("""
     select t.id as todoId,
            t.title as todoTitle,
-           coalesce(sum(sr.duration), 0) as totalDuration
+           sum(sr.duration) as totalDuration
     from TodoStep ts
     join Todo t on t.id = ts.todoId
-    left join StepRecord sr on sr.stepId = ts.id
+    join StepRecord sr on sr.stepId = ts.id
     where ts.userId = :userId
       and ts.stepDate = :date
     group by t.id, t.title
