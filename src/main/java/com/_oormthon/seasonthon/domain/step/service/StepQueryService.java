@@ -1,6 +1,7 @@
 package com._oormthon.seasonthon.domain.step.service;
 
 import com._oormthon.seasonthon.domain.step.domain.StepRecord;
+import com._oormthon.seasonthon.domain.step.domain.TodoDurationGroup;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.repository.StepRecordRepository;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
@@ -58,5 +59,13 @@ public class StepQueryService {
 
     public List<TodoStep> findAllByStepDateAndUserId(LocalDate localDate, Long userId) {
         return todoStepRepository.findAllByStepDateAndUserId(localDate, userId);
+    }
+
+    public List<StepRecord> getStepRecordsByUserIdAndDate(Long userId, LocalDate date) {
+        return stepRecordRepository.findAllByUserIdAndCreatedAt(userId, date);
+    }
+
+    public List<TodoDurationGroup> findTodoDurationGroup(Long userId, LocalDate date) {
+        return stepRecordRepository.findTodoDurationGroup(userId, date);
     }
 }
