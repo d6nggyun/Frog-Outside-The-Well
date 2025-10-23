@@ -11,8 +11,6 @@ public record DailyLogBeforeRequest(
 
                 @Schema(description = "감정 (1~5)", example = "4", minimum = "1", maximum = "5") @Min(1) @Max(5) int emotion,
 
-                @Schema(description = "사용자 ID", example = "1") @NotNull Long userId,
-
                 @Schema(description = "에너지 (1~5)", example = "3", minimum = "1", maximum = "5") @Min(1) @Max(5) int energy,
 
                 @Schema(description = "장소", example = "HOME", allowableValues = {
