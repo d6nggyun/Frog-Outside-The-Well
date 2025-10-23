@@ -28,6 +28,4 @@ public interface StepRecordRepository extends JpaRepository<StepRecord, Long> {
 """)
     List<TodoDurationGroup> findTodoDurationGroup(@Param("userId") Long userId,
                                                 @Param("date") LocalDate date);
-
-    List<StepRecord> findAllByUserIdAndCreatedAt(Long userId, LocalDate createdAt);
 }

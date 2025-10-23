@@ -9,7 +9,6 @@ import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarRepos
 import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarTodoStepRepository;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
-import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.service.StepQueryService;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.service.TodoQueryService;
@@ -38,10 +37,17 @@ public class StepCalendarService {
 
         List<StepCalendar> calendars = stepCalendarRepository
                 .findAllByUserIdAndCalendarDateBetween(user.getUserId(), startDate, endDate);
-        List<StepResponse> todayTodos = stepQueryService
-                .findAllStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
 
-        return ListStepCalendarResponse.from(createCalendarResponses(calendars), todayTodos);
+        List<StepCalendarResponse> stepCalendarResponses = createCalendarResponses(calendars);
+        List<StepCalendarResponse> todayCalendarResponses = stepCalendarResponses.stream()
+                .filter(response -> response.calendarDate().isEqual(LocalDate.now())).toList();
+
+        List<TodoAndStepResponse> taskToDo = List.of();
+        if (!todayCalendarResponses.isEmpty()) {
+            taskToDo = todayCalendarResponses.get(0).stepResponses();
+        }
+
+        return ListStepCalendarResponse.from(stepCalendarResponses, taskToDo);
     }
 
     public StepCalendar saveStepCalendar(Long userId, LocalDate date) {

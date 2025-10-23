@@ -12,10 +12,10 @@ public record ListStepCalendarResponse(
         List<StepCalendarResponse> calendar,
 
         @ArraySchema(schema = @Schema(implementation = StepResponse.class))
-        List<StepResponse> todayToDo
+        List<TodoAndStepResponse> todayToDo
 
 ) {
-    public static ListStepCalendarResponse from(List<StepCalendarResponse> calendar, List<StepResponse> todayToDo) {
+    public static ListStepCalendarResponse from(List<StepCalendarResponse> calendar, List<TodoAndStepResponse> todayToDo) {
         return new ListStepCalendarResponse(calendar, todayToDo);
     }
 }
