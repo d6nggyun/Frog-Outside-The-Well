@@ -1,7 +1,6 @@
 package com._oormthon.seasonthon.domain.StepCalendar.dto.res;
 
 import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
-import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
@@ -20,10 +19,10 @@ public record StepCalendarResponse(
         Integer percentage,
 
         @Schema(description = "해당 날짜의 업무 리스트")
-        List<StepResponse> stepResponses
+        List<TodoAndStepResponse> stepResponses
 
 ) {
-    public static StepCalendarResponse from(StepCalendar stepCalendar, List<StepResponse> stepResponses) {
+    public static StepCalendarResponse from(StepCalendar stepCalendar, List<TodoAndStepResponse> stepResponses) {
         return new StepCalendarResponse(stepCalendar.getId(), stepCalendar.getCalendarDate(), stepCalendar.getPercentage(), stepResponses);
     }
 }
