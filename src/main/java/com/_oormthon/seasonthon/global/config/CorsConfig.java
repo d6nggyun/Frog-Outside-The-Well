@@ -19,7 +19,7 @@ public class CorsConfig {
 
         configuration.setAllowCredentials(true);
         configuration.setAllowedOrigins(List.of(
-                "https://52.79.253.182.nip.io",
+                "https://43.200.191.66.nip.io",
                 "http://localhost:3000",
                 "http://localhost:5173",
                 "https://2025-seasonthon-team-36-fe.vercel.app"));
