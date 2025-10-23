@@ -2,6 +2,7 @@ package com._oormthon.seasonthon.domain.step.controller;
 
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
+import com._oormthon.seasonthon.domain.step.dto.res.OneStepResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
@@ -66,6 +67,20 @@ public interface StepApiSpecification {
     )
     ResponseEntity<TodoStepResponse> getTodoSteps(@AuthenticationPrincipal User user,
                                                   @PathVariable Long todoId);
+
+    @Operation(
+            summary = "오늘의 한 걸음 / 놓친 한 걸음 조회",
+            description = "오늘의 한 걸음, 놓친 한 걸음 리스트를 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "오늘의 한 걸음 / 놓친 한 걸음 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = StepRecordResponse.class)
+                            )
+                    )
+            }
+    )
+    ResponseEntity<OneStepResponse> getOneSteps(@AuthenticationPrincipal User user);
 
     @Operation(
             summary = "Step 기록 시작",

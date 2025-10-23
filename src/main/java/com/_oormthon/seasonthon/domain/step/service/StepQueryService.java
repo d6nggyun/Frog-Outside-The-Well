@@ -3,6 +3,7 @@ package com._oormthon.seasonthon.domain.step.service;
 import com._oormthon.seasonthon.domain.step.domain.StepRecord;
 import com._oormthon.seasonthon.domain.step.domain.TodoDurationGroup;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
+import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.repository.StepRecordRepository;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.global.exception.CustomException;
@@ -38,10 +39,6 @@ public class StepQueryService {
                 });
     }
 
-    public List<TodoStep> findAllByUserIdAndStepDate(Long userId, LocalDate now) {
-        return todoStepRepository.findAllByUserIdAndStepDate(userId, now);
-    }
-
     public void validateStepOwnership(Long userId, Long stepId) {
         if (!todoStepRepository.existsByIdAndUserId(stepId, userId)) {
             log.warn("[Step 작업 실패] Step Id: {}, User Id: {} - 권한 없음", stepId, userId);
@@ -61,11 +58,15 @@ public class StepQueryService {
         return todoStepRepository.findAllByStepDateAndUserId(localDate, userId);
     }
 
-    public List<StepRecord> getStepRecordsByUserIdAndDate(Long userId, LocalDate date) {
-        return stepRecordRepository.findAllByUserIdAndCreatedAt(userId, date);
-    }
-
     public List<TodoDurationGroup> findTodoDurationGroup(Long userId, LocalDate date) {
         return stepRecordRepository.findTodoDurationGroup(userId, date);
+    }
+
+    public List<StepResponse> findAllStepsByUserIdAndStepDate(Long userId, LocalDate now) {
+        return todoStepRepository.findAllStepResponseByUserIdAndStepDate(userId, now);
+    }
+
+    public List<StepResponse> findAllMissedStepsByUserIdAndStepDate(Long userId, LocalDate now) {
+        return todoStepRepository.findAllMissedStepResponseByUserIdAndStepDate(userId, now);
     }
 }

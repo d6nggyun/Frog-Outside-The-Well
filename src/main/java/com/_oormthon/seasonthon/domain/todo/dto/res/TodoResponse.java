@@ -1,12 +1,10 @@
 package com._oormthon.seasonthon.domain.todo.dto.res;
 
-import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 @Schema(description = "ToDo 정보 응답")
 public record TodoResponse(
@@ -33,17 +31,14 @@ public record TodoResponse(
         Integer progress,
 
         @Schema(description = "완료 여부", example = "false")
-        Boolean isCompleted,
-
-        @Schema(description = "Step 리스트")
-        List<StepResponse> stepResponses
+        Boolean isCompleted
 
 ) {
-    public static TodoResponse of(Todo todo, String warmMessage, List<StepResponse> stepResponses) {
+    public static TodoResponse of(Todo todo, String warmMessage) {
         int dDayValue = (int) ChronoUnit.DAYS.between(LocalDate.now(), todo.getEndDate());
 
         return new TodoResponse(LocalDate.now(), todo.getId(), todo.getUserId(),
                 dDayValue > 0 ? "D-" + dDayValue : dDayValue == 0 ? "D-DAY" : "D+" + Math.abs(dDayValue),
-                todo.getTitle(), warmMessage, todo.getProgress(), todo.getIsCompleted() , stepResponses);
+                todo.getTitle(), warmMessage, todo.getProgress(), todo.getIsCompleted());
     }
 }

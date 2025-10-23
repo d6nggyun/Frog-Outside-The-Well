@@ -3,6 +3,7 @@ package com._oormthon.seasonthon.domain.step.controller;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequestId;
+import com._oormthon.seasonthon.domain.step.dto.res.OneStepResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.service.StepService;
@@ -28,6 +29,12 @@ public class StepController implements StepApiSpecification {
     public ResponseEntity<TodoStepResponse> getTodoSteps(@AuthenticationPrincipal User user,
             @PathVariable Long todoId) {
         return ResponseEntity.status(HttpStatus.OK).body(stepService.getTodoSteps(user, todoId));
+    }
+
+    // 한 걸음 Step 조회
+    @GetMapping("/one-step")
+    public ResponseEntity<OneStepResponse> getOneSteps(@AuthenticationPrincipal User user) {
+        return ResponseEntity.status(HttpStatus.OK).body(stepService.getOneSteps(user));
     }
 
     // Step 기록 시작

@@ -3,8 +3,6 @@ package com._oormthon.seasonthon.domain.todo.service;
 import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarQueryService;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
-import com._oormthon.seasonthon.domain.step.dto.req.StepRequest;
-import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
@@ -47,13 +45,9 @@ public class TodoService {
 
         List<TodoResponse> todoResponses = todos.stream()
                 .map(todo -> {
-                    List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
-                    List<StepResponse> stepResponses = todoSteps.stream()
-                            .map(todoStep -> StepResponse.of(todo, todoStep))
-                            .toList();
                     String warmMessage = createWarmText(usedTexts, warmTexts);
 
-                    return TodoResponse.of(todo, warmMessage, stepResponses);
+                    return TodoResponse.of(todo, warmMessage);
                 }).toList();
 
         return PageResponse.from(todos.getTotalPages(), todos.getTotalElements(), todoResponses);
@@ -65,7 +59,7 @@ public class TodoService {
 
         todoRepository.save(todo);
 
-        return TodoResponse.of(todo, randomWarmText(getWarmText()), null);
+        return TodoResponse.of(todo, randomWarmText(getWarmText()));
     }
 
     @Transactional
@@ -78,11 +72,7 @@ public class TodoService {
 
         todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
 
-        List<TodoStep> todoStepList = getAndSaveTodoStep(todo.getId(), user.getUserId(), updateTodoRequest.todoSteps());
-        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.of(todo, todoStep))
-                .toList();
-
-        return TodoResponse.of(todo, randomWarmText(getWarmText()), stepResponses);
+        return TodoResponse.of(todo, randomWarmText(getWarmText()));
     }
 
     @Transactional
@@ -108,16 +98,7 @@ public class TodoService {
 
         todo.completeTodo();
 
-        List<TodoStep> todoStepList = todoStepRepository.findByTodoId(todoId);
-        List<StepResponse> stepResponses = todoStepList.stream().map(todoStep -> StepResponse.of(todo, todoStep))
-                .toList();
-
-        return TodoResponse.of(todo, "개구리가 우물 탈출에 성공했어요!", stepResponses);
-    }
-
-    private List<TodoStep> getAndSaveTodoStep(Long todoId, Long userId, List<StepRequest> stepList) {
-        return todoStepRepository.saveAll(stepList.stream()
-                .map(stepRequest -> TodoStep.createTodoStep(todoId, userId, stepRequest)).toList());
+        return TodoResponse.of(todo, "개구리가 우물 탈출에 성공했어요!");
     }
 
     private List<String> getWarmText() {

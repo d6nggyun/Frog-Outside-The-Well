@@ -8,6 +8,7 @@ import com._oormthon.seasonthon.domain.step.domain.StepRecord;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequestId;
+import com._oormthon.seasonthon.domain.step.dto.res.OneStepResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.repository.StepRecordRepository;
@@ -20,14 +21,13 @@ import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,8 +52,17 @@ public class StepService {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todoId);
         String progressText = createProgressText(todo.getProgress());
 
-        return TodoStepResponse.of(todo, progressText,
-                todoSteps.stream().map(todoStep ->  StepResponse.of(todo, todoStep)).toList());
+        return TodoStepResponse.of(todo, progressText, todoSteps.stream().map(StepResponse::of).toList());
+    }
+
+    @Transactional(readOnly = true)
+    public OneStepResponse getOneSteps(User user) {
+        List<StepResponse> todayStepResponses = stepQueryService
+                .findAllStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
+        List<StepResponse> missedStepResponses = stepQueryService
+                .findAllMissedStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
+
+        return OneStepResponse.of(todayStepResponses, missedStepResponses);
     }
 
     @Transactional
@@ -190,7 +199,7 @@ public class StepService {
     private List<StepResponse> newTodoStepResponse(Todo todo) {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
 
-        return todoSteps.stream().map(todoStep -> StepResponse.of(todo, todoStep)).toList();
+        return todoSteps.stream().map(StepResponse::of).toList();
     }
 
     private String createProgressText(Integer progress) {

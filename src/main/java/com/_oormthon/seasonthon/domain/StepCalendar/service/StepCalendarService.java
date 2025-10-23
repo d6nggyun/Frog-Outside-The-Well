@@ -4,6 +4,7 @@ import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
 import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendarTodoStep;
 import com._oormthon.seasonthon.domain.StepCalendar.dto.res.ListStepCalendarResponse;
 import com._oormthon.seasonthon.domain.StepCalendar.dto.res.StepCalendarResponse;
+import com._oormthon.seasonthon.domain.StepCalendar.dto.res.TodoAndStepResponse;
 import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarRepository;
 import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarTodoStepRepository;
 import com._oormthon.seasonthon.domain.member.entity.User;
@@ -37,10 +38,10 @@ public class StepCalendarService {
 
         List<StepCalendar> calendars = stepCalendarRepository
                 .findAllByUserIdAndCalendarDateBetween(user.getUserId(), startDate, endDate);
-        List<TodoStep> todayTodos = stepQueryService
-                .findAllByUserIdAndStepDate(user.getUserId(), LocalDate.now());
+        List<StepResponse> todayTodos = stepQueryService
+                .findAllStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
 
-        return ListStepCalendarResponse.from(createCalendarResponses(calendars), createStepResponses(todayTodos));
+        return ListStepCalendarResponse.from(createCalendarResponses(calendars), todayTodos);
     }
 
     public StepCalendar saveStepCalendar(Long userId, LocalDate date) {
@@ -78,14 +79,7 @@ public class StepCalendarService {
                 StepCalendarResponse.from(stepCalendar, responseCalendarSteps(stepCalendar))).toList();
     }
 
-    private List<StepResponse> createStepResponses(List<TodoStep> todoSteps) {
-        return todoSteps.stream().map(todoStep -> {
-            Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
-            return StepResponse.of(todo, todoStep);
-        }).toList();
-    }
-
-    private List<StepResponse> responseCalendarSteps(StepCalendar stepCalendar) {
+    private List<TodoAndStepResponse> responseCalendarSteps(StepCalendar stepCalendar) {
         return stepCalendarTodoStepRepository
                 .findAllByStepCalendarId(stepCalendar.getId())
                 .stream()
@@ -93,7 +87,7 @@ public class StepCalendarService {
                     TodoStep todoStep = stepQueryService.getTodoStepById(stepCalendarTodoStep.getTodoStepId());
                     Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
-                    return StepResponse.of(todo, todoStep);
+                    return TodoAndStepResponse.of(todo, todoStep);
                 })
                 .toList();
     }
