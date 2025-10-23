@@ -39,15 +39,9 @@ public class StepCalendarService {
                 .findAllByUserIdAndCalendarDateBetween(user.getUserId(), startDate, endDate);
 
         List<StepCalendarResponse> stepCalendarResponses = createCalendarResponses(calendars);
-        List<StepCalendarResponse> todayCalendarResponses = stepCalendarResponses.stream()
-                .filter(response -> response.calendarDate().isEqual(LocalDate.now())).toList();
+        List<TodoAndStepResponse> TaskToDo = responseTaskToDo(LocalDate.now(), user.getUserId());
 
-        List<TodoAndStepResponse> taskToDo = List.of();
-        if (!todayCalendarResponses.isEmpty()) {
-            taskToDo = todayCalendarResponses.get(0).stepResponses();
-        }
-
-        return ListStepCalendarResponse.from(stepCalendarResponses, taskToDo);
+        return ListStepCalendarResponse.from(stepCalendarResponses, TaskToDo);
     }
 
     public StepCalendar saveStepCalendar(Long userId, LocalDate date) {
@@ -96,5 +90,14 @@ public class StepCalendarService {
                     return TodoAndStepResponse.of(todo, todoStep);
                 })
                 .toList();
+    }
+
+    private List<TodoAndStepResponse> responseTaskToDo(LocalDate date, Long userId) {
+        List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(date, userId);
+
+        return todoSteps.stream().map(todoStep -> {
+            Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
+            return TodoAndStepResponse.of(todo, todoStep);
+        }).toList();
     }
 }
