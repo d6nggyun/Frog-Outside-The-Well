@@ -1,18 +1,15 @@
 package com._oormthon.seasonthon.domain.step.service;
 
-import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
-import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarQueryService;
-import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarService;
 import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.step.domain.StepRecord;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequestId;
 import com._oormthon.seasonthon.domain.step.dto.res.OneStepResponse;
-import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
-import com._oormthon.seasonthon.domain.step.repository.StepRecordRepository;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
+import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarQueryService;
+import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarService;
+import com._oormthon.seasonthon.domain.stepRecord.repository.StepRecordRepository;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.enums.TodoText;
@@ -63,41 +60,6 @@ public class StepService {
                 .findAllMissedStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
 
         return OneStepResponse.of(todayStepResponses, missedStepResponses);
-    }
-
-    @Transactional
-    public StepRecordResponse startStep(User user, Long stepId) {
-        stepQueryService.getTodoStepById(stepId);
-        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
-
-        TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
-        Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
-
-        completeStep(todoStep);
-        StepCalendar stepCalendar = stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
-        stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
-
-        List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(LocalDate.now(), user.getUserId());
-        Boolean isCompletedTodaySteps = todoSteps.stream().allMatch(TodoStep::getIsCompleted);
-
-        return StepRecordResponse.of(startOrGetStepRecord(todoStep.getUserId(), stepId), todo.getProgress(), isCompletedTodaySteps);
-    }
-
-    @Transactional
-    public StepRecordResponse stopStep(User user, Long stepId) {
-        TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
-        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
-
-        StepRecord stepRecord = stepQueryService.getStepRecordByStepId(stepId);
-
-        Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
-
-        stepRecord.stopStep();
-
-        List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(LocalDate.now(), user.getUserId());
-        Boolean isCompletedTodaySteps = todoSteps.stream().allMatch(TodoStep::getIsCompleted);
-
-        return StepRecordResponse.of(stepRecord, todo.getProgress(), isCompletedTodaySteps);
     }
 
     @Transactional
@@ -169,31 +131,6 @@ public class StepService {
         todoStepRepository.deleteById(stepId);
 
         return newTodoStepResponse(todo);
-    }
-
-    private void completeStep(TodoStep todoStep) {
-        if (todoStep.isCompleted())
-            return;
-        todoStep.completeStep();
-
-        Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
-        List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
-
-        long completedStepsCount = todoSteps.stream().filter(TodoStep::isCompleted).count();
-        int progress = (int) ((completedStepsCount * 100) / todoSteps.size());
-
-        todo.updateProgress(progress);
-        if (progress == 100) todo.completeTodo();
-    }
-
-    private StepRecord startOrGetStepRecord(Long userId, Long stepId) {
-        return stepRecordRepository.findByUserIdAndStepId(userId, stepId)
-                .map(existingRecord -> {
-                    existingRecord.startStep(stepId, userId);
-
-                    return existingRecord;
-                })
-                .orElseGet(() -> stepRecordRepository.save(StepRecord.createStepRecord(stepId, userId)));
     }
 
     private List<StepResponse> newTodoStepResponse(Todo todo) {

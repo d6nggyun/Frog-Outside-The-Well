@@ -1,6 +1,6 @@
-package com._oormthon.seasonthon.domain.step.dto.res;
+package com._oormthon.seasonthon.domain.stepRecord.dto.res;
 
-import com._oormthon.seasonthon.domain.step.domain.StepRecord;
+import com._oormthon.seasonthon.domain.stepRecord.domain.StepRecord;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -23,6 +23,9 @@ public record StepRecordResponse(
         @Schema(description = "총 수행 시간(단위: 초)", example = "3600")
         Long duration,
 
+        @Schema(description = "휴식 횟수", example = "1")
+        Integer breakCount,
+
         @Schema(description = "Todo 진행률", example = "100")
         Integer progress,
 
@@ -32,6 +35,6 @@ public record StepRecordResponse(
 ) {
         public static StepRecordResponse of(StepRecord stepRecord, Integer progress, Boolean isCompletedTodaySteps) {
                 return new StepRecordResponse(stepRecord.getStepId(), stepRecord.getUserId(),
-                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(), progress, isCompletedTodaySteps);
+                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(), progress, stepRecord.getBreakCount(), isCompletedTodaySteps);
         }
 }

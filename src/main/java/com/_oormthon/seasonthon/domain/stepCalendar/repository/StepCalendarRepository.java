@@ -1,6 +1,6 @@
-package com._oormthon.seasonthon.domain.StepCalendar.repository;
+package com._oormthon.seasonthon.domain.stepCalendar.repository;
 
-import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
+import com._oormthon.seasonthon.domain.stepCalendar.domain.StepCalendar;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;

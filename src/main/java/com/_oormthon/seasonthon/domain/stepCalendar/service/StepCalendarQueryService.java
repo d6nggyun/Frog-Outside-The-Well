@@ -1,7 +1,7 @@
-package com._oormthon.seasonthon.domain.StepCalendar.service;
+package com._oormthon.seasonthon.domain.stepCalendar.service;
 
-import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendarTodoStep;
-import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarTodoStepRepository;
+import com._oormthon.seasonthon.domain.stepCalendar.domain.StepCalendarTodoStep;
+import com._oormthon.seasonthon.domain.stepCalendar.repository.StepCalendarTodoStepRepository;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

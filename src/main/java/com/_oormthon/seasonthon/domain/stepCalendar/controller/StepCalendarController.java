@@ -1,7 +1,7 @@
-package com._oormthon.seasonthon.domain.StepCalendar.controller;
+package com._oormthon.seasonthon.domain.stepCalendar.controller;
 
-import com._oormthon.seasonthon.domain.StepCalendar.dto.res.ListStepCalendarResponse;
-import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarService;
+import com._oormthon.seasonthon.domain.stepCalendar.dto.res.ListStepCalendarResponse;
+import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarService;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
