@@ -24,7 +24,7 @@ public class StepRecordController implements StepRecordApiSpecification{
     public ResponseEntity<StepRecordResponse> startStep(@AuthenticationPrincipal User user,
                                                         @PathVariable Long stepId,
                                                         @Valid @RequestBody StepStartRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(stepRecordService.startStep(user, stepId, request));
+        return ResponseEntity.status(HttpStatus.OK).body(stepRecordService.startStep(user, stepId, request));
     }
 
     // Step 기록 일시 정지

@@ -35,6 +35,6 @@ public record StepRecordResponse(
 ) {
         public static StepRecordResponse of(StepRecord stepRecord, Integer progress, Boolean isCompletedTodaySteps) {
                 return new StepRecordResponse(stepRecord.getStepId(), stepRecord.getUserId(),
-                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(), progress, stepRecord.getBreakCount(), isCompletedTodaySteps);
+                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(), stepRecord.getBreakCount(), progress, isCompletedTodaySteps);
         }
 }
