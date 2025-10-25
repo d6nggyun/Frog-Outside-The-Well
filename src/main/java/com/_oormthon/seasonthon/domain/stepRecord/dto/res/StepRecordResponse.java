@@ -29,12 +29,16 @@ public record StepRecordResponse(
         @Schema(description = "Todo 진행률", example = "100")
         Integer progress,
 
+        @Schema(description = "Step 완료 여부", example = "true")
+        Boolean isCompleted,
+
         @Schema(description = "Today Step 완료 여부", example = "true")
         Boolean isCompletedTodaySteps
 
 ) {
         public static StepRecordResponse of(StepRecord stepRecord, Integer progress, Boolean isCompletedTodaySteps) {
                 return new StepRecordResponse(stepRecord.getStepId(), stepRecord.getUserId(),
-                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(), stepRecord.getBreakCount(), progress, isCompletedTodaySteps);
+                        stepRecord.getStartTime(), stepRecord.getEndTime(), stepRecord.getDuration(),
+                        stepRecord.getBreakCount(), progress, stepRecord.getIsCompleted(), isCompletedTodaySteps);
         }
 }
