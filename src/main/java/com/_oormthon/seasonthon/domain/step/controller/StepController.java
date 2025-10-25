@@ -4,7 +4,6 @@ import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequestId;
 import com._oormthon.seasonthon.domain.step.dto.res.OneStepResponse;
-import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.service.StepService;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
@@ -35,20 +34,6 @@ public class StepController implements StepApiSpecification {
     @GetMapping("/one-step")
     public ResponseEntity<OneStepResponse> getOneSteps(@AuthenticationPrincipal User user) {
         return ResponseEntity.status(HttpStatus.OK).body(stepService.getOneSteps(user));
-    }
-
-    // Step 기록 시작
-    @PostMapping("/{stepId}/start")
-    public ResponseEntity<StepRecordResponse> startStep(@AuthenticationPrincipal User user,
-            @PathVariable Long stepId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(stepService.startStep(user, stepId));
-    }
-
-    // Step 기록 종료
-    @PostMapping("/{stepId}/stop")
-    public ResponseEntity<StepRecordResponse> stopStep(@AuthenticationPrincipal User user,
-            @PathVariable Long stepId) {
-        return ResponseEntity.status(HttpStatus.OK).body(stepService.stopStep(user, stepId));
     }
 
     // Step 수정

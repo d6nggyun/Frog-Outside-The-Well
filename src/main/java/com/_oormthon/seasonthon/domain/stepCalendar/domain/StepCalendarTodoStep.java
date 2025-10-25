@@ -1,4 +1,4 @@
-package com._oormthon.seasonthon.domain.StepCalendar.domain;
+package com._oormthon.seasonthon.domain.stepCalendar.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

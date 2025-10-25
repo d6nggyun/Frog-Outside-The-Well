@@ -1,6 +1,6 @@
-package com._oormthon.seasonthon.domain.StepCalendar.dto.res;
+package com._oormthon.seasonthon.domain.stepCalendar.dto.res;
 
-import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
+import com._oormthon.seasonthon.domain.stepCalendar.domain.StepCalendar;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;

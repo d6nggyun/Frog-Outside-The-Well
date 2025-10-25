@@ -1,12 +1,12 @@
-package com._oormthon.seasonthon.domain.StepCalendar.service;
+package com._oormthon.seasonthon.domain.stepCalendar.service;
 
-import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
-import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendarTodoStep;
-import com._oormthon.seasonthon.domain.StepCalendar.dto.res.ListStepCalendarResponse;
-import com._oormthon.seasonthon.domain.StepCalendar.dto.res.StepCalendarResponse;
-import com._oormthon.seasonthon.domain.StepCalendar.dto.res.TodoAndStepResponse;
-import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarRepository;
-import com._oormthon.seasonthon.domain.StepCalendar.repository.StepCalendarTodoStepRepository;
+import com._oormthon.seasonthon.domain.stepCalendar.domain.StepCalendar;
+import com._oormthon.seasonthon.domain.stepCalendar.domain.StepCalendarTodoStep;
+import com._oormthon.seasonthon.domain.stepCalendar.dto.res.ListStepCalendarResponse;
+import com._oormthon.seasonthon.domain.stepCalendar.dto.res.StepCalendarResponse;
+import com._oormthon.seasonthon.domain.stepCalendar.dto.res.TodoAndStepResponse;
+import com._oormthon.seasonthon.domain.stepCalendar.repository.StepCalendarRepository;
+import com._oormthon.seasonthon.domain.stepCalendar.repository.StepCalendarTodoStepRepository;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.service.StepQueryService;

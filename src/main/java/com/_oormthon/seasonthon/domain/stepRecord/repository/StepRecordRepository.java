@@ -1,7 +1,8 @@
-package com._oormthon.seasonthon.domain.step.repository;
+package com._oormthon.seasonthon.domain.stepRecord.repository;
 
-import com._oormthon.seasonthon.domain.step.domain.StepRecord;
 import com._oormthon.seasonthon.domain.step.domain.TodoDurationGroup;
+import com._oormthon.seasonthon.domain.stepRecord.domain.StepRecord;
+import com._oormthon.seasonthon.domain.stepRecord.dto.res.StepRecordDetailResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +13,6 @@ import java.util.Optional;
 
 public interface StepRecordRepository extends JpaRepository<StepRecord, Long> {
 
-    Optional<StepRecord> findByStepId(Long stepId);
     Optional<StepRecord> findByUserIdAndStepId(Long userId, Long stepId);
 
     @Query("""
@@ -28,4 +28,18 @@ public interface StepRecordRepository extends JpaRepository<StepRecord, Long> {
 """)
     List<TodoDurationGroup> findTodoDurationGroup(@Param("userId") Long userId,
                                                 @Param("date") LocalDate date);
+
+    @Query("""
+    SELECT new com._oormthon.seasonthon.domain.stepRecord.dto.res.StepRecordDetailResponse(
+        sr.id,
+        sr.stepId,
+        sr.userId,
+        sr.startTime,
+        sr.endTime,
+        sr.duration
+    )
+    FROM StepRecord sr
+    WHERE sr.userId = :userId AND sr.stepId = :stepId
+""")
+    Optional<StepRecordDetailResponse> findStepRecordDetailResponseByUserIdAndStepId(Long userId, Long stepId);
 }

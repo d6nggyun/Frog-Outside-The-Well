@@ -1,6 +1,6 @@
 package com._oormthon.seasonthon.domain.todo.service;
 
-import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarQueryService;
+import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarQueryService;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;

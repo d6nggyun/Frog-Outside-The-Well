@@ -1,4 +1,4 @@
-package com._oormthon.seasonthon.domain.step.domain;
+package com._oormthon.seasonthon.domain.stepRecord.domain;
 
 import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -37,6 +36,9 @@ public class StepRecord {
 
     private Long duration;
 
+    @Column(name = "break_count")
+    private int breakCount = 0;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDate createdAt;
@@ -50,26 +52,35 @@ public class StepRecord {
         this.duration = duration;
     }
 
-    public static StepRecord createStepRecord(Long stepId, Long userId) {
+    public static StepRecord createStepRecord(Long stepId, Long userId, LocalDateTime startTime) {
         return StepRecord.builder()
                 .stepId(stepId)
                 .userId(userId)
-                .startTime(LocalDateTime.now())
+                .startTime(startTime)
                 .endTime(null)
                 .duration(0L)
                 .build();
     }
 
-    public void startStep(Long stepId, Long userId) {
-        this.startTime = LocalDateTime.now();
+    public void startStep(LocalDateTime startTime) {
+        this.startTime = startTime;
         this.endTime = null;
     }
 
-    public void stopStep() {
+    public void stopStep(LocalDateTime endTime, Long duration) {
         if (this.startTime == null) {
             throw new CustomException(ErrorCode.STEP_NOT_STARTED);
         }
-        this.endTime = LocalDateTime.now();
-        this.duration = this.duration + Duration.between(this.startTime, this.endTime).toSeconds();
+        this.endTime = endTime;
+        this.duration = this.duration + duration;
+    }
+
+    public void pauseStep(LocalDateTime endTime, Long duration) {
+        if (this.startTime == null) {
+            throw new CustomException(ErrorCode.STEP_NOT_STARTED);
+        }
+        this.duration = this.duration + duration;
+        this.endTime = endTime;
+        this.breakCount += 1;
     }
 }

@@ -3,7 +3,6 @@ package com._oormthon.seasonthon.domain.step.controller;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.step.dto.res.OneStepResponse;
-import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.global.exception.ErrorResponseEntity;
@@ -75,84 +74,12 @@ public interface StepApiSpecification {
                     @ApiResponse(responseCode = "200", description = "오늘의 한 걸음 / 놓친 한 걸음 조회 성공",
                             content = @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = StepRecordResponse.class)
+                                    schema = @Schema(implementation = OneStepResponse.class)
                             )
                     )
             }
     )
     ResponseEntity<OneStepResponse> getOneSteps(@AuthenticationPrincipal User user);
-
-    @Operation(
-            summary = "Step 기록 시작",
-            description = "해당 Step의 기록을 시작합니다. <br><br>시작 시간을 기록하며, 시작 시 완료됨으로 표시합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Step 기록 시작",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = StepRecordResponse.class)
-                            )
-                    ),
-                    @ApiResponse(responseCode = "403", description = "Step에 접근할 권한이 없습니다.",
-                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                {
-                                                   "code": 403,
-                                                   "name": "STEP_ACCESS_DENIED",
-                                                   "message": "Step에 접근할 권한이 없습니다.",
-                                                   "errors": null
-                                                }
-                                                """
-                                    )
-                            )
-                    )
-            }
-    )
-    ResponseEntity<StepRecordResponse> startStep(@AuthenticationPrincipal User user,
-                                                 @PathVariable Long stepId);
-
-    @Operation(
-            summary = "Step 기록 종료",
-            description = "해당 Step의 기록을 종료합니다. <br><br>종료 시간을 기록하며, 종료 시 저장된 시작 시간을 기준으로 총 소요시간을 누적합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Step 기록 종료",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = StepRecordResponse.class)
-                            )
-                    ),
-                    @ApiResponse(responseCode = "403", description = "Step에 접근할 권한이 없습니다.",
-                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                {
-                                                   "code": 403,
-                                                   "name": "STEP_ACCESS_DENIED",
-                                                   "message": "Step에 접근할 권한이 없습니다.",
-                                                   "errors": null
-                                                }
-                                                """
-                                    )
-                            )
-                    ),
-                    @ApiResponse(responseCode = "404", description = "시작되지 않은 Step입니다.",
-                            content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                {
-                                                   "code": 404,
-                                                   "name": "STEP_NOT_STARTED",
-                                                   "message": "시작되지 않은 Step입니다.",
-                                                   "errors": null
-                                                }
-                                                """
-                                    )
-                            )
-                    )
-            }
-    )
-    ResponseEntity<StepRecordResponse> stopStep(@AuthenticationPrincipal User user,
-                                                @PathVariable Long stepId);
 
     @Operation(
             summary = "Step 수정",

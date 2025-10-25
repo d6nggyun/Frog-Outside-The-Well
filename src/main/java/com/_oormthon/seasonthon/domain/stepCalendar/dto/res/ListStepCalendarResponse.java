@@ -1,4 +1,4 @@
-package com._oormthon.seasonthon.domain.StepCalendar.dto.res;
+package com._oormthon.seasonthon.domain.stepCalendar.dto.res;
 
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

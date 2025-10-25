@@ -1,6 +1,6 @@
-package com._oormthon.seasonthon.domain.StepCalendar.controller;
+package com._oormthon.seasonthon.domain.stepCalendar.controller;
 
-import com._oormthon.seasonthon.domain.StepCalendar.dto.res.ListStepCalendarResponse;
+import com._oormthon.seasonthon.domain.stepCalendar.dto.res.ListStepCalendarResponse;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

@@ -8,7 +8,7 @@ import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.member.repository.DailyLogAfterRepository;
 import com._oormthon.seasonthon.domain.member.repository.DailyLogBeforeRepository;
 import com._oormthon.seasonthon.domain.step.domain.TodoDurationGroup;
-import com._oormthon.seasonthon.domain.step.service.StepQueryService;
+import com._oormthon.seasonthon.domain.stepRecord.service.StepRecordQueryService;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodayCompletedTodoResponse;
 import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
@@ -30,7 +30,7 @@ public class DiaryService {
 
     private final DailyLogBeforeRepository dailyLogBeforeRepository;
     private final DailyLogAfterRepository dailyLogAfterRepository;
-    private final StepQueryService stepQueryService;
+    private final StepRecordQueryService stepRecordQueryService;
 
     @Transactional(readOnly = true)
     public List<DiaryResponse> findDiaries(User user, YearMonth yearMonth) {
@@ -46,7 +46,7 @@ public class DiaryService {
         DailyLogAfter dailyLogAfter = getDailyLogAfter(user.getUserId(), date);
 
         List<TodoDurationGroup> todoDurationGroups =
-                stepQueryService.findTodoDurationGroup(user.getUserId(), date);
+                stepRecordQueryService.findTodoDurationGroup(user.getUserId(), date);
 
         long total = todoDurationGroups.stream()
                 .map(TodoDurationGroup::getTotalDuration)
