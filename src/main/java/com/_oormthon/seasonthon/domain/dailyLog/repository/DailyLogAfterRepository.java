@@ -1,7 +1,7 @@
-package com._oormthon.seasonthon.domain.member.repository;
+package com._oormthon.seasonthon.domain.dailyLog.repository;
 
 import com._oormthon.seasonthon.domain.diary.dto.res.DiaryResponse;
-import com._oormthon.seasonthon.domain.member.entity.DailyLogAfter;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogAfter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

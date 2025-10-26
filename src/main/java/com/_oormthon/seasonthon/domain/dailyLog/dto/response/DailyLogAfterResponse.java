@@ -1,8 +1,8 @@
-package com._oormthon.seasonthon.domain.member.dto.response;
+package com._oormthon.seasonthon.domain.dailyLog.dto.response;
 
-import com._oormthon.seasonthon.domain.member.enums.Mood;
-import com._oormthon.seasonthon.domain.member.entity.DailyLogAfter;
-import com._oormthon.seasonthon.domain.member.enums.CompletionLevel;
+import com._oormthon.seasonthon.domain.dailyLog.enums.Mood;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogAfter;
+import com._oormthon.seasonthon.domain.dailyLog.enums.CompletionLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;

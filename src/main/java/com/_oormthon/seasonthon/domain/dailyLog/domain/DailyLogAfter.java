@@ -1,5 +1,6 @@
-package com._oormthon.seasonthon.domain.member.entity;
+package com._oormthon.seasonthon.domain.dailyLog.domain;
 
+import com._oormthon.seasonthon.domain.member.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -8,9 +9,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 
-import com._oormthon.seasonthon.domain.member.dto.request.DailyLogAfterRequest;
-import com._oormthon.seasonthon.domain.member.enums.CompletionLevel;
-import com._oormthon.seasonthon.domain.member.enums.Mood;
+import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogAfterRequest;
+import com._oormthon.seasonthon.domain.dailyLog.enums.CompletionLevel;
+import com._oormthon.seasonthon.domain.dailyLog.enums.Mood;
 
 @Entity
 @Table(name = "daily_log_after")

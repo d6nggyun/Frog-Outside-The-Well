@@ -2,11 +2,11 @@ package com._oormthon.seasonthon.diary;
 
 import com._oormthon.seasonthon.domain.diary.dto.res.DiaryResponse;
 import com._oormthon.seasonthon.domain.diary.service.DiaryService;
-import com._oormthon.seasonthon.domain.member.entity.DailyLogAfter;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogAfter;
 import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.member.enums.CompletionLevel;
-import com._oormthon.seasonthon.domain.member.enums.Mood;
-import com._oormthon.seasonthon.domain.member.repository.DailyLogAfterRepository;
+import com._oormthon.seasonthon.domain.dailyLog.enums.CompletionLevel;
+import com._oormthon.seasonthon.domain.dailyLog.enums.Mood;
+import com._oormthon.seasonthon.domain.dailyLog.repository.DailyLogAfterRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

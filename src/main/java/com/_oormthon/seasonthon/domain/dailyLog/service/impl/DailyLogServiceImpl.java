@@ -1,11 +1,16 @@
-package com._oormthon.seasonthon.domain.member.service.impl;
+package com._oormthon.seasonthon.domain.dailyLog.service.impl;
 
-import com._oormthon.seasonthon.domain.member.dto.response.*;
-import com._oormthon.seasonthon.domain.member.dto.request.*;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogAfter;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogBefore;
+import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogAfterRequest;
+import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogBeforeRequest;
+import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogAfterResponse;
+import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogBeforeResponse;
+import com._oormthon.seasonthon.domain.dailyLog.repository.DailyLogAfterRepository;
+import com._oormthon.seasonthon.domain.dailyLog.repository.DailyLogBeforeRepository;
 import com._oormthon.seasonthon.domain.member.entity.*;
-import com._oormthon.seasonthon.domain.member.repository.*;
-import com._oormthon.seasonthon.domain.member.service.DailyLogService;
-import com._oormthon.seasonthon.domain.member.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.service.DailyLogService;
+import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

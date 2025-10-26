@@ -1,10 +1,10 @@
-package com._oormthon.seasonthon.domain.member.controller;
+package com._oormthon.seasonthon.domain.dailyLog.controller;
 
-import com._oormthon.seasonthon.domain.member.dto.request.DailyLogBeforeRequest;
-import com._oormthon.seasonthon.domain.member.dto.request.DailyLogAfterRequest;
-import com._oormthon.seasonthon.domain.member.dto.response.DailyLogBeforeResponse;
-import com._oormthon.seasonthon.domain.member.dto.response.DailyLogAfterResponse;
-import com._oormthon.seasonthon.domain.member.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogBeforeRequest;
+import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogAfterRequest;
+import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogBeforeResponse;
+import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogAfterResponse;
+import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.global.exception.ErrorResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;

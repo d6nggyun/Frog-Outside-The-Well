@@ -1,10 +1,10 @@
 package com._oormthon.seasonthon.domain.diary.dto.res;
 
-import com._oormthon.seasonthon.domain.member.entity.DailyLogAfter;
-import com._oormthon.seasonthon.domain.member.entity.DailyLogBefore;
-import com._oormthon.seasonthon.domain.member.enums.CompletionLevel;
-import com._oormthon.seasonthon.domain.member.enums.Mood;
-import com._oormthon.seasonthon.domain.member.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogAfter;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogBefore;
+import com._oormthon.seasonthon.domain.dailyLog.enums.CompletionLevel;
+import com._oormthon.seasonthon.domain.dailyLog.enums.Mood;
+import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodayCompletedTodoResponse;
 
 import java.time.LocalDate;

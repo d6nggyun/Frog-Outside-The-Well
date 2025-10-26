@@ -1,11 +1,12 @@
-package com._oormthon.seasonthon.domain.member.entity;
+package com._oormthon.seasonthon.domain.dailyLog.domain;
 
+import com._oormthon.seasonthon.domain.member.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com._oormthon.seasonthon.domain.member.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -1,13 +1,14 @@
-package com._oormthon.seasonthon.domain.member.entity;
+package com._oormthon.seasonthon.domain.dailyLog.domain;
 
+import com._oormthon.seasonthon.domain.member.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import com._oormthon.seasonthon.domain.member.dto.request.DailyLogBeforeRequest;
-import com._oormthon.seasonthon.domain.member.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogBeforeRequest;
+import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
 
 import java.time.LocalDate;
 

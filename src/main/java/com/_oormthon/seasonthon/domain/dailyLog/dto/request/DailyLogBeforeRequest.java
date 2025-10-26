@@ -1,6 +1,6 @@
-package com._oormthon.seasonthon.domain.member.dto.request;
+package com._oormthon.seasonthon.domain.dailyLog.dto.request;
 
-import com._oormthon.seasonthon.domain.member.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

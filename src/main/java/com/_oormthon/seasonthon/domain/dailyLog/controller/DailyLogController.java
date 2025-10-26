@@ -1,10 +1,12 @@
-package com._oormthon.seasonthon.domain.member.controller;
+package com._oormthon.seasonthon.domain.dailyLog.controller;
 
-import com._oormthon.seasonthon.domain.member.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogAfterRequest;
+import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogBeforeRequest;
+import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogAfterResponse;
+import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogBeforeResponse;
+import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
 import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.member.dto.response.*;
-import com._oormthon.seasonthon.domain.member.dto.request.*;
-import com._oormthon.seasonthon.domain.member.service.DailyLogService;
+import com._oormthon.seasonthon.domain.dailyLog.service.DailyLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

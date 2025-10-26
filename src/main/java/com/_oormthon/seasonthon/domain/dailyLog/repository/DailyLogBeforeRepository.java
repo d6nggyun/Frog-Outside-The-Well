@@ -1,6 +1,6 @@
-package com._oormthon.seasonthon.domain.member.repository;
+package com._oormthon.seasonthon.domain.dailyLog.repository;
 
-import com._oormthon.seasonthon.domain.member.entity.DailyLogBefore;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogBefore;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
