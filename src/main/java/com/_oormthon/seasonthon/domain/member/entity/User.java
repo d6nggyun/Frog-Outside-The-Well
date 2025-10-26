@@ -44,4 +44,10 @@ public class User {
         this.nickname = Optional.ofNullable(nickname).orElse(this.nickname);
         this.profileImage = Optional.ofNullable(profileImage).orElse(this.profileImage);
     }
+
+    public void updateMyPage(Integer age, School school, Integer grade) {
+        this.age = Optional.ofNullable(age).orElse(this.age);
+        this.school = Optional.ofNullable(school).orElse(this.school);
+        this.grade = Optional.ofNullable(grade).orElse(this.grade);
+    }
 }

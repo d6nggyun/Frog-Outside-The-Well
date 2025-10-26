@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.member.controller;
 
+import com._oormthon.seasonthon.domain.member.dto.req.UpdateMypageRequest;
 import com._oormthon.seasonthon.domain.member.dto.res.UserResponse;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.global.exception.ErrorResponseEntity;
@@ -46,8 +47,9 @@ public interface UserApiSpecification {
 
     @Operation(
             summary = "회원 정보 수정",
-            description = "로그인한 사용자의 정보를 수정합니다. <br><br>" +
-                    "입력되지 않은 필드는 기존 값이 유지됩니다.",
+            description = "로그인한 사용자의 정보를 수정합니다.<br>" +
+                    "입력되지 않은 필드는 기존 값이 유지됩니다.<br><br>" +
+                    "School Enum 값: ELEMENTARY, MIDDLE, HIGH, UNIVERSITY",
             responses = {
                     @ApiResponse(responseCode = "200", description = "회원 정보 수정 성공",
                             content = @Content(
@@ -72,5 +74,5 @@ public interface UserApiSpecification {
             }
     )
     ResponseEntity<UserResponse> updateMyPage(@AuthenticationPrincipal User user,
-                                              @RequestBody UserResponse request);
+                                              @RequestBody UpdateMypageRequest request);
 }

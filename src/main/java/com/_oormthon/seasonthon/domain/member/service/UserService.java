@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.member.service;
 
+import com._oormthon.seasonthon.domain.member.dto.req.UpdateMypageRequest;
 import com._oormthon.seasonthon.domain.member.dto.res.UserResponse;
 
 public interface UserService {
@@ -10,5 +11,5 @@ public interface UserService {
 
     UserResponse getMyPage(Long userId);
 
-    UserResponse updateMyPage(Long userId, UserResponse request);
+    UserResponse updateMyPage(Long userId, UpdateMypageRequest request);
 }

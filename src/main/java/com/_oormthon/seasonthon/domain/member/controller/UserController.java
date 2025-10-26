@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.member.controller;
 
+import com._oormthon.seasonthon.domain.member.dto.req.UpdateMypageRequest;
 import com._oormthon.seasonthon.domain.member.dto.res.UserResponse;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.member.service.UserService;
@@ -36,7 +37,7 @@ public class UserController implements UserApiSpecification {
 
     @PutMapping("/my-page")
     public ResponseEntity<UserResponse> updateMyPage(@AuthenticationPrincipal User user,
-                                                     @RequestBody UserResponse request) {
+                                                     @RequestBody UpdateMypageRequest request) {
         return ResponseEntity.ok(userService.updateMyPage(user.getUserId(), request));
     }
 }

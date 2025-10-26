@@ -1,5 +1,6 @@
 package com._oormthon.seasonthon.domain.member.service.impl;
 
+import com._oormthon.seasonthon.domain.member.dto.req.UpdateMypageRequest;
 import com._oormthon.seasonthon.domain.member.dto.res.UserResponse;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.member.repository.UserRepository;
@@ -42,11 +43,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateMyPage(Long userId, UserResponse request) {
+    public UserResponse updateMyPage(Long userId, UpdateMypageRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        user.updateProfile(request.email(), request.nickname(), request.profileImage());
+        user.updateMyPage(request.age(), request.school(), request.grade());
 
         return UserResponse.of(user);
     }
