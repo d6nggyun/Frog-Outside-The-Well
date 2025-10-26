@@ -19,7 +19,6 @@ public enum ErrorCode {
 
     // Member
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "회원을 찾을 수 없습니다."),
-    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, 401, "로그인이 실패하였습니다."),
 
     // ToDo
     TODO_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "ToDo를 찾을 수 없습니다."),

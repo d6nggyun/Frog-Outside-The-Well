@@ -1,4 +1,4 @@
-package com._oormthon.seasonthon.domain.member.enums;
+package com._oormthon.seasonthon.domain.dailyLog.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -2,11 +2,11 @@ package com._oormthon.seasonthon.domain.diary.service;
 
 import com._oormthon.seasonthon.domain.diary.dto.res.DiaryDetailResponse;
 import com._oormthon.seasonthon.domain.diary.dto.res.DiaryResponse;
-import com._oormthon.seasonthon.domain.member.entity.DailyLogAfter;
-import com._oormthon.seasonthon.domain.member.entity.DailyLogBefore;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogAfter;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogBefore;
 import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.member.repository.DailyLogAfterRepository;
-import com._oormthon.seasonthon.domain.member.repository.DailyLogBeforeRepository;
+import com._oormthon.seasonthon.domain.dailyLog.repository.DailyLogAfterRepository;
+import com._oormthon.seasonthon.domain.dailyLog.repository.DailyLogBeforeRepository;
 import com._oormthon.seasonthon.domain.step.domain.TodoDurationGroup;
 import com._oormthon.seasonthon.domain.stepRecord.service.StepRecordQueryService;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodayCompletedTodoResponse;

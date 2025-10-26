@@ -1,7 +1,7 @@
-package com._oormthon.seasonthon.domain.member.dto.response;
+package com._oormthon.seasonthon.domain.dailyLog.dto.response;
 
-import com._oormthon.seasonthon.domain.member.entity.DailyLogBefore;
-import com._oormthon.seasonthon.domain.member.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogBefore;
+import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;

@@ -1,7 +1,7 @@
-package com._oormthon.seasonthon.domain.member.dto.request;
+package com._oormthon.seasonthon.domain.dailyLog.dto.request;
 
-import com._oormthon.seasonthon.domain.member.enums.Mood;
-import com._oormthon.seasonthon.domain.member.enums.CompletionLevel;
+import com._oormthon.seasonthon.domain.dailyLog.enums.Mood;
+import com._oormthon.seasonthon.domain.dailyLog.enums.CompletionLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
