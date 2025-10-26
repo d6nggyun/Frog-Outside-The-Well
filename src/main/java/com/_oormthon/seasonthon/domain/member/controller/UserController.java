@@ -25,4 +25,12 @@ public class UserController {
         UserResponse res = userService.getUserByKakaoId(kakaoId);
         return DataResponseDto.of(res);
     }
+
+    @GetMapping("/my-page")
+    public ResponseDto<UserResponse> getMyPage(@RequestHeader("X-USER-ID") Long userId) {
+        UserResponse res = userService.getUserById(userId);
+        return DataResponseDto.of(res);
+    }
+
+
 }
