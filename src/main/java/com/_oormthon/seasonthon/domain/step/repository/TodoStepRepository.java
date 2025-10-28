@@ -41,4 +41,6 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
     WHERE ts.userId = :userId AND ts.stepDate < :stepDate AND ts.isCompleted = false
 """)
     List<StepResponse> findAllMissedStepResponseByUserIdAndStepDate(Long userId, LocalDate stepDate);
+
+    List<TodoStep> findAllByTodoId(Long todoId);
 }

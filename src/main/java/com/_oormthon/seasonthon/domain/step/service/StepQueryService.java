@@ -53,4 +53,8 @@ public class StepQueryService {
     public List<StepResponse> findAllMissedStepsByUserIdAndStepDate(Long userId, LocalDate now) {
         return todoStepRepository.findAllMissedStepResponseByUserIdAndStepDate(userId, now);
     }
+
+    public List<TodoStep> getAllTodoStepByTodoId(Long todoId) {
+        return todoStepRepository.findAllByTodoId(todoId);
+    }
 }
