@@ -34,7 +34,7 @@ public class StatisticsService {
 
         return todos.stream().map(todo -> {
             List<TodoStep> todoSteps = stepQueryService.getAllTodoStepByTodoId(todo.getId());
-            Long totalDuration = todoSteps.stream().mapToLong(step -> step.getTotalDuration() != null ? step.getTotalDuration() : 0L).sum();
+            Long totalDuration = todoSteps.stream().mapToLong(TodoStep::getTotalDuration).sum();
 
             return MonthlyTodosResponse.of(todo.getTitle(), todo.getStartDate(), todo.getEndDate(), totalDuration);
         }).toList();
