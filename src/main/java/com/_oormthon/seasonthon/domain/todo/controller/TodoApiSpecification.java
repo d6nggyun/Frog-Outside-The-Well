@@ -38,7 +38,9 @@ public interface TodoApiSpecification {
 
     @Operation(
             summary = "ToDo 추가",
-            description = "회원이 자신의 ToDo 업무를 추가합니다. <br><br>Step까지 한꺼번에 요청 값으로 보내주세요.",
+            description = "회원이 자신의 ToDo 업무를 추가합니다. <br><br>Step까지 한꺼번에 요청 값으로 보내주세요." +
+                    "<br><br>todoType 값: PREVIEW_REVIEW (예습/복습 과제), HOMEWORK (숙제), TEST_STUDY (시험공부)," +
+                    "PERFORMANCE_ASSESSMENT (수행평가), CAREER_ACTIVITY (진로활동), ETC (기타)",
             responses = {
                     @ApiResponse(responseCode = "200", description = "ToDo 추가",
                             content = @Content(
