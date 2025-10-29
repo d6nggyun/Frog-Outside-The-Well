@@ -1,6 +1,8 @@
 package com._oormthon.seasonthon.domain.statistics.controller;
 
 import com._oormthon.seasonthon.domain.member.entity.User;
+import com._oormthon.seasonthon.domain.statistics.dto.res.AchievementRateResponse;
+import com._oormthon.seasonthon.domain.statistics.dto.res.FocusTimeResponse;
 import com._oormthon.seasonthon.domain.statistics.dto.res.MonthlyTodosResponse;
 import com._oormthon.seasonthon.domain.todo.enums.TodoType;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,5 +41,33 @@ public interface StatisticsApiSpecification {
                                                                @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth,
                                                                @RequestParam TodoType todoType);
 
+    @Operation(
+            summary = "달성률 변화 추이 조회",
+            description = "yyyy-MM 형식의 year, month 값을 받아 해당 달에 달성률 변화 추이를 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "달성률 변화 추이 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = AchievementRateResponse.class))
+                            )
+                    )
+            }
+    )
+    ResponseEntity<List<AchievementRateResponse>> getAchievementRate(@AuthenticationPrincipal User user,
+                                                                     @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth);
 
+    @Operation(
+            summary = "집중 시간 조회",
+            description = "yyyy-MM 형식의 year, month 값을 받아 집중 시간을 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "집중 시간 조회 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = FocusTimeResponse.class))
+                            )
+                    )
+            }
+    )
+    ResponseEntity<List<FocusTimeResponse>> getFocusTime(@AuthenticationPrincipal User user,
+                                                         @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth yearMonth);
 }
