@@ -36,6 +36,13 @@ public class StepController implements StepApiSpecification {
         return ResponseEntity.status(HttpStatus.OK).body(stepService.getOneSteps(user));
     }
 
+    // 한 걸음 Step 조회
+    @GetMapping("/one-step/{todoId}")
+    public ResponseEntity<OneStepResponse> getOneStepsWithTodoId(@AuthenticationPrincipal User user,
+            @PathVariable Long todoId) {
+        return ResponseEntity.status(HttpStatus.OK).body(stepService.getOneStepsWithTodoId(user, todoId));
+    }
+
     // Step 수정
     @PutMapping("/{stepId}")
     public ResponseEntity<List<StepResponse>> updateStep(@AuthenticationPrincipal User user,
