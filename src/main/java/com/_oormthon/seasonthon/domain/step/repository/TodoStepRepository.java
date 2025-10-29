@@ -56,7 +56,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
     WHERE ts.userId = :userId
       AND ts.stepDate BETWEEN :monthStart AND :monthEnd
 """)
-    List<TodoStep> findAllTodoStepOverlappingPeriod(Long userId, LocalDate startDate, LocalDate endDate);
+    List<TodoStep> findAllTodoStepOverlappingPeriod(Long userId, LocalDate monthStart, LocalDate monthEnd);
 
     @Query("""
                 SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
