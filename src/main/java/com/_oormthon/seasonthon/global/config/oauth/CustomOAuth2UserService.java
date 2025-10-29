@@ -49,8 +49,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
                 String profileImage = Optional.ofNullable(kakaoProfile)
                         .map(p -> (String) Optional.ofNullable(p.get("profile_image_url"))
-                                .orElse(p.get("thumbnail_image_url")))
-                        .orElse(null);
+                                .orElse("https://t1.kakaocdn.net/account_images/default_profile.jpeg"))
+                        .orElse("https://t1.kakaocdn.net/account_images/default_profile.jpeg");
 
                 userRepository.findByKakaoId(kakaoId).ifPresentOrElse(
                         user -> {
