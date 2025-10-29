@@ -41,17 +41,21 @@ public class TodoStep {
     @Column(name = "is_completed", nullable = false)
     private Boolean isCompleted = false;
 
+    @Column(name = "total_duration")
+    private Long totalDuration;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
-    private TodoStep(Long todoId, Long userId, LocalDate stepDate, String description, Boolean isCompleted) {
+    private TodoStep(Long todoId, Long userId, LocalDate stepDate, String description, Boolean isCompleted, Long totalDuration) {
         this.todoId = todoId;
         this.userId = userId;
         this.stepDate = stepDate;
         this.description = description;
         this.isCompleted = isCompleted;
+        this.totalDuration = totalDuration;
     }
 
     public static TodoStep createTodoStep(Long todoId, Long userId, StepRequest stepRequest) {
@@ -61,6 +65,7 @@ public class TodoStep {
                 .stepDate(stepRequest.stepDate())
                 .description(stepRequest.description())
                 .isCompleted(false)
+                .totalDuration(0L)
                 .build();
     }
 
@@ -78,5 +83,9 @@ public class TodoStep {
 
     public void completeStep() {
         this.isCompleted = true;
+    }
+
+    public void updateTotalDuration(Long duration) {
+        this.totalDuration += duration;
     }
 }

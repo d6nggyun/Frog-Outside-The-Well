@@ -20,6 +20,8 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
 
     List<TodoStep> findAllByStepDateAndUserId(LocalDate stepDate, Long userId);
 
+    List<TodoStep> findAllByTodoId(Long todoId);
+
     @Query("""
                 SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
                     ts.id,
@@ -33,16 +35,28 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
     List<StepResponse> findAllStepResponseByUserIdAndStepDate(Long userId, LocalDate stepDate);
 
     @Query("""
-                SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
-                    ts.id,
-                    ts.stepDate,
-                    ts.description,
-                    ts.isCompleted
-                )
-                FROM TodoStep ts
-                WHERE ts.userId = :userId AND ts.stepDate < :stepDate AND ts.isCompleted = false
-            """)
+    SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
+        ts.id,
+        ts.stepDate,
+        ts.description,
+        ts.isCompleted
+    )
+    FROM TodoStep ts
+    WHERE ts.userId = :userId
+    AND (
+        (ts.stepDate < :stepDate AND ts.isCompleted = false)
+        OR (ts.stepDate = :stepDate AND ts.isCompleted = true)
+        )
+""")
     List<StepResponse> findAllMissedStepResponseByUserIdAndStepDate(Long userId, LocalDate stepDate);
+
+    @Query("""
+    SELECT ts
+    FROM TodoStep ts
+    WHERE ts.userId = :userId
+      AND ts.stepDate BETWEEN :monthStart AND :monthEnd
+""")
+    List<TodoStep> findAllTodoStepOverlappingPeriod(Long userId, LocalDate startDate, LocalDate endDate);
 
     @Query("""
                 SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(

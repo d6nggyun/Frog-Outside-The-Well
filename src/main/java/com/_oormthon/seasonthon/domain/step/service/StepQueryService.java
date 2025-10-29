@@ -54,6 +54,14 @@ public class StepQueryService {
         return todoStepRepository.findAllMissedStepResponseByUserIdAndStepDate(userId, now);
     }
 
+    public List<TodoStep> getAllTodoStepByTodoId(Long todoId) {
+        return todoStepRepository.findAllByTodoId(todoId);
+    }
+  
+    public List<TodoStep> getTodoStepsByUserIdAndMonth(Long userId, LocalDate startDate, LocalDate endDate) {
+        return todoStepRepository.findAllTodoStepOverlappingPeriod(userId, startDate, endDate);
+    }
+
     public List<StepResponse> findAllStepsByUserIdAndTodoIdAndStepDate(Long userId, Long todoId, LocalDate date) {
         return todoStepRepository.findAllStepResponseByUserIdAndStepDateAndTodoId(userId, todoId, date);
     }

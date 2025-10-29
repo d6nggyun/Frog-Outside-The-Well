@@ -57,6 +57,7 @@ public class StepRecordService {
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
         stepRecord.pauseStep(request.endTime(), request.duration());
+        todoStep.updateTotalDuration(request.duration());
 
         Boolean isCompletedTodaySteps = checkAllStepsCompletedToday(user);
 
@@ -75,6 +76,7 @@ public class StepRecordService {
         stepRecord.stopStep(request.endTime(), request.duration());
 
         completeStep(todoStep);
+        todoStep.updateTotalDuration(request.duration());
 
         StepCalendar stepCalendar = stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
         stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
