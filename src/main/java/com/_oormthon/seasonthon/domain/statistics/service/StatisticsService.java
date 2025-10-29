@@ -4,6 +4,7 @@ import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.statistics.dto.res.AchievementRateResponse;
 import com._oormthon.seasonthon.domain.statistics.dto.res.FocusTimeResponse;
 import com._oormthon.seasonthon.domain.statistics.dto.res.MonthlyTodosResponse;
+import com._oormthon.seasonthon.domain.statistics.util.FixedWeeks;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.service.StepQueryService;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
@@ -41,18 +42,70 @@ public class StatisticsService {
 
     @Transactional(readOnly = true)
     public List<AchievementRateResponse> getAchievementRate(User user, YearMonth yearMonth) {
-        LocalDate startDate = yearMonth.atDay(1);
-        LocalDate endDate = yearMonth.atEndOfMonth();
+        LocalDate monthStart = yearMonth.atDay(1);
+        LocalDate monthEnd = yearMonth.atEndOfMonth();
 
-        List<Todo> todos = todoQueryService.getTodosByUserIdAndMonth(user.getUserId(), startDate, endDate);
+        List<Todo> todos = todoQueryService.getTodosByUserIdAndMonth(user.getUserId(), monthStart, monthEnd);
 
+        List<FixedWeeks.WeekBucket> buckets = FixedWeeks.getWeekBuckets(yearMonth);
 
+        long[] sum = new long[6];
+        int[] count = new int[6];
+
+        for (Todo todo : todos) {
+            LocalDate endDate = todo.getEndDate();
+            Integer progress = todo.getProgress();
+            if (endDate == null || progress == null) continue;
+
+            int week = FixedWeeks.getWeekIndex(endDate);
+
+            sum[week] += progress;
+            count[week] += 1;
+        }
+
+        return buckets.stream().map(
+                b -> {
+                    int week = b.index();
+                    Double rate = (count[week] == 0) ? null : round1(sum[week] * 1.0 / count[week]);
+                    return AchievementRateResponse.of(b.index(), rate, b.startDate(), b.endDate());
+                }).toList();
     }
 
     @Transactional(readOnly = true)
     public List<FocusTimeResponse> getFocusTime(User user, YearMonth yearMonth) {
-        LocalDate startDate = yearMonth.atDay(1);
-        LocalDate endDate = yearMonth.atEndOfMonth();
+        LocalDate monthStart = yearMonth.atDay(1);
+        LocalDate monthEnd = yearMonth.atEndOfMonth();
 
+        List<TodoStep> todoSteps = stepQueryService.getTodoStepsByUserIdAndMonth(user.getUserId(), monthStart, monthEnd);
+
+        List<FixedWeeks.WeekBucket> buckets = FixedWeeks.getWeekBuckets(yearMonth);
+
+        Long[] minDuration = new Long[6];
+        Long[] maxDuration = new Long[6];
+
+        for (TodoStep todoStep : todoSteps) {
+            LocalDate stepDate = todoStep.getStepDate();
+            Long duration = todoStep.getTotalDuration();
+            if (stepDate == null || duration == null) continue;
+
+            int week = FixedWeeks.getWeekIndex(stepDate);
+
+            if (minDuration[week] == null || duration < minDuration[week]) {
+                minDuration[week] = duration;
+            }
+            if (maxDuration[week] == null || duration > maxDuration[week]) {
+                maxDuration[week] = duration;
+            }
+        }
+
+        return buckets.stream().map(
+                b -> {
+                    int week = b.index();
+                    return FocusTimeResponse.of(b.index(), minDuration[week], maxDuration[week] , b.startDate(), b.endDate());
+                }).toList();
+    }
+
+    private Double round1(double v) {
+        return Math.round(v * 10.0) / 10.0;
     }
 }

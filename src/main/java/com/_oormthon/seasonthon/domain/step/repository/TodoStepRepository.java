@@ -47,4 +47,12 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
     List<StepResponse> findAllMissedStepResponseByUserIdAndStepDate(Long userId, LocalDate stepDate);
 
     List<TodoStep> findAllByTodoId(Long todoId);
+
+    @Query("""
+    SELECT ts
+    FROM TodoStep ts
+    WHERE ts.userId = :userId
+      AND ts.stepDate BETWEEN :monthStart AND :monthEnd
+""")
+    List<TodoStep> findAllTodoStepOverlappingPeriod(Long userId, LocalDate startDate, LocalDate endDate);
 }

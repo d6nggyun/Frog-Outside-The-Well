@@ -23,6 +23,7 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
       AND t.todoType = :todoType
       AND t.startDate <= :endDate
       AND t.endDate >= :startDate
+      AND t.isCompleted = true
 """)
     List<Todo> findAllTodoByTodoTypeOverlappingPeriod(Long userId, TodoType todoType, LocalDate startDate, LocalDate endDate);
 
@@ -30,8 +31,8 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     SELECT t
     FROM Todo t
     WHERE t.userId = :userId
-      AND t.startDate <= :endDate
-      AND t.endDate >= :startDate
+      AND t.endDate BETWEEN :monthStart AND :monthEnd
+      AND t.isCompleted = true
 """)
-    List<Todo> findAllTodoOverlappingPeriod(Long userId, LocalDate startDate, LocalDate endDate);
+    List<Todo> findAllTodoOverlappingPeriod(Long userId, LocalDate monthStart, LocalDate monthEnd);
 }
