@@ -43,7 +43,8 @@ public interface StatisticsApiSpecification {
 
     @Operation(
             summary = "달성률 변화 추이 조회",
-            description = "yyyy-MM 형식의 year, month 값을 받아 해당 달에 달성률 변화 추이를 조회합니다.",
+            description = "yyyy-MM 형식의 year, month 값을 받아 해당 달에 달성률 변화 추이를 조회합니다." +
+                    "<br><br>해당 주차에 값이 존재하지 않으면 rate 값들이 null로 반환됩니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "달성률 변화 추이 조회 성공",
                             content = @Content(
@@ -58,7 +59,8 @@ public interface StatisticsApiSpecification {
 
     @Operation(
             summary = "집중 시간 조회",
-            description = "yyyy-MM 형식의 year, month 값을 받아 집중 시간을 조회합니다.",
+            description = "yyyy-MM 형식의 year, month 값을 받아 집중 시간을 조회합니다." +
+                    "<br><br>해당 주차에 값이 존재하지 않으면 Duration 값들이 null로 반환됩니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "집중 시간 조회 성공",
                             content = @Content(
