@@ -58,6 +58,16 @@ public class StepService {
         return OneStepResponse.of(todayStepResponses, missedStepResponses);
     }
 
+    @Transactional(readOnly = true)
+    public OneStepResponse getOneStepsWithTodoId(User user, Long todoId) {
+        List<StepResponse> todayStepResponses = stepQueryService
+                .findAllStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId, LocalDate.now());
+        List<StepResponse> missedStepResponses = stepQueryService
+                .findAllMissedStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId, LocalDate.now());
+
+        return OneStepResponse.of(todayStepResponses, missedStepResponses);
+    }
+
     @Transactional
     public List<StepResponse> updateStep(User user, Long stepId, UpdateStepRequest updateStepRequest) {
         stepQueryService.getTodoStepById(stepId);
@@ -136,11 +146,17 @@ public class StepService {
     }
 
     private String createProgressText(Integer progress) {
-        if (progress == 100) return TodoText.PROGRESS_100.getText();
-        else if (progress > 80) return TodoText.PROGRESS_80.getText();
-        else if (progress > 50) return TodoText.PROGRESS_50.getText();
-        else if (progress > 20) return TodoText.PROGRESS_20.getText();
-        else if (progress >= 0) return TodoText.PROGRESS_0.getText();
-        else throw new CustomException(ErrorCode.TODO_PROGRESS_NOT_VALID);
+        if (progress == 100)
+            return TodoText.PROGRESS_100.getText();
+        else if (progress > 80)
+            return TodoText.PROGRESS_80.getText();
+        else if (progress > 50)
+            return TodoText.PROGRESS_50.getText();
+        else if (progress > 20)
+            return TodoText.PROGRESS_20.getText();
+        else if (progress >= 0)
+            return TodoText.PROGRESS_0.getText();
+        else
+            throw new CustomException(ErrorCode.TODO_PROGRESS_NOT_VALID);
     }
 }
