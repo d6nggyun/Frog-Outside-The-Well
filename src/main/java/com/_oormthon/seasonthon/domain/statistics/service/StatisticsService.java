@@ -85,8 +85,8 @@ public class StatisticsService {
 
         for (TodoStep todoStep : todoSteps) {
             LocalDate stepDate = todoStep.getStepDate();
-            Long duration = todoStep.getTotalDuration();
-            if (stepDate == null || duration == null) continue;
+            long duration = todoStep.getTotalDuration();
+            if (stepDate == null) continue;
 
             int week = FixedWeeks.getWeekIndex(stepDate);
 

@@ -44,7 +44,7 @@ public class StepCalendarService {
         return ListStepCalendarResponse.from(stepCalendarResponses, TaskToDo);
     }
 
-    public StepCalendar saveStepCalendar(Long userId, LocalDate date) {
+    public StepCalendar saveAndUpdateStepCalendar(Long userId, LocalDate date) {
         StepCalendar stepCalendar = stepCalendarRepository.findByUserIdAndCalendarDate(userId, date)
                 .orElseGet(() -> {
                     StepCalendar newStepCalendar = StepCalendar.builder()

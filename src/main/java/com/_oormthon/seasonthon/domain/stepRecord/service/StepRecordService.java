@@ -78,7 +78,7 @@ public class StepRecordService {
         completeStep(todoStep);
         todoStep.updateTotalDuration(request.duration());
 
-        StepCalendar stepCalendar = stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
+        StepCalendar stepCalendar = stepCalendarService.saveAndUpdateStepCalendar(user.getUserId(), LocalDate.now());
         stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
 
         Boolean isCompletedTodaySteps = checkAllStepsCompletedToday(user);
