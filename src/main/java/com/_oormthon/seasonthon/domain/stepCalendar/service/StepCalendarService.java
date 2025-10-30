@@ -56,7 +56,7 @@ public class StepCalendarService {
                 });
 
         int totalDailySteps = stepQueryService.countTodoStepsByUserIdAndStepDate(userId, date);
-        int totalDailyCompletedSteps = stepQueryService.countTodoStepsByUserIdAndCompleted(userId, date);
+        int totalDailyCompletedSteps = stepQueryService.countByUserIdAndCompletedDateAndIsCompletedIsNull(userId, date);
         int completedDailySteps = stepQueryService.countCompletedTodoStepsByUserIdAndCompletedDate(userId, date);
         int percentage = totalDailySteps == 0 ? 0 : (completedDailySteps * 100 / (totalDailyCompletedSteps + totalDailySteps));
 

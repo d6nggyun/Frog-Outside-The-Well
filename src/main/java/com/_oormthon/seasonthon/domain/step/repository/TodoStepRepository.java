@@ -84,7 +84,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
     List<StepResponse> findAllMissedStepResponseByUserIdAndStepDateAndTodoId(Long userId,
             Long todoId, LocalDate stepDate);
 
-    int countByUserIdAndCompletedDate(Long userId, LocalDate completedDate);
+    int countByUserIdAndCompletedDateAndIsCompletedIsNull(Long userId, LocalDate completedDate);
 
     int countByUserIdAndIsCompletedTrueAndCompletedDate(Long userId, LocalDate completedDate);
 

@@ -34,8 +34,8 @@ public class StepQueryService {
         }
     }
 
-    public int countTodoStepsByUserIdAndCompleted(Long userId, LocalDate date) {
-        return todoStepRepository.countByUserIdAndCompletedDate(userId, date);
+    public int countByUserIdAndCompletedDateAndIsCompletedIsNull(Long userId, LocalDate date) {
+        return todoStepRepository.countByUserIdAndCompletedDateAndIsCompletedIsNull(userId, date);
     }
 
     public int countTodoStepsByUserIdAndStepDate(Long userId, LocalDate date) {
