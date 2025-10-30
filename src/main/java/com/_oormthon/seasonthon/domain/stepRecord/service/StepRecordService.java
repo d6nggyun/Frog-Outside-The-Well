@@ -76,7 +76,7 @@ public class StepRecordService {
 
         stepRecord.stopStep(request.endTime(), request.duration());
 
-        completeStep(todoStep);
+        completeStep(todoStep, request.endTime());
         todoStep.updateTotalDuration(request.duration());
 
         StepCalendar stepCalendar = stepCalendarService.saveAndUpdateStepCalendar(userId, LocalDate.now());
@@ -87,10 +87,10 @@ public class StepRecordService {
         return StepRecordResponse.of(stepRecord, todo.getProgress(), isCompletedTodaySteps);
     }
 
-    private void completeStep(TodoStep todoStep) {
+    private void completeStep(TodoStep todoStep, LocalDateTime endTime) {
         if (todoStep.isCompleted())
             return;
-        todoStep.completeStep();
+        todoStep.completeStep(endTime);
 
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());

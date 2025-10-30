@@ -34,12 +34,12 @@ public class StepQueryService {
         }
     }
 
-    public int countTodoStepsByUserIdAndDate(Long userId, LocalDate date) {
-        return todoStepRepository.countByUserIdAndStepDate(userId, date);
+    public int countTodoStepsByUserIdAndCompleted(Long userId, LocalDate date) {
+        return todoStepRepository.countByUserIdAndCompletedDate(userId, date);
     }
 
-    public int countCompletedTodoStepsByUserIdAndDate(Long userId, LocalDate date) {
-        return todoStepRepository.countByUserIdAndIsCompletedTrueAndStepDate(userId, date);
+    public int countCompletedTodoStepsByUserIdAndCompletedDate(Long userId, LocalDate date) {
+        return todoStepRepository.countByUserIdAndIsCompletedTrueAndCompletedDate(userId, date);
     }
 
     public List<TodoStep> findAllByStepDateAndUserId(LocalDate localDate, Long userId) {
