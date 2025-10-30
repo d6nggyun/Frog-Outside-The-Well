@@ -87,4 +87,6 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
     int countByUserIdAndCompletedDate(Long userId, LocalDate completedDate);
 
     int countByUserIdAndIsCompletedTrueAndCompletedDate(Long userId, LocalDate completedDate);
+
+    int countByUserIdAndStepDate(Long userId, LocalDate stepDate);
 }
