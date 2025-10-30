@@ -64,13 +64,13 @@ public class StepCalendarService {
         return stepCalendar;
     }
 
-    public void saveStepCalendarTodoStep(Long stepCalendarId, Long todoStepId) {
+    public void saveStepCalendarTodoStep(Long userId, Long stepCalendarId, Long todoStepId) {
         boolean exists = stepCalendarTodoStepRepository
-                .existsByStepCalendarIdAndTodoStepId(stepCalendarId, todoStepId);
+                .existsByUserIdAndStepCalendarIdAndTodoStepId(userId, stepCalendarId, todoStepId);
 
         if (!exists) {
             stepCalendarTodoStepRepository
-                    .save(StepCalendarTodoStep.builder().stepCalendarId(stepCalendarId).todoStepId(todoStepId).build());
+                    .save(StepCalendarTodoStep.builder().userId(userId).stepCalendarId(stepCalendarId).todoStepId(todoStepId).build());
         }
     }
 

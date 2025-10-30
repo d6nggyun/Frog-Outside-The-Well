@@ -134,12 +134,13 @@ public class StepService {
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
-        LocalDate stepDate = todoStep.getStepDate();
+        Long stepCalendarId = stepCalendarQueryService.findStepCalendarIdByUserIdAndTodoStepId(user.getUserId(), todoStep.getId());
+        LocalDate date = stepCalendarQueryService.findStepCalendarDateById(stepCalendarId);
 
         stepCalendarQueryService.deleteByTodoSteps(List.of(todoStep));
         todoStepRepository.deleteById(stepId);
         stepRecordQueryService.deleteByStepId(stepId);
-        stepCalendarService.saveAndUpdateStepCalendar(user.getUserId(), stepDate);
+        stepCalendarService.saveAndUpdateStepCalendar(user.getUserId(), date);
 
         return newTodoStepResponse(todo);
     }

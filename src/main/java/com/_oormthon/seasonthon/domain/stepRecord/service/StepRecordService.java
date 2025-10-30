@@ -66,10 +66,11 @@ public class StepRecordService {
 
     @Transactional
     public StepRecordResponse stopStep(User user, Long stepId, StepStopRequest request) {
+        Long userId = user.getUserId();
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
-        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
+        stepQueryService.validateStepOwnership(userId, stepId);
 
-        StepRecord stepRecord = stepRecordQueryService.getStepRecordByUserIdAndStepId(user.getUserId(), stepId);
+        StepRecord stepRecord = stepRecordQueryService.getStepRecordByUserIdAndStepId(userId, stepId);
 
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
@@ -78,8 +79,8 @@ public class StepRecordService {
         completeStep(todoStep);
         todoStep.updateTotalDuration(request.duration());
 
-        StepCalendar stepCalendar = stepCalendarService.saveAndUpdateStepCalendar(user.getUserId(), LocalDate.now());
-        stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
+        StepCalendar stepCalendar = stepCalendarService.saveAndUpdateStepCalendar(userId, LocalDate.now());
+        stepCalendarService.saveStepCalendarTodoStep(userId, stepCalendar.getId(), stepId);
 
         Boolean isCompletedTodaySteps = checkAllStepsCompletedToday(user);
 

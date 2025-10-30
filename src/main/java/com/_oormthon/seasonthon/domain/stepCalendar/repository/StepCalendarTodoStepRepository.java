@@ -10,7 +10,9 @@ public interface StepCalendarTodoStepRepository extends JpaRepository<StepCalend
 
     List<StepCalendarTodoStep> findAllByStepCalendarId(Long stepCalendarId);
 
-    boolean existsByStepCalendarIdAndTodoStepId(Long stepCalendarId, Long todoStepId);
-
     List<StepCalendarTodoStep> findByTodoStepIdIn(Collection<Long> todoStepIds);
+
+    Long findStepCalendarIdByUserIdAndTodoStepId(Long userId, Long todoStepId);
+
+    boolean existsByUserIdAndStepCalendarIdAndTodoStepId(Long userId, Long stepCalendarId, Long todoStepId);
 }

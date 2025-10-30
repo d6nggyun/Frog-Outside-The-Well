@@ -16,6 +16,9 @@ public class StepCalendarTodoStep {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     @Column(name = "step_calendar_id", nullable = false)
     private Long stepCalendarId;
 
@@ -23,7 +26,8 @@ public class StepCalendarTodoStep {
     private Long todoStepId;
 
     @Builder
-    private StepCalendarTodoStep(Long stepCalendarId, Long todoStepId) {
+    private StepCalendarTodoStep(Long userId, Long stepCalendarId, Long todoStepId) {
+        this.userId = userId;
         this.stepCalendarId = stepCalendarId;
         this.todoStepId = todoStepId;
     }
