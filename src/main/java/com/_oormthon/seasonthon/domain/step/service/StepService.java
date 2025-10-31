@@ -133,9 +133,7 @@ public class StepService {
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
         stepQueryService.validateStepOwnership(user.getUserId(), stepId);
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
-
-        Long stepCalendarId = stepCalendarQueryService.findStepCalendarIdByUserIdAndTodoStepId(user.getUserId(), todoStep.getId());
-        LocalDate date = stepCalendarQueryService.findStepCalendarDateById(stepCalendarId);
+        LocalDate date = todoStep.getStepDate();
 
         stepCalendarQueryService.deleteByTodoSteps(List.of(todoStep));
         todoStepRepository.deleteById(stepId);
