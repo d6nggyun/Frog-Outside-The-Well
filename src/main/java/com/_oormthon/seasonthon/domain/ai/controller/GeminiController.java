@@ -29,7 +29,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class GeminiController implements GeminiApiSpecification {
 
     private final GeminiService aiService;
-    private final GeminiChatService geminiChatService;
     private final ChatbotScriptService chatbotScriptService;
 
     @Override
@@ -43,8 +42,8 @@ public class GeminiController implements GeminiApiSpecification {
     /**
      * 🔹 SSE 연결 유지용 (EventSource가 이 엔드포인트에 연결)
      */
-    @GetMapping(value = "/connect/{userId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter connect(@PathVariable Long userId) {
+    @GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter connect(@RequestParam Long userId) {
         log.info("🌐 SSE 연결 요청 userId={}", userId);
         return chatbotScriptService.connect(userId);
     }
@@ -53,8 +52,8 @@ public class GeminiController implements GeminiApiSpecification {
      * 🔹 사용자 메시지 전송용
      */
 
-    @PostMapping("/send/{userId}")
-    public void sendMessage(@PathVariable Long userId, @RequestBody String message) {
+    @PostMapping("/send")
+    public void sendMessage(@RequestParam Long userId, @RequestBody String message) {
         log.info("📨 사용자 입력 도착 userId={}, message={}", userId, message);
         chatbotScriptService.handleUserMessage(userId, message);
     }
