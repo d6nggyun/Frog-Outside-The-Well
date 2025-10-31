@@ -1,18 +1,11 @@
 package com._oormthon.seasonthon.domain.ai.controller;
 
-import com._oormthon.seasonthon.domain.ai.service.GeminiChatService;
 import com._oormthon.seasonthon.domain.ai.service.ChatbotScriptService;
 import com._oormthon.seasonthon.domain.ai.service.GeminiService;
 import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -5,6 +5,9 @@ import com._oormthon.seasonthon.domain.ai.entity.UserConversation;
 import com._oormthon.seasonthon.domain.ai.enums.ConversationState;
 import com._oormthon.seasonthon.domain.ai.repository.UserConversationRepository;
 import com._oormthon.seasonthon.domain.ai.scripts.ChatbotScript;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,7 @@ public class GeminiChatService {
     private final UserConversationRepository conversationRepo;
     private final GeminiApiClient geminiApiClient;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final ObjectMapper objectMapper = new ObjectMapper(); // ✅ JSON 파싱용
 
     public GeminiChatService(UserConversationRepository repo, GeminiApiClient client) {
         this.conversationRepo = repo;
@@ -31,7 +35,8 @@ public class GeminiChatService {
     /**
      * 사용자 메시지를 단계별로 처리하고 필요 시 Gemini SSE 응답 Flux로 반환
      */
-    public Flux<String> handleUserMessageStream(Long userId, String userMessage) {
+    public Flux<String> handleUserMessageStream(Long userId, String userMessageJson) {
+        String userMessage = extractMessage(userMessageJson);
         return Mono.defer(() -> Mono.fromCallable(() -> processUserMessage(userId, userMessage)))
                 .flatMapMany(result -> {
                     if (result.isStreaming()) {
@@ -48,6 +53,16 @@ public class GeminiChatService {
                 .doOnSubscribe(sub -> log.info("💬 [{}] 사용자 입력 처리 시작: {}", userId, userMessage))
                 .doOnError(e -> log.error("💥 handleUserMessageStream error: {}", e.getMessage(), e))
                 .onErrorResume(e -> Flux.just("죄송해 😢 잠시 문제가 생겼어. 다시 시도해줄래?"));
+    }
+
+    private String extractMessage(String userMessageJson) {
+        try {
+            JsonNode node = objectMapper.readTree(userMessageJson);
+            return node.has("message") ? node.get("message").asText().trim() : "";
+        } catch (Exception e) {
+            log.error("💥 userMessage JSON 파싱 실패: {}", userMessageJson, e);
+            return "";
+        }
     }
 
     /**
