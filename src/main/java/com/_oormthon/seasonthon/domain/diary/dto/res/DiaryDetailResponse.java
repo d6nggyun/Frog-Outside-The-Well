@@ -4,7 +4,7 @@ import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogAfter;
 import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogBefore;
 import com._oormthon.seasonthon.domain.dailyLog.enums.CompletionLevel;
 import com._oormthon.seasonthon.domain.dailyLog.enums.Mood;
-import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.enums.WeatherType;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodayCompletedTodoResponse;
 
 import java.time.LocalDate;
@@ -12,44 +12,42 @@ import java.util.List;
 
 public record DiaryDetailResponse(
 
-        LocalDate date,
+                LocalDate date,
 
-        List<TodayCompletedTodoResponse> todayCompletedTodoResponses,
+                List<TodayCompletedTodoResponse> todayCompletedTodoResponses,
 
-        Integer emotion,
+                Integer emotion,
 
-        Integer energy,
+                Integer energy,
 
-        PlaceType place,
+                WeatherType weather,
 
-        Mood mood,
+                Mood mood,
 
-        Integer focusLevel,
+                Integer focusLevel,
 
-        CompletionLevel completionLevel,
+                CompletionLevel completionLevel,
 
-        String memo,
+                String memo,
 
-        String photoUrl
+                String photoUrl
 
 ) {
-    public static DiaryDetailResponse of(
-            LocalDate date,
-            List<TodayCompletedTodoResponse> todayCompletedTodoResponses,
-            DailyLogBefore dailyLogBefore,
-            DailyLogAfter dailyLogAfter
-    ) {
-        return new DiaryDetailResponse(
-                date,
-                todayCompletedTodoResponses,
-                dailyLogBefore.getEmotion(),
-                dailyLogBefore.getEnergy(),
-                dailyLogBefore.getPlace(),
-                dailyLogAfter.getMood(),
-                dailyLogAfter.getFocusLevel(),
-                dailyLogAfter.getCompletionLevel(),
-                dailyLogAfter.getMemo(),
-                dailyLogAfter.getPhotoUrl()
-        );
-    }
+        public static DiaryDetailResponse of(
+                        LocalDate date,
+                        List<TodayCompletedTodoResponse> todayCompletedTodoResponses,
+                        DailyLogBefore dailyLogBefore,
+                        DailyLogAfter dailyLogAfter) {
+                return new DiaryDetailResponse(
+                                date,
+                                todayCompletedTodoResponses,
+                                dailyLogBefore.getEmotion(),
+                                dailyLogBefore.getEnergy(),
+                                dailyLogBefore.getWeather(),
+                                dailyLogAfter.getMood(),
+                                dailyLogAfter.getFocusLevel(),
+                                dailyLogAfter.getCompletionLevel(),
+                                dailyLogAfter.getMemo(),
+                                dailyLogAfter.getPhotoUrl());
+        }
 }

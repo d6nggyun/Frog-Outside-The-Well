@@ -10,7 +10,7 @@ import com._oormthon.seasonthon.domain.dailyLog.repository.DailyLogAfterReposito
 import com._oormthon.seasonthon.domain.dailyLog.repository.DailyLogBeforeRepository;
 import com._oormthon.seasonthon.domain.member.entity.*;
 import com._oormthon.seasonthon.domain.dailyLog.service.DailyLogService;
-import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.enums.WeatherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,28 +47,28 @@ public class DailyLogServiceImpl implements DailyLogService {
                 return DailyLogAfterResponse.fromEntity(saved);
         }
 
-        // ===== 이번 주 PlaceType 합계 =====
+        // ===== 이번 주 WeatherType 합계 =====
         @Override
-        public Map<PlaceType, Long> getThisWeekPlaceTypeCount(Long userId) {
+        public Map<WeatherType, Long> getThisWeekWeatherTypeCount(Long userId) {
                 LocalDate today = LocalDate.now();
                 LocalDate start = today.with(DayOfWeek.MONDAY);
                 LocalDate end = today.with(DayOfWeek.SUNDAY);
 
                 List<DailyLogBefore> logs = dailyLogBeforeRepository.findByUserIdAndCreatedAtBetween(userId, start,
                                 end);
-                return calculatePlaceTypeCount(logs);
+                return calculateWeatherTypeCount(logs);
         }
 
-        // ===== 이번 달 PlaceType 합계 =====
+        // ===== 이번 달 WeatherType 합계 =====
         @Override
-        public Map<PlaceType, Long> getThisMonthPlaceTypeCount(Long userId) {
+        public Map<WeatherType, Long> getThisMonthWeatherTypeCount(Long userId) {
                 YearMonth month = YearMonth.now();
                 LocalDate start = month.atDay(1);
                 LocalDate end = month.atEndOfMonth();
 
                 List<DailyLogBefore> logs = dailyLogBeforeRepository.findByUserIdAndCreatedAtBetween(userId, start,
                                 end);
-                return calculatePlaceTypeCount(logs);
+                return calculateWeatherTypeCount(logs);
         }
 
         // ===== 오늘의 DailyLogBefore =====
@@ -92,8 +92,8 @@ public class DailyLogServiceImpl implements DailyLogService {
         }
 
         // ===== Helper =====
-        private Map<PlaceType, Long> calculatePlaceTypeCount(List<DailyLogBefore> logs) {
+        private Map<WeatherType, Long> calculateWeatherTypeCount(List<DailyLogBefore> logs) {
                 return logs.stream()
-                                .collect(Collectors.groupingBy(DailyLogBefore::getPlace, Collectors.counting()));
+                                .collect(Collectors.groupingBy(DailyLogBefore::getWeather, Collectors.counting()));
         }
 }

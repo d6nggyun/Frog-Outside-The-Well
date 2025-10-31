@@ -4,7 +4,7 @@ import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogAfterRequest
 import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogBeforeRequest;
 import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogAfterResponse;
 import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogBeforeResponse;
-import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.enums.WeatherType;
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.dailyLog.service.DailyLogService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/daily-log")
 @RequiredArgsConstructor
-public class DailyLogController implements DailyLogApiSpecification{
+public class DailyLogController implements DailyLogApiSpecification {
 
     private final DailyLogService dailyLogService;
 
@@ -56,15 +56,15 @@ public class DailyLogController implements DailyLogApiSpecification{
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
-    @GetMapping("/before/place/this-week")
-    public ResponseEntity<Map<PlaceType, Long>> getThisWeekPlaceType(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(dailyLogService.getThisWeekPlaceTypeCount(user.getUserId()));
+    @GetMapping("/before/Weather/this-week")
+    public ResponseEntity<Map<WeatherType, Long>> getThisWeekWeatherType(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(dailyLogService.getThisWeekWeatherTypeCount(user.getUserId()));
     }
 
-    // 이번 달 PlaceType 합계
-    @GetMapping("/before/place/this-month")
-    public ResponseEntity<Map<PlaceType, Long>> getThisMonthPlaceType(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(dailyLogService.getThisMonthPlaceTypeCount(user.getUserId()));
+    // 이번 달 WeatherType 합계
+    @GetMapping("/before/Weather/this-month")
+    public ResponseEntity<Map<WeatherType, Long>> getThisMonthWeatherType(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(dailyLogService.getThisMonthWeatherTypeCount(user.getUserId()));
     }
 
 }

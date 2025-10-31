@@ -5,7 +5,7 @@ import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogBeforeReques
 import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogAfterResponse;
 import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogBeforeResponse;
 import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.enums.WeatherType;
 
 import java.util.Map;
 import java.util.Optional;
@@ -22,8 +22,8 @@ public interface DailyLogService {
 
     Optional<DailyLogAfterResponse> getTodayAfter(Long userId);
 
-    // ===== PlaceType 합계 (userId별) =====
-    Map<PlaceType, Long> getThisWeekPlaceTypeCount(Long userId);
+    // ===== WeatherType 합계 (userId별) =====
+    Map<WeatherType, Long> getThisWeekWeatherTypeCount(Long userId);
 
-    Map<PlaceType, Long> getThisMonthPlaceTypeCount(Long userId);
+    Map<WeatherType, Long> getThisMonthWeatherTypeCount(Long userId);
 }

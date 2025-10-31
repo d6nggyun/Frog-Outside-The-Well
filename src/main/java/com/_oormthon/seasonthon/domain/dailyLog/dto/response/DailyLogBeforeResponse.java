@@ -1,7 +1,7 @@
 package com._oormthon.seasonthon.domain.dailyLog.dto.response;
 
 import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogBefore;
-import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.enums.WeatherType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
@@ -17,7 +17,7 @@ public record DailyLogBeforeResponse(
 
         @Schema(description = "에너지 (1~5)", example = "4") int energy,
 
-        @Schema(description = "장소", example = "HOME") PlaceType place,
+        @Schema(description = "날씨씨", example = "SUNNY") WeatherType weather,
 
         @Schema(description = "작성 날짜", example = "2025-09-07") LocalDate createdAt
 
@@ -29,7 +29,7 @@ public record DailyLogBeforeResponse(
                 entity.getEmotion(),
                 entity.getUserId(),
                 entity.getEnergy(),
-                entity.getPlace(),
+                entity.getWeather(),
                 entity.getCreatedAt());
     }
 }

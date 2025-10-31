@@ -30,6 +30,11 @@ public class SecurityConfig {
                         "/oauth2/**",
                         "/login/oauth2/**"
         };
+        private static final String[] AI_WHITELIST = {
+                        "/api/v1/ai/connect/**",
+                        "/api/v1/ai/send/**",
+                        "/api/v1/ai/**"
+        };
 
         private final JwtFilter jwtFilter;
         private final JwtExceptionFilter jwtExceptionFilter;

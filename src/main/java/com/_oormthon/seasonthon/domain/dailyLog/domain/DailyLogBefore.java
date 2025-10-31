@@ -8,7 +8,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com._oormthon.seasonthon.domain.dailyLog.dto.request.DailyLogBeforeRequest;
-import com._oormthon.seasonthon.domain.dailyLog.enums.PlaceType;
+import com._oormthon.seasonthon.domain.dailyLog.enums.WeatherType;
 
 import java.time.LocalDate;
 
@@ -43,7 +43,7 @@ public class DailyLogBefore {
     // 장소 (집, 직장, 카페, 도서관, 강의실, 기타)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private PlaceType place;
+    private WeatherType weather;
 
     // 작성날 (자동 저장)
     @CreationTimestamp
@@ -55,7 +55,7 @@ public class DailyLogBefore {
                 .userId(user.getUserId())
                 .emotion(dailyLogBeforeRequest.emotion())
                 .energy(dailyLogBeforeRequest.energy())
-                .place(dailyLogBeforeRequest.place())
+                .weather(dailyLogBeforeRequest.weather())
                 .build();
     }
 
