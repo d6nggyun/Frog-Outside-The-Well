@@ -58,8 +58,11 @@ public class StepService {
                 .findAllStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
         List<StepResponse> missedStepResponses = stepQueryService
                 .findAllMissedStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
+        List<StepResponse> completedMissedStepResponses = stepQueryService
+                .findAllCompletedMissedStepsByUserIdAndStepDate(user.getUserId(),
+                        LocalDate.now().minusDays(1), LocalDate.now());
 
-        return OneStepResponse.of(todayStepResponses, missedStepResponses);
+        return OneStepResponse.of(todayStepResponses, missedStepResponses, completedMissedStepResponses);
     }
 
     @Transactional(readOnly = true)
@@ -68,8 +71,11 @@ public class StepService {
                 .findAllStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId, LocalDate.now());
         List<StepResponse> missedStepResponses = stepQueryService
                 .findAllMissedStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId, LocalDate.now());
+        List<StepResponse> completedMissedStepResponses = stepQueryService
+                .findAllCompletedMissedStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId,
+                        LocalDate.now().minusDays(1), LocalDate.now());
 
-        return OneStepResponse.of(todayStepResponses, missedStepResponses);
+        return OneStepResponse.of(todayStepResponses, missedStepResponses, completedMissedStepResponses);
     }
 
     @Transactional

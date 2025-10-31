@@ -54,6 +54,10 @@ public class StepQueryService {
         return todoStepRepository.findAllMissedStepResponseByUserIdAndStepDate(userId, now);
     }
 
+    public List<StepResponse> findAllCompletedMissedStepsByUserIdAndStepDate(Long userId, LocalDate yesterday, LocalDate now) {
+        return todoStepRepository.findAllCompletedMissedStepResponseByUserIdAndStepDate(userId, yesterday, now);
+    }
+
     public List<TodoStep> getAllTodoStepByTodoId(Long todoId) {
         return todoStepRepository.findAllByTodoId(todoId);
     }
@@ -68,5 +72,9 @@ public class StepQueryService {
 
     public List<StepResponse> findAllMissedStepsByUserIdAndTodoIdAndStepDate(Long userId, Long todoId, LocalDate date) {
         return todoStepRepository.findAllMissedStepResponseByUserIdAndStepDateAndTodoId(userId, todoId, date);
+    }
+
+    public List<StepResponse> findAllCompletedMissedStepsByUserIdAndTodoIdAndStepDate(Long userId, Long todoId, LocalDate yesterday, LocalDate now) {
+        return todoStepRepository.findAllCompletedMissedStepResponseByUserIdAndStepDateAndTodoId(userId, todoId, yesterday, now);
     }
 }

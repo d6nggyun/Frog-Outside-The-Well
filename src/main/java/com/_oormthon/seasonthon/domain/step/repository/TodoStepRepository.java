@@ -39,10 +39,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
     )
     FROM TodoStep ts
     WHERE ts.userId = :userId
-    AND (
-        (ts.stepDate < :stepDate AND ts.isCompleted = false)
-        OR (ts.stepDate = :stepDate AND ts.isCompleted = true)
-        )
+    AND ts.stepDate < :stepDate AND ts.isCompleted = false
 """)
     List<StepResponse> findAllMissedStepResponseByUserIdAndStepDate(Long userId, LocalDate stepDate);
 
@@ -87,4 +84,33 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
     int countByUserIdAndStepDate(Long userId, LocalDate stepDate);
 
     int countByUserIdAndIsCompletedTrueAndStepDate(Long userId, LocalDate stepDate);
+
+    @Query("""
+    SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
+        ts.id,
+        ts.stepDate,
+        ts.description,
+        ts.isCompleted
+    )
+    FROM TodoStep ts
+    WHERE ts.userId = :userId
+    AND ts.stepDate < :now AND ts.isCompleted = true
+    AND ts.completedDate BETWEEN :yesterday AND :now
+""")
+    List<StepResponse> findAllCompletedMissedStepResponseByUserIdAndStepDate(Long userId, LocalDate yesterday, LocalDate now);
+
+    @Query("""
+                SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
+                    ts.id,
+                    ts.stepDate,
+                    ts.description,
+                    ts.isCompleted
+                )
+                FROM TodoStep ts
+                WHERE ts.userId = :userId
+                AND ts.todoId =:todoId
+                AND ts.stepDate < :now AND ts.isCompleted = true
+                AND ts.completedDate BETWEEN :yesterday AND :now
+            """)
+    List<StepResponse> findAllCompletedMissedStepResponseByUserIdAndStepDateAndTodoId(Long userId, Long todoId, LocalDate yesterday, LocalDate now);
 }

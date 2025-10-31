@@ -10,10 +10,14 @@ public record OneStepResponse(
         List<StepResponse> todayStepResponses,
 
         @Schema(description = "놓친 한 걸음")
-        List<StepResponse> missedStepResponses
+        List<StepResponse> missedStepResponses,
+
+        @Schema(description = "놓친 한 걸음 중 오늘 완료된 한 걸음")
+        List<StepResponse> completedMissedStepResponses
 
 ) {
-    public static OneStepResponse of(List<StepResponse> todayStepResponses, List<StepResponse> missedStepResponses) {
-        return new OneStepResponse(todayStepResponses, missedStepResponses);
+    public static OneStepResponse of(List<StepResponse> todayStepResponses, List<StepResponse> missedStepResponses,
+                                     List<StepResponse> completedMissedStepResponses) {
+        return new OneStepResponse(todayStepResponses, missedStepResponses, completedMissedStepResponses);
     }
 }
