@@ -30,6 +30,7 @@ public class SecurityConfig {
                         "/oauth2/**",
                         "/login/oauth2/**"
         };
+
         private static final String[] AI_WHITELIST = {
                         "/api/v1/ai/connect/**",
                         "/api/v1/ai/send/**",
@@ -43,33 +44,35 @@ public class SecurityConfig {
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-                return http
-                                // 기본 보안 설정 비활성화
+
+                // ===== 공통 설정 =====
+                http
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .cors(Customizer.withDefaults())
                                 .httpBasic(AbstractHttpConfigurer::disable)
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .logout(AbstractHttpConfigurer::disable)
-
-                                // 세션 대신 JWT 사용
                                 .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-                                // 권한 설정
+                // ===== AI API는 완전 자유 접근, OAuth2Login 필터 제외 =====
+                http.securityMatcher(AI_WHITELIST)
+                                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+
+                // ===== Swagger / JWT 테스트 / OAuth2 로그인 관련 요청 =====
+                http.securityMatcher("/**")
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(SWAGGER_WHITELIST).permitAll()
                                                 .requestMatchers(JWT_WHITELIST).permitAll()
                                                 .anyRequest().authenticated())
-
-                                // OAuth2 설정
                                 .oauth2Login(oauth -> oauth
                                                 .userInfoEndpoint(user -> user.userService(oAuth2UserService))
-                                                .successHandler(oAuth2SuccessHandler))
+                                                .successHandler(oAuth2SuccessHandler));
 
-                                // JWT 필터 등록
-                                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                                .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
+                // ===== JWT 필터 추가 =====
+                http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                http.addFilterBefore(jwtExceptionFilter, JwtFilter.class);
 
-                                .build();
+                return http.build();
         }
 }
