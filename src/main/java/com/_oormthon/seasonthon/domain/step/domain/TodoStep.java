@@ -41,6 +41,12 @@ public class TodoStep {
     @Column(name = "is_completed", nullable = false)
     private Boolean isCompleted = false;
 
+    @Column(name = "completed_date")
+    private LocalDate completedDate;
+
+    @Column(name = "total_duration")
+    private long totalDuration = 0L;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -76,7 +82,12 @@ public class TodoStep {
         return this.isCompleted;
     }
 
-    public void completeStep() {
+    public void completeStep(LocalDateTime endTime) {
+        this.completedDate = LocalDate.from(endTime);
         this.isCompleted = true;
+    }
+
+    public void updateTotalDuration(Long duration) {
+        this.totalDuration += duration;
     }
 }

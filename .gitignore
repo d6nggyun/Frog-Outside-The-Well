@@ -38,4 +38,5 @@ out/
 
 application.yml
 
-frog.log
+/logging.file.path_IS_UNDEFINED
+/frog/logs

@@ -4,6 +4,7 @@ import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.enums.Day;
+import com._oormthon.seasonthon.domain.todo.enums.TodoType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -52,13 +53,16 @@ public class Todo {
     @Enumerated(EnumType.STRING)
     private List<Day> expectedDays;
 
+    @Enumerated(EnumType.STRING)
+    private TodoType todoType;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDate createdAt;
 
     @Builder
     private Todo(Long userId, String title, String content, LocalDate startDate,
-                 LocalDate endDate, Integer progress, List<Day> expectedDays, Boolean isCompleted) {
+                 LocalDate endDate, Integer progress, List<Day> expectedDays, Boolean isCompleted, TodoType todoType) {
         this.userId = userId;
         this.title = title;
         this.content = content;
@@ -67,6 +71,7 @@ public class Todo {
         this.progress = progress;
         this.expectedDays = expectedDays;
         this.isCompleted = isCompleted;
+        this.todoType = todoType;
     }
 
     public static Todo createTodo(User user, TodoRequest todoRequest) {
@@ -79,6 +84,7 @@ public class Todo {
                 .progress(0)
                 .expectedDays(todoRequest.expectedDays())
                 .isCompleted(false)
+                .todoType(todoRequest.todoType())
                 .build();
     }
 

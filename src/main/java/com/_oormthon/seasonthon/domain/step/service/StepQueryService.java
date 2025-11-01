@@ -1,9 +1,7 @@
 package com._oormthon.seasonthon.domain.step.service;
 
-import com._oormthon.seasonthon.domain.step.domain.StepRecord;
-import com._oormthon.seasonthon.domain.step.domain.TodoDurationGroup;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
-import com._oormthon.seasonthon.domain.step.repository.StepRecordRepository;
+import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
@@ -20,7 +18,6 @@ import java.util.List;
 public class StepQueryService {
 
     private final TodoStepRepository todoStepRepository;
-    private final StepRecordRepository stepRecordRepository;
 
     public TodoStep getTodoStepById(Long stepId) {
         return todoStepRepository.findById(stepId)
@@ -30,18 +27,6 @@ public class StepQueryService {
                 });
     }
 
-    public StepRecord getStepRecordByStepId(Long stepId) {
-        return stepRecordRepository.findByStepId(stepId)
-                .orElseThrow(() -> {
-                    log.warn("[StepRecord 조회 실패] 존재하지 않는 stepId Id: {}", stepId);
-                    return new CustomException(ErrorCode.STEP_RECORD_NOT_FOUND);
-                });
-    }
-
-    public List<TodoStep> findAllByUserIdAndStepDate(Long userId, LocalDate now) {
-        return todoStepRepository.findAllByUserIdAndStepDate(userId, now);
-    }
-
     public void validateStepOwnership(Long userId, Long stepId) {
         if (!todoStepRepository.existsByIdAndUserId(stepId, userId)) {
             log.warn("[Step 작업 실패] Step Id: {}, User Id: {} - 권한 없음", stepId, userId);
@@ -49,11 +34,11 @@ public class StepQueryService {
         }
     }
 
-    public int countTodoStepsByUserIdAndDate(Long userId, LocalDate date) {
+    public int countTodoStepsByUserIdAndStepDate(Long userId, LocalDate date) {
         return todoStepRepository.countByUserIdAndStepDate(userId, date);
     }
 
-    public int countCompletedTodoStepsByUserIdAndDate(Long userId, LocalDate date) {
+    public int countCompletedTodoStepsByUserIdAndStepDate(Long userId, LocalDate date) {
         return todoStepRepository.countByUserIdAndIsCompletedTrueAndStepDate(userId, date);
     }
 
@@ -61,11 +46,35 @@ public class StepQueryService {
         return todoStepRepository.findAllByStepDateAndUserId(localDate, userId);
     }
 
-    public List<StepRecord> getStepRecordsByUserIdAndDate(Long userId, LocalDate date) {
-        return stepRecordRepository.findAllByUserIdAndCreatedAt(userId, date);
+    public List<StepResponse> findAllStepsByUserIdAndStepDate(Long userId, LocalDate now) {
+        return todoStepRepository.findAllStepResponseByUserIdAndStepDate(userId, now);
     }
 
-    public List<TodoDurationGroup> findTodoDurationGroup(Long userId, LocalDate date) {
-        return stepRecordRepository.findTodoDurationGroup(userId, date);
+    public List<StepResponse> findAllMissedStepsByUserIdAndStepDate(Long userId, LocalDate now) {
+        return todoStepRepository.findAllMissedStepResponseByUserIdAndStepDate(userId, now);
+    }
+
+    public List<StepResponse> findAllCompletedMissedStepsByUserIdAndStepDate(Long userId, LocalDate yesterday, LocalDate now) {
+        return todoStepRepository.findAllCompletedMissedStepResponseByUserIdAndStepDate(userId, yesterday, now);
+    }
+
+    public List<TodoStep> getAllTodoStepByTodoId(Long todoId) {
+        return todoStepRepository.findAllByTodoId(todoId);
+    }
+  
+    public List<TodoStep> getTodoStepsByUserIdAndMonth(Long userId, LocalDate startDate, LocalDate endDate) {
+        return todoStepRepository.findAllTodoStepOverlappingPeriod(userId, startDate, endDate);
+    }
+
+    public List<StepResponse> findAllStepsByUserIdAndTodoIdAndStepDate(Long userId, Long todoId, LocalDate date) {
+        return todoStepRepository.findAllStepResponseByUserIdAndStepDateAndTodoId(userId, todoId, date);
+    }
+
+    public List<StepResponse> findAllMissedStepsByUserIdAndTodoIdAndStepDate(Long userId, Long todoId, LocalDate date) {
+        return todoStepRepository.findAllMissedStepResponseByUserIdAndStepDateAndTodoId(userId, todoId, date);
+    }
+
+    public List<StepResponse> findAllCompletedMissedStepsByUserIdAndTodoIdAndStepDate(Long userId, Long todoId, LocalDate yesterday, LocalDate now) {
+        return todoStepRepository.findAllCompletedMissedStepResponseByUserIdAndStepDateAndTodoId(userId, todoId, yesterday, now);
     }
 }

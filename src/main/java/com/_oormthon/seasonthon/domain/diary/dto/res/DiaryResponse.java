@@ -1,6 +1,6 @@
 package com._oormthon.seasonthon.domain.diary.dto.res;
 
-import com._oormthon.seasonthon.domain.member.enums.Mood;
+import com._oormthon.seasonthon.domain.dailyLog.enums.Mood;
 
 import java.time.LocalDate;
 

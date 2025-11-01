@@ -1,17 +1,15 @@
 package com._oormthon.seasonthon.domain.step.service;
 
-import com._oormthon.seasonthon.domain.StepCalendar.domain.StepCalendar;
-import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarQueryService;
-import com._oormthon.seasonthon.domain.StepCalendar.service.StepCalendarService;
 import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.step.domain.StepRecord;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequestId;
-import com._oormthon.seasonthon.domain.step.dto.res.StepRecordResponse;
+import com._oormthon.seasonthon.domain.step.dto.res.OneStepResponse;
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
-import com._oormthon.seasonthon.domain.step.repository.StepRecordRepository;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
+import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarQueryService;
+import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarService;
+import com._oormthon.seasonthon.domain.stepRecord.service.StepRecordQueryService;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.enums.TodoText;
@@ -20,14 +18,13 @@ import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,11 +34,11 @@ import java.util.stream.Collectors;
 public class StepService {
 
     private final TodoStepRepository todoStepRepository;
-    private final StepRecordRepository stepRecordRepository;
     private final StepQueryService stepQueryService;
     private final TodoQueryService todoQueryService;
     private final StepCalendarService stepCalendarService;
     private final StepCalendarQueryService stepCalendarQueryService;
+    private final StepRecordQueryService stepRecordQueryService;
 
     @Transactional(readOnly = true)
     public TodoStepResponse getTodoSteps(User user, Long todoId) {
@@ -52,43 +49,33 @@ public class StepService {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todoId);
         String progressText = createProgressText(todo.getProgress());
 
-        return TodoStepResponse.of(todo, progressText,
-                todoSteps.stream().map(todoStep ->  StepResponse.of(todo, todoStep)).toList());
+        return TodoStepResponse.of(todo, progressText, todoSteps.stream().map(StepResponse::of).toList());
     }
 
-    @Transactional
-    public StepRecordResponse startStep(User user, Long stepId) {
-        stepQueryService.getTodoStepById(stepId);
-        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
+    @Transactional(readOnly = true)
+    public OneStepResponse getOneSteps(User user) {
+        List<StepResponse> todayStepResponses = stepQueryService
+                .findAllStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
+        List<StepResponse> missedStepResponses = stepQueryService
+                .findAllMissedStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
+        List<StepResponse> completedMissedStepResponses = stepQueryService
+                .findAllCompletedMissedStepsByUserIdAndStepDate(user.getUserId(),
+                        LocalDate.now().minusDays(1), LocalDate.now());
 
-        TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
-        Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
-
-        completeStep(todoStep);
-        StepCalendar stepCalendar = stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
-        stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
-
-        List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(LocalDate.now(), user.getUserId());
-        Boolean isCompletedTodaySteps = todoSteps.stream().allMatch(TodoStep::getIsCompleted);
-
-        return StepRecordResponse.of(startOrGetStepRecord(todoStep.getUserId(), stepId), todo.getProgress(), isCompletedTodaySteps);
+        return OneStepResponse.of(todayStepResponses, missedStepResponses, completedMissedStepResponses);
     }
 
-    @Transactional
-    public StepRecordResponse stopStep(User user, Long stepId) {
-        TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
-        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
+    @Transactional(readOnly = true)
+    public OneStepResponse getOneStepsWithTodoId(User user, Long todoId) {
+        List<StepResponse> todayStepResponses = stepQueryService
+                .findAllStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId, LocalDate.now());
+        List<StepResponse> missedStepResponses = stepQueryService
+                .findAllMissedStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId, LocalDate.now());
+        List<StepResponse> completedMissedStepResponses = stepQueryService
+                .findAllCompletedMissedStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId,
+                        LocalDate.now().minusDays(1), LocalDate.now());
 
-        StepRecord stepRecord = stepQueryService.getStepRecordByStepId(stepId);
-
-        Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
-
-        stepRecord.stopStep();
-
-        List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(LocalDate.now(), user.getUserId());
-        Boolean isCompletedTodaySteps = todoSteps.stream().allMatch(TodoStep::getIsCompleted);
-
-        return StepRecordResponse.of(stepRecord, todo.getProgress(), isCompletedTodaySteps);
+        return OneStepResponse.of(todayStepResponses, missedStepResponses, completedMissedStepResponses);
     }
 
     @Transactional
@@ -149,56 +136,37 @@ public class StepService {
 
     @Transactional
     public List<StepResponse> deleteStep(User user, Long stepId) {
-        stepQueryService.getTodoStepById(stepId);
-        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
-
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
+        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
+        LocalDate date = todoStep.getStepDate();
 
         stepCalendarQueryService.deleteByTodoSteps(List.of(todoStep));
-
         todoStepRepository.deleteById(stepId);
+        stepRecordQueryService.deleteByStepId(stepId);
+        stepCalendarService.saveAndUpdateStepCalendar(user.getUserId(), date);
 
         return newTodoStepResponse(todo);
-    }
-
-    private void completeStep(TodoStep todoStep) {
-        if (todoStep.isCompleted())
-            return;
-        todoStep.completeStep();
-
-        Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
-        List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
-
-        long completedStepsCount = todoSteps.stream().filter(TodoStep::isCompleted).count();
-        int progress = (int) ((completedStepsCount * 100) / todoSteps.size());
-
-        todo.updateProgress(progress);
-        if (progress == 100) todo.completeTodo();
-    }
-
-    private StepRecord startOrGetStepRecord(Long userId, Long stepId) {
-        return stepRecordRepository.findByUserIdAndStepId(userId, stepId)
-                .map(existingRecord -> {
-                    existingRecord.startStep(stepId, userId);
-
-                    return existingRecord;
-                })
-                .orElseGet(() -> stepRecordRepository.save(StepRecord.createStepRecord(stepId, userId)));
     }
 
     private List<StepResponse> newTodoStepResponse(Todo todo) {
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
 
-        return todoSteps.stream().map(todoStep -> StepResponse.of(todo, todoStep)).toList();
+        return todoSteps.stream().map(StepResponse::of).toList();
     }
 
     private String createProgressText(Integer progress) {
-        if (progress == 100) return TodoText.PROGRESS_100.getText();
-        else if (progress > 80) return TodoText.PROGRESS_80.getText();
-        else if (progress > 50) return TodoText.PROGRESS_50.getText();
-        else if (progress > 20) return TodoText.PROGRESS_20.getText();
-        else if (progress >= 0) return TodoText.PROGRESS_0.getText();
-        else throw new CustomException(ErrorCode.TODO_PROGRESS_NOT_VALID);
+        if (progress == 100)
+            return TodoText.PROGRESS_100.getText();
+        else if (progress > 80)
+            return TodoText.PROGRESS_80.getText();
+        else if (progress > 50)
+            return TodoText.PROGRESS_50.getText();
+        else if (progress > 20)
+            return TodoText.PROGRESS_20.getText();
+        else if (progress >= 0)
+            return TodoText.PROGRESS_0.getText();
+        else
+            throw new CustomException(ErrorCode.TODO_PROGRESS_NOT_VALID);
     }
 }
