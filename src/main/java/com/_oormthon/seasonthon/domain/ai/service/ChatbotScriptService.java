@@ -1,6 +1,6 @@
 package com._oormthon.seasonthon.domain.ai.service;
 
-import com._oormthon.seasonthon.domain.ai.repository.UserConversationRepository;
+// import com._oormthon.seasonthon.domain.ai.repository.UserConversationRepository;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,15 +18,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatbotScriptService {
 
     private final GeminiChatService geminiChatService;
-    private final UserConversationRepository userConversationRepository;
 
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final Map<Long, Disposable> activeStreams = new ConcurrentHashMap<>();
 
-    public ChatbotScriptService(GeminiChatService geminiChatService,
-            UserConversationRepository userConversationRepository) {
+    public ChatbotScriptService(GeminiChatService geminiChatService) {
         this.geminiChatService = geminiChatService;
-        this.userConversationRepository = userConversationRepository;
     }
 
     /**

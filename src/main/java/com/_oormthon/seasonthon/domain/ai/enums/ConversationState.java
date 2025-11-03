@@ -1,8 +1,6 @@
 package com._oormthon.seasonthon.domain.ai.enums;
 
 public enum ConversationState {
-    ACTIVE,
-    COMPLETED,
 
     INTRO, // 챗봇 자기소개
     ASK_READY, // "준비됐어?" 질문

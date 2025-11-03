@@ -39,8 +39,23 @@ public class ChatbotScript {
                 return age + "살이면 " + school + "이겠구나! 👍\n이번에 이루고 싶은 목표가 뭐야? 예를 들어 ‘토익 800점 달성’ 같은 거!";
         }
 
-        public static String askStartDate(String goal) {
-                return "좋아! '" + goal + "'를 목표로 해볼게.\n언제부터 시작할까? (yyyy-MM-dd 형식)(예: 2025-11-01)";
+        public static String planDetail(String title) {
+                return String.format(
+                                """
+                                                    당신은 일정 관리 보조 AI입니다.
+                                                    사용자가 제시한 할 일 제목을 기반으로 할 일에 대한한 설명을 생성하세요.
+                                                    설명은 '~있어' 또는 '~이야' 등의 형태로 자연스럽게 끝나야 합니다.
+                                                    예시:
+                                                    입력: '박태웅의 AI특강으로 독후감'
+                                                    출력: '박태웅 의장의 AI 특강은 AI 기술의 발전이 우리 삶과 경제 구조에 미치는 영향, 그리고 이에 따른 사회적 변화와 윤리적 고려사항을 다루고 있어.'
+
+                                                    입력: '%s'
+                                                """
+                                                .formatted(title));
+        }
+
+        public static String askStartDate(String content, String goal) {
+                return content + "\n이제 '" + goal + "'를 목표로 계획을 짜볼게.\n언제부터 시작할까? (yyyy-MM-dd 형식)(예: 2025-11-01)";
         }
 
         public static String askEndDate(LocalDate start) {
@@ -64,7 +79,9 @@ public class ChatbotScript {
 
                                 [사용자 정보]
                                 - 이름: %s
-                                - 목표: %s
+                                - 나이: %d
+                                - 주제: %s
+                                - 업무 설명: %s
                                 - 기간: %s ~ %s
                                 - 공부 요일: %s
                                 - 하루 공부 시간: %d분
@@ -91,8 +108,10 @@ public class ChatbotScript {
                                     ]
                                 }
                                                                 """,
-                                convo.getUserAge(), convo.getUserName(),
-                                convo.getCurrentGoal(),
+                                convo.getUserName(),
+                                convo.getUserAge(),
+                                convo.getTitle(),
+                                convo.getContent(),
                                 convo.getStartDate().format(formatter),
                                 convo.getEndDate().format(formatter),
                                 convo.getStudyDays(),

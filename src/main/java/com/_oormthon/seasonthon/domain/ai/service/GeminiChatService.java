@@ -5,6 +5,11 @@ import com._oormthon.seasonthon.domain.ai.entity.UserConversation;
 import com._oormthon.seasonthon.domain.ai.enums.ConversationState;
 import com._oormthon.seasonthon.domain.ai.repository.UserConversationRepository;
 import com._oormthon.seasonthon.domain.ai.scripts.ChatbotScript;
+import com._oormthon.seasonthon.domain.step.domain.TodoStep;
+import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
+import com._oormthon.seasonthon.domain.todo.domain.Todo;
+import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
+import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -17,6 +22,8 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -24,12 +31,22 @@ public class GeminiChatService {
 
     private final UserConversationRepository conversationRepo;
     private final GeminiApiClient geminiApiClient;
+    private final TodoStepRepository todoStepRepository;
+    private final TodoRepository todoRepository;
+    // private final TodoQueryService todoQueryService;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final ObjectMapper objectMapper = new ObjectMapper(); // ✅ JSON 파싱용
 
-    public GeminiChatService(UserConversationRepository repo, GeminiApiClient client) {
+    private static final Pattern STEPS_JSON_PATTERN = Pattern.compile("\\{.*\"steps\"\\s*:\\s*\\[.*\\].*\\}",
+            Pattern.DOTALL);
+
+    public GeminiChatService(UserConversationRepository repo, GeminiApiClient client,
+            TodoStepRepository todoStepRepository,
+            TodoRepository todoRepository) {
         this.conversationRepo = repo;
         this.geminiApiClient = client;
+        this.todoStepRepository = todoStepRepository;
+        this.todoRepository = todoRepository;
     }
 
     /**
@@ -37,22 +54,22 @@ public class GeminiChatService {
      */
     public Flux<String> handleUserMessageStream(Long userId, String userMessageJson) {
         String userMessage = extractMessage(userMessageJson);
+        log.info("🆕 사용자 message userMessageJson={}", userMessageJson);
+
         return Mono.defer(() -> Mono.fromCallable(() -> processUserMessage(userId, userMessage)))
                 .flatMapMany(result -> {
                     if (result.isStreaming()) {
-                        // ✅ SSE 기반 Gemini 스트림 요청 후, 후속 문장 추가
+                        // ✅ SSE 기반 Gemini 스트림 요청
                         return geminiApiClient.generateStream(result.prompt())
-                                .concatWith(Flux.interval(Duration.ofSeconds(10)).map(tick -> "💓 연결 유지 중...").take(5)); // 50초간
-                                                                                                                         // 유지
-                        // .concatWith(Flux.just("\n\n이 계획으로 진행할까?"));
+                                .doOnNext(chunk -> trySaveTodoAndSteps(userId, chunk))
+                                .concatWith(Flux.just("✅ 계획 저장 완료"))
+                                .delayElements(Duration.ofMillis(80));
+
                     } else {
-                        // ✅ 일반 텍스트 응답
                         return Flux.just(result.response());
                     }
                 })
-                .doOnSubscribe(sub -> log.info("💬 [{}] 사용자 입력 처리 시작: {}", userId, userMessage))
-                .doOnError(e -> log.error("💥 handleUserMessageStream error: {}", e.getMessage(), e))
-                .onErrorResume(e -> Flux.just("죄송해 😢 잠시 문제가 생겼어. 다시 시도해줄래?"));
+                .onErrorResume(e -> Flux.just("미안해 😢 잠시 문제가 생겼어. 다시 시도해줄래?"));
     }
 
     private String extractMessage(String userMessageJson) {
@@ -62,6 +79,61 @@ public class GeminiChatService {
         } catch (Exception e) {
             log.error("💥 userMessage JSON 파싱 실패: {}", userMessageJson, e);
             return "";
+        }
+    }
+
+    /**
+     * SSE 스트림 내 JSON 블록을 감지하고 TodoStep 저장
+     */
+    @Transactional
+    protected void trySaveTodoAndSteps(Long userId, String dataChunk) {
+        try {
+            if (!dataChunk.contains("{") || !dataChunk.contains("steps"))
+                return;
+
+            // JSON 정리 및 파싱
+            String cleaned = dataChunk
+                    .replaceAll("(?s)```json", "")
+                    .replaceAll("(?s)```", "")
+                    .trim();
+
+            TodoStepResponse parsed = objectMapper.readValue(cleaned, TodoStepResponse.class);
+
+            // 현재 대화 상태 확인
+            UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
+            if (convo == null || convo.getTitle() == null)
+                return;
+
+            // ✅ Todo 생성
+            Todo todo = Todo.builder()
+                    .userId(userId)
+                    .title(convo.getTitle())
+                    .content(convo.getContent())
+                    .startDate(convo.getStartDate())
+                    .endDate(convo.getEndDate())
+                    .progress(0)
+                    .expectedDays(DayConverter.parseDays(convo.getStudyDays()))
+                    .build();
+            todoRepository.save(todo);
+
+            // ✅ TodoStep 생성 및 저장
+            List<TodoStep> todoSteps = parsed.steps().stream()
+                    .map(step -> TodoStep.builder()
+                            .todoId(todo.getId())
+                            .userId(userId)
+                            .stepDate(step.stepDate())
+                            .description(step.description())
+                            .isCompleted(step.isCompleted())
+                            .build())
+                    .toList();
+
+            todoStepRepository.saveAll(todoSteps);
+
+            log.info("💾 Todo({}) 및 {}개의 TodoStep 저장 완료 (userId={})",
+                    todo.getTitle(), todoSteps.size(), userId);
+
+        } catch (Exception e) {
+            log.debug("⚠️ JSON chunk는 계획 JSON이 아님, skip: {}", e.getMessage());
         }
     }
 
@@ -110,8 +182,16 @@ public class GeminiChatService {
                     }
                 }
                 case ASK_TASK -> {
-                    convo.setCurrentGoal(userMessage.trim());
-                    response = ChatbotScript.askStartDate(convo.getCurrentGoal());
+                    convo.setTitle(userMessage.trim());
+                    prompt = ChatbotScript.planDetail(userMessage.trim());
+                    geminiApiClient.generateStream(prompt)
+                            .collectList()
+                            .map(chunks -> String.join("", chunks))
+                            .map(text -> text.replaceAll("```", "").trim())
+                            .subscribe(description -> {
+                                convo.setContent(description);
+                            });
+                    response = ChatbotScript.askStartDate(convo.getContent(), convo.getTitle());
                     convo.setState(ConversationState.ASK_START_DATE);
                 }
                 case ASK_START_DATE -> {
@@ -141,7 +221,8 @@ public class GeminiChatService {
                 }
                 case ASK_TIME_PER_DAY -> {
                     try {
-                        convo.setDailyMinutes(Integer.parseInt(userMessage.trim()));
+                        int minutes = Integer.parseInt(userMessage.trim());
+                        convo.setDailyMinutes(minutes);
                         prompt = ChatbotScript.planPrompt(convo);
                         streaming = true; // ✅ Gemini SSE 호출 준비 완료
                         convo.setState(ConversationState.CONFIRM_PLAN);
