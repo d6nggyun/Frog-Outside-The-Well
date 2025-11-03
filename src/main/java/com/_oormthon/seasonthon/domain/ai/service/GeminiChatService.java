@@ -20,7 +20,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -35,215 +34,170 @@ public class GeminiChatService {
     private final GeminiApiClient geminiApiClient;
     private final TodoStepRepository todoStepRepository;
     private final TodoRepository todoRepository;
-    // private final TodoQueryService todoQueryService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private final ObjectMapper objectMapper = new ObjectMapper(); // ✅ JSON 파싱용
 
     private static final Pattern STEPS_JSON_PATTERN = Pattern.compile("\\{.*\"steps\"\\s*:\\s*\\[.*\\].*\\}",
             Pattern.DOTALL);
 
-    public GeminiChatService(UserConversationRepository repo, GeminiApiClient client,
+    public GeminiChatService(
+            UserConversationRepository conversationRepo,
+            GeminiApiClient geminiApiClient,
             TodoStepRepository todoStepRepository,
             TodoRepository todoRepository) {
-        this.conversationRepo = repo;
-        this.geminiApiClient = client;
+        this.conversationRepo = conversationRepo;
+        this.geminiApiClient = geminiApiClient;
         this.todoStepRepository = todoStepRepository;
         this.todoRepository = todoRepository;
     }
 
     /**
-     * 사용자 메시지를 단계별로 처리하고 필요 시 Gemini SSE 응답 Flux로 반환
+     * 사용자 입력 메시지 처리 (Gemini 스트리밍 포함)
      */
     public Flux<String> handleUserMessageStream(Long userId, String userMessageJson) {
         String userMessage = extractMessage(userMessageJson);
-        log.info("🆕 사용자 message userMessageJson={}", userMessageJson);
+        log.info("🗣 사용자 입력: {}", userMessage);
 
         return Mono.fromCallable(() -> processUserMessage(userId, userMessage))
                 .flatMapMany(result -> {
                     if (result.isStreaming()) {
-                        // 스트림에서 각 chunk 처리 -> JSON 블록 감지 시 DB 저장(블로킹) 오프로드
+                        // Gemini 스트림 응답 처리
                         return geminiApiClient.generateStream(result.prompt())
-                                // 각 chunk가 들어올 때 DB 저장 시도(필요 시)
                                 .flatMap(chunk -> trySaveTodoAndStepsReactive(userId, chunk, result.stepIndex())
-                                        // 저장 완료/skip 후 원본 chunk를 그대로 전달
                                         .thenReturn(chunk))
-                                // 스트림 끝에 완료 메시지 추가
-                                .concatWith(Flux.just("✅ 계획 저장 완료"));
+                                .concatWith(Mono.defer(() -> {
+                                    if (result.stepIndex() == 1) {
+                                        String content = conversationRepo.findByUserId(userId)
+                                                .map(UserConversation::getContent)
+                                                .orElse("");
+                                        String title = conversationRepo.findByUserId(userId)
+                                                .map(UserConversation::getTitle)
+                                                .orElse("");
+                                        return Mono.just(
+                                                ChatbotScript.askStartDate(content, title));
+                                    } else if (result.stepIndex() == 2) {
+                                        return Mono.just("✅ 계획 저장 완료");
+                                    } else {
+                                        return Mono.empty();
+                                    }
+                                }));
                     } else {
+                        // 일반 메시지 응답
                         return Flux.just(result.response());
                     }
                 })
                 .onErrorResume(e -> {
-                    log.error("스트림 처리 중 에러", e);
-                    return Flux.just("미안해 😢 잠시 문제가 생겼어. 다시 시도해줄래?");
+                    log.error("💥 스트림 처리 중 오류", e);
+                    return Flux.just("문제가 발생했어 😢 다시 시도해줄래?");
                 });
     }
 
+    /**
+     * JSON에서 "message" 필드 추출
+     */
     private String extractMessage(String userMessageJson) {
         try {
             JsonNode node = objectMapper.readTree(userMessageJson);
             return node.has("message") ? node.get("message").asText().trim() : "";
         } catch (Exception e) {
-            log.error("💥 userMessage JSON 파싱 실패: {}", userMessageJson, e);
+            log.error("💥 JSON 파싱 실패: {}", userMessageJson, e);
             return "";
         }
     }
 
     /**
-     * Reactive wrapper: 스트림 chunk를 검사해서 유효한 plan JSON이면 블로킹 저장을 boundedElastic에서 수행
+     * 단계별로 다른 저장 로직 수행 (Reactive Wrapper)
      */
     private Mono<Void> trySaveTodoAndStepsReactive(Long userId, String dataChunk, int stepIndex) {
-        // 빠르게 탐지: '{' 와 'steps' 가 없으면 바로 종료
-        if (stepIndex == 1) {
-            return Mono.fromCallable(() -> {
-                try {
-                    // convo 조회 (blocking)
-                    UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
-                    if (convo == null) {
-                        log.debug("대화 없음(userId={}), skip 저장", userId);
-                        return null;
-                    }
-                    convo.setContent(dataChunk);
-                    log.info("🆕 description 생성 content={}", dataChunk);
-
-                    // 중복 방지를 위해 convo에 flag 저장
-                    convo.setPlanSaved(true);
-                    conversationRepo.save(convo);
-
-                } catch (Exception e) {
-                    // 파싱 실패 등은 무해하게 무시(스트림 계속)
-                    log.debug("⚠️ JSON 파싱/저장 실패: {}", e.getMessage());
-                }
-                return null;
-            }).subscribeOn(Schedulers.boundedElastic()).then();
-        } else if (stepIndex == 2) {
-            if (dataChunk == null || !dataChunk.contains("{") || !dataChunk.contains("steps")) {
-                return Mono.empty();
-            }
-
-            Matcher matcher = STEPS_JSON_PATTERN.matcher(dataChunk);
-            if (!matcher.find()) {
-                // 완전한 JSON 블록이 없으면 skip
-                return Mono.empty();
-            }
-
-            String jsonBlock = matcher.group();
-            // 실제 DB 저장은 블로킹이므로 boundedElastic으로 오프로드
-            return Mono.fromCallable(() -> {
-                try {
-                    TodoStepResponse parsed = objectMapper.readValue(jsonBlock, TodoStepResponse.class);
-
-                    // convo 조회 (blocking)
-                    UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
-                    if (convo == null) {
-                        log.debug("대화 없음(userId={}), skip 저장", userId);
-                        return null;
-                    }
-
-                    // 이미 저장된 계획이면 중복 저장 방지
-                    if (Boolean.TRUE.equals(convo.isPlanSaved())) {
-                        log.debug("이미 저장된 계획이므로 skip (userId={})", userId);
-                        return null;
-                    }
-
-                    // Todo 생성
-                    Todo todo = Todo.builder()
-                            .userId(userId)
-                            .title(convo.getTitle())
-                            .content(convo.getContent())
-                            .startDate(convo.getStartDate())
-                            .endDate(convo.getEndDate())
-                            .progress(0)
-                            .expectedDays(DayConverter.parseDays(convo.getStudyDays()))
-                            .build();
-                    todoRepository.save(todo);
-
-                    List<TodoStep> todoSteps = parsed.steps().stream()
-                            .map(step -> TodoStep.builder()
-                                    .todoId(todo.getId())
-                                    .userId(userId)
-                                    .stepDate(step.stepDate())
-                                    .description(step.description())
-                                    .isCompleted(step.isCompleted())
-                                    .build())
-                            .toList();
-
-                    todoStepRepository.saveAll(todoSteps);
-
-                    // 중복 방지를 위해 convo에 flag 저장
-                    convo.setPlanSaved(true);
-                    conversationRepo.save(convo);
-
-                    log.info("💾 Todo({}) 및 {}개의 TodoStep 저장 완료 (userId={})",
-                            todo.getTitle(), todoSteps.size(), userId);
-                } catch (Exception e) {
-                    // 파싱 실패 등은 무해하게 무시(스트림 계속)
-                    log.debug("⚠️ JSON 파싱/저장 실패: {}", e.getMessage());
-                }
-                return null;
-            }).subscribeOn(Schedulers.boundedElastic()).then();
-        } else {
-            return null;
-        }
+        return switch (stepIndex) {
+            case 1 -> savePlanDescription(userId, dataChunk);
+            case 2 -> saveTodoAndSteps(userId, dataChunk);
+            default -> Mono.empty();
+        };
     }
 
     /**
-     * SSE 스트림 내 JSON 블록을 감지하고 TodoStep 저장
+     * Step 1: 학습 목표 설명 저장
      */
-    @Transactional
-    protected void trySaveTodoAndSteps(Long userId, String dataChunk) {
-        try {
-            if (!dataChunk.contains("{") || !dataChunk.contains("steps"))
-                return;
+    private Mono<Void> savePlanDescription(Long userId, String dataChunk) {
+        String description = String.join("", dataChunk).replaceAll("```", "").trim();
+        return Mono.fromCallable(() -> {
+            try {
+                UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
+                if (convo == null)
+                    return null;
 
-            // JSON 정리 및 파싱
-            String cleaned = dataChunk
-                    .replaceAll("(?s)```json", "")
-                    .replaceAll("(?s)```", "")
-                    .trim();
+                convo.setContent(description);
+                convo.setPlanSaved(false);
+                conversationRepo.save(convo);
 
-            TodoStepResponse parsed = objectMapper.readValue(cleaned, TodoStepResponse.class);
-
-            // 현재 대화 상태 확인
-            UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
-            if (convo == null || convo.getTitle() == null)
-                return;
-
-            // ✅ Todo 생성
-            Todo todo = Todo.builder()
-                    .userId(userId)
-                    .title(convo.getTitle())
-                    .content(convo.getContent())
-                    .startDate(convo.getStartDate())
-                    .endDate(convo.getEndDate())
-                    .progress(0)
-                    .expectedDays(DayConverter.parseDays(convo.getStudyDays()))
-                    .build();
-            todoRepository.save(todo);
-
-            // ✅ TodoStep 생성 및 저장
-            List<TodoStep> todoSteps = parsed.steps().stream()
-                    .map(step -> TodoStep.builder()
-                            .todoId(todo.getId())
-                            .userId(userId)
-                            .stepDate(step.stepDate())
-                            .description(step.description())
-                            .isCompleted(step.isCompleted())
-                            .build())
-                    .toList();
-
-            todoStepRepository.saveAll(todoSteps);
-
-            log.info("💾 Todo({}) 및 {}개의 TodoStep 저장 완료 (userId={})",
-                    todo.getTitle(), todoSteps.size(), userId);
-
-        } catch (Exception e) {
-            log.debug("⚠️ JSON chunk는 계획 JSON이 아님, skip: {}", e.getMessage());
-        }
+                log.info("📘 계획 설명 저장 완료 (userId={}): {}", userId, dataChunk);
+            } catch (Exception e) {
+                log.debug("⚠️ Step1 저장 실패: {}", e.getMessage());
+            }
+            return null;
+        }).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
     /**
-     * DB 트랜잭션 내에서 사용자 상태 업데이트 및 다음 프롬프트 생성
+     * Step 2: 실제 Todo + Step 생성 및 저장
+     */
+    private Mono<Void> saveTodoAndSteps(Long userId, String dataChunk) {
+        if (dataChunk == null || !dataChunk.contains("{") || !dataChunk.contains("steps")) {
+            return Mono.empty();
+        }
+
+        Matcher matcher = STEPS_JSON_PATTERN.matcher(dataChunk);
+        if (!matcher.find())
+            return Mono.empty();
+
+        String jsonBlock = matcher.group();
+
+        return Mono.fromCallable(() -> {
+            try {
+                TodoStepResponse parsed = objectMapper.readValue(jsonBlock, TodoStepResponse.class);
+
+                UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
+                if (convo == null || convo.isPlanSaved()) {
+                    return null;
+                }
+
+                Todo todo = Todo.builder()
+                        .userId(userId)
+                        .title(convo.getTitle())
+                        .content(convo.getContent())
+                        .startDate(convo.getStartDate())
+                        .endDate(convo.getEndDate())
+                        .progress(0)
+                        .expectedDays(DayConverter.parseDays(convo.getStudyDays()))
+                        .build();
+                todoRepository.save(todo);
+
+                List<TodoStep> todoSteps = parsed.steps().stream()
+                        .map(step -> TodoStep.builder()
+                                .todoId(todo.getId())
+                                .userId(userId)
+                                .stepDate(step.stepDate())
+                                .description(step.description())
+                                .isCompleted(step.isCompleted())
+                                .build())
+                        .toList();
+
+                todoStepRepository.saveAll(todoSteps);
+                convo.setPlanSaved(true);
+                conversationRepo.save(convo);
+
+                log.info("💾 Todo({}) 및 {}개 Step 저장 완료 (userId={})",
+                        todo.getTitle(), todoSteps.size(), userId);
+            } catch (Exception e) {
+                log.debug("⚠️ Step2 JSON 저장 실패: {}", e.getMessage());
+            }
+            return null;
+        }).subscribeOn(Schedulers.boundedElastic()).then();
+    }
+
+    /**
+     * 사용자 입력 메시지 처리 및 다음 상태 결정
      */
     @Transactional
     protected MessageResult processUserMessage(Long userId, String userMessage) {
@@ -253,7 +207,7 @@ public class GeminiChatService {
                     uc.setUserId(userId);
                     uc.setState(ConversationState.INTRO);
                     conversationRepo.save(uc);
-                    log.info("🆕 새 사용자 대화 생성 userId={}", userId);
+                    log.info("🆕 새 대화 생성 (userId={})", userId);
                     return uc;
                 });
 
@@ -292,7 +246,6 @@ public class GeminiChatService {
                     prompt = ChatbotScript.planDetail(userMessage.trim());
                     stepIndex = 1;
                     streaming = true;
-                    response = ChatbotScript.askStartDate(convo.getContent(), convo.getTitle());
                     convo.setState(ConversationState.ASK_START_DATE);
                 }
                 case ASK_START_DATE -> {
@@ -302,7 +255,7 @@ public class GeminiChatService {
                         response = ChatbotScript.askEndDate(start);
                         convo.setState(ConversationState.ASK_END_DATE);
                     } catch (Exception e) {
-                        response = "날짜는 'yyyy-MM-dd' 형식으로 입력해줘! 예: 2025-11-01";
+                        response = "날짜는 'yyyy-MM-dd' 형식으로 입력해줘!";
                     }
                 }
                 case ASK_END_DATE -> {
@@ -312,12 +265,12 @@ public class GeminiChatService {
                         response = ChatbotScript.askStudyDays(convo.getStartDate(), convo.getEndDate());
                         convo.setState(ConversationState.ASK_DAYS);
                     } catch (Exception e) {
-                        response = "날짜는 'yyyy-MM-dd' 형식으로 입력해줘! 예: 2025-11-15";
+                        response = "날짜는 'yyyy-MM-dd' 형식으로 입력해줘!";
                     }
                 }
                 case ASK_DAYS -> {
                     convo.setStudyDays(userMessage.trim());
-                    response = "좋아! 이제 하루 공부 시간을 알려줘 (분 단위로 입력)";
+                    response = "좋아! 하루 공부 시간을 (분 단위로) 알려줘.";
                     convo.setState(ConversationState.ASK_TIME_PER_DAY);
                 }
                 case ASK_TIME_PER_DAY -> {
@@ -326,18 +279,18 @@ public class GeminiChatService {
                         convo.setDailyMinutes(minutes);
                         prompt = ChatbotScript.planPrompt(convo);
                         stepIndex = 2;
-                        streaming = true; // ✅ Gemini SSE 호출 준비 완료
+                        streaming = true;
                         convo.setState(ConversationState.CONFIRM_PLAN);
                     } catch (NumberFormatException e) {
                         response = "공부 시간은 숫자로 입력해줘! 예: 90";
                     }
                 }
                 case CONFIRM_PLAN -> {
-                    if (userMessage.contains("좋아") || userMessage.contains("응") || userMessage.contains("ㅇㅇ")) {
-                        response = "좋아! 🎉 그럼 이 계획으로 진행할게. 앞으로 화이팅이야 💪";
+                    if (userMessage.contains("좋아") || userMessage.contains("응")) {
+                        response = "좋아! 🎉 이 계획으로 진행할게. 화이팅 💪";
                         convo.setState(ConversationState.FINISHED);
                     } else if (userMessage.contains("아니") || userMessage.contains("수정")) {
-                        response = "괜찮아 😊 어떤 점을 바꿔볼까?";
+                        response = "괜찮아 😊 어떤 점을 수정할까?";
                         convo.setState(ConversationState.ASK_TASK);
                     } else {
                         response = "이 계획으로 진행할까? (좋아 / 수정)";
@@ -348,23 +301,23 @@ public class GeminiChatService {
                         convo.setState(ConversationState.INTRO);
                         response = "좋아! 🐸 새로운 공부 계획을 세워보자!";
                     } else {
-                        response = "이미 계획이 완성됐어 🎯 새로운 계획을 세우려면 '새로운 계획'이라고 말해줘!";
+                        response = "이미 계획이 완성됐어 🎯 '새로운 계획'이라고 말해줘!";
                     }
                 }
-                default -> response = "무슨 말인지 모르겠어 😅 다시 한 번 말해줄래?";
+                default -> response = "무슨 말인지 모르겠어 😅 다시 말해줄래?";
             }
 
             conversationRepo.save(convo);
         } catch (Exception e) {
-            log.error("💥 Error processing user message: {}", e.getMessage(), e);
-            response = "오류가 발생했어 😢 잠시 후 다시 시도해줘.";
+            log.error("💥 메시지 처리 오류", e);
+            response = "오류가 발생했어 😢 다시 시도해줘.";
         }
 
         return new MessageResult(response, prompt, streaming, stepIndex);
     }
 
     /**
-     * 내부 응답 모델 (Flux 전송용)
+     * 내부 메시지 결과 DTO
      */
     private record MessageResult(String response, String prompt, boolean isStreaming, int stepIndex) {
     }
