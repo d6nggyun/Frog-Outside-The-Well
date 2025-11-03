@@ -39,6 +39,14 @@ public class GeminiChatService {
     private static final Pattern STEPS_JSON_PATTERN = Pattern.compile("\\{.*\"steps\"\\s*:\\s*\\[.*\\].*\\}",
             Pattern.DOTALL);
 
+    private String extractDescription(String content) {
+        if (content == null || !content.contains(":")) {
+            return "";
+        }
+        String[] parts = content.split(":", 2);
+        return parts[1].replace("```", "").trim();
+    }
+
     public GeminiChatService(
             UserConversationRepository conversationRepo,
             GeminiApiClient geminiApiClient,
@@ -69,7 +77,7 @@ public class GeminiChatService {
                                 .doOnNext(chunk -> log.debug("🧩 Gemini 응답 조각: {}", chunk))
                                 .collectList()
                                 .flatMapMany(chunks -> {
-                                    log.info("📘 청크크 (chunks={})", chunks);
+                                    log.info("📘 청크 (chunks={})", chunks);
                                     String merged = String.join("", chunks);
                                     return trySaveTodoAndStepsReactive(userId, merged, result.stepIndex())
                                             .thenMany(Flux.fromIterable(chunks)); // 원본 스트림 그대로 반환
@@ -132,7 +140,9 @@ public class GeminiChatService {
      */
     private Mono<Void> savePlanDescriptionBuffered(Long userId, String fullContent) {
         log.info("📘 Initial 설명 (fullContent={})", fullContent);
-        String description = fullContent.replaceAll("```", "").trim();
+
+        String description = extractDescription(fullContent);
+
         return Mono.fromRunnable(() -> {
             try {
                 conversationRepo.updateContentByUserId(userId, description);
@@ -148,6 +158,7 @@ public class GeminiChatService {
      * Step 2: 계획 JSON → Todo/Steps 생성 (전체 응답 병합 후 1회 처리)
      */
     private Mono<Void> saveTodoAndStepsBuffered(Long userId, String fullContent) {
+        log.info("⚠️ fullContent : {}", fullContent);
         if (fullContent == null || !fullContent.contains("{") || !fullContent.contains("steps")) {
             return Mono.empty();
         }
