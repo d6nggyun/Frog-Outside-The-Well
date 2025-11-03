@@ -61,28 +61,31 @@ public class GeminiChatService {
         return Mono.fromCallable(() -> processUserMessage(userId, userMessage))
                 .flatMapMany(result -> {
                     if (result.isStreaming()) {
-                        // Gemini 스트림 응답 처리
                         return geminiApiClient.generateStream(result.prompt())
                                 .flatMap(chunk -> trySaveTodoAndStepsReactive(userId, chunk, result.stepIndex())
                                         .thenReturn(chunk))
-                                .concatWith(Mono.defer(() -> {
-                                    if (result.stepIndex() == 1) {
-                                        String content = conversationRepo.findByUserId(userId)
-                                                .map(UserConversation::getContent)
-                                                .orElse("");
-                                        String title = conversationRepo.findByUserId(userId)
-                                                .map(UserConversation::getTitle)
-                                                .orElse("");
-                                        return Mono.just(
-                                                ChatbotScript.askStartDate(content, title));
-                                    } else if (result.stepIndex() == 2) {
-                                        return Mono.just("✅ 계획 저장 완료");
-                                    } else {
-                                        return Mono.empty();
-                                    }
-                                }));
+                                .thenMany(
+                                        Mono.defer(() -> {
+                                            if (result.stepIndex() == 1) {
+                                                // ✅ Step 1: content가 저장된 이후 DB에서 reactive하게 다시 가져오기
+                                                return Mono.fromCallable(() -> {
+                                                    UserConversation convo = conversationRepo.findByUserId(userId)
+                                                            .orElse(null);
+                                                    if (convo == null)
+                                                        return "";
+                                                    return ChatbotScript.askStartDate(
+                                                            convo.getContent() != null ? convo.getContent() : "",
+                                                            convo.getTitle() != null ? convo.getTitle() : "");
+                                                })
+                                                        .subscribeOn(Schedulers.boundedElastic());
+                                            } else if (result.stepIndex() == 2) {
+                                                // ✅ Step 2: 계획 저장 완료
+                                                return Mono.just("✅ 계획 저장 완료");
+                                            } else {
+                                                return Mono.empty();
+                                            }
+                                        }));
                     } else {
-                        // 일반 메시지 응답
                         return Flux.just(result.response());
                     }
                 })
@@ -120,22 +123,14 @@ public class GeminiChatService {
      * Step 1: 학습 목표 설명 저장
      */
     private Mono<Void> savePlanDescription(Long userId, String dataChunk) {
-        String description = String.join("", dataChunk).replaceAll("```", "").trim();
-        return Mono.fromCallable(() -> {
+        String description = dataChunk.replaceAll("```", "").trim();
+        return Mono.fromRunnable(() -> {
             try {
-                UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
-                if (convo == null)
-                    return null;
-
-                convo.setContent(description);
-                convo.setPlanSaved(false);
-                conversationRepo.save(convo);
-
-                log.info("📘 계획 설명 저장 완료 (userId={}): {}", userId, dataChunk);
+                conversationRepo.updateContentByUserId(userId, description);
+                log.info("📘 [Reactive] 계획 설명 저장 완료 (userId={}): {}", userId, description);
             } catch (Exception e) {
-                log.debug("⚠️ Step1 저장 실패: {}", e.getMessage());
+                log.warn("⚠️ Step1 저장 실패: {}", e.getMessage());
             }
-            return null;
         }).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
@@ -156,11 +151,9 @@ public class GeminiChatService {
         return Mono.fromCallable(() -> {
             try {
                 TodoStepResponse parsed = objectMapper.readValue(jsonBlock, TodoStepResponse.class);
-
                 UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
-                if (convo == null || convo.isPlanSaved()) {
+                if (convo == null || convo.isPlanSaved())
                     return null;
-                }
 
                 Todo todo = Todo.builder()
                         .userId(userId)
@@ -190,7 +183,7 @@ public class GeminiChatService {
                 log.info("💾 Todo({}) 및 {}개 Step 저장 완료 (userId={})",
                         todo.getTitle(), todoSteps.size(), userId);
             } catch (Exception e) {
-                log.debug("⚠️ Step2 JSON 저장 실패: {}", e.getMessage());
+                log.warn("⚠️ Step2 JSON 저장 실패: {}", e.getMessage());
             }
             return null;
         }).subscribeOn(Schedulers.boundedElastic()).then();

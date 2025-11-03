@@ -55,6 +55,6 @@ public class UserConversation {
 
     private boolean planSaved = false; // 기본 false
 
-    @Version
-    private Long version;
+    // @Version
+    // private Long version;
 }
