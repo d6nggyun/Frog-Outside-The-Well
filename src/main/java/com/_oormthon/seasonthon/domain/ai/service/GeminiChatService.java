@@ -18,11 +18,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -56,20 +58,25 @@ public class GeminiChatService {
         String userMessage = extractMessage(userMessageJson);
         log.info("🆕 사용자 message userMessageJson={}", userMessageJson);
 
-        return Mono.defer(() -> Mono.fromCallable(() -> processUserMessage(userId, userMessage)))
+        return Mono.fromCallable(() -> processUserMessage(userId, userMessage))
                 .flatMapMany(result -> {
                     if (result.isStreaming()) {
-                        // ✅ SSE 기반 Gemini 스트림 요청
+                        // 스트림에서 각 chunk 처리 -> JSON 블록 감지 시 DB 저장(블로킹) 오프로드
                         return geminiApiClient.generateStream(result.prompt())
-                                .doOnNext(chunk -> trySaveTodoAndSteps(userId, chunk))
-                                .concatWith(Flux.just("✅ 계획 저장 완료"))
-                                .delayElements(Duration.ofMillis(80));
-
+                                // 각 chunk가 들어올 때 DB 저장 시도(필요 시)
+                                .flatMap(chunk -> trySaveTodoAndStepsReactive(userId, chunk, result.stepIndex())
+                                        // 저장 완료/skip 후 원본 chunk를 그대로 전달
+                                        .thenReturn(chunk))
+                                // 스트림 끝에 완료 메시지 추가
+                                .concatWith(Flux.just("✅ 계획 저장 완료"));
                     } else {
                         return Flux.just(result.response());
                     }
                 })
-                .onErrorResume(e -> Flux.just("미안해 😢 잠시 문제가 생겼어. 다시 시도해줄래?"));
+                .onErrorResume(e -> {
+                    log.error("스트림 처리 중 에러", e);
+                    return Flux.just("미안해 😢 잠시 문제가 생겼어. 다시 시도해줄래?");
+                });
     }
 
     private String extractMessage(String userMessageJson) {
@@ -79,6 +86,104 @@ public class GeminiChatService {
         } catch (Exception e) {
             log.error("💥 userMessage JSON 파싱 실패: {}", userMessageJson, e);
             return "";
+        }
+    }
+
+    /**
+     * Reactive wrapper: 스트림 chunk를 검사해서 유효한 plan JSON이면 블로킹 저장을 boundedElastic에서 수행
+     */
+    private Mono<Void> trySaveTodoAndStepsReactive(Long userId, String dataChunk, int stepIndex) {
+        // 빠르게 탐지: '{' 와 'steps' 가 없으면 바로 종료
+        if (stepIndex == 1) {
+            return Mono.fromCallable(() -> {
+                try {
+                    // convo 조회 (blocking)
+                    UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
+                    if (convo == null) {
+                        log.debug("대화 없음(userId={}), skip 저장", userId);
+                        return null;
+                    }
+                    convo.setContent(dataChunk);
+                    log.info("🆕 description 생성 content={}", dataChunk);
+
+                    // 중복 방지를 위해 convo에 flag 저장
+                    convo.setPlanSaved(true);
+                    conversationRepo.save(convo);
+
+                } catch (Exception e) {
+                    // 파싱 실패 등은 무해하게 무시(스트림 계속)
+                    log.debug("⚠️ JSON 파싱/저장 실패: {}", e.getMessage());
+                }
+                return null;
+            }).subscribeOn(Schedulers.boundedElastic()).then();
+        } else if (stepIndex == 2) {
+            if (dataChunk == null || !dataChunk.contains("{") || !dataChunk.contains("steps")) {
+                return Mono.empty();
+            }
+
+            Matcher matcher = STEPS_JSON_PATTERN.matcher(dataChunk);
+            if (!matcher.find()) {
+                // 완전한 JSON 블록이 없으면 skip
+                return Mono.empty();
+            }
+
+            String jsonBlock = matcher.group();
+            // 실제 DB 저장은 블로킹이므로 boundedElastic으로 오프로드
+            return Mono.fromCallable(() -> {
+                try {
+                    TodoStepResponse parsed = objectMapper.readValue(jsonBlock, TodoStepResponse.class);
+
+                    // convo 조회 (blocking)
+                    UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
+                    if (convo == null) {
+                        log.debug("대화 없음(userId={}), skip 저장", userId);
+                        return null;
+                    }
+
+                    // 이미 저장된 계획이면 중복 저장 방지
+                    if (Boolean.TRUE.equals(convo.isPlanSaved())) {
+                        log.debug("이미 저장된 계획이므로 skip (userId={})", userId);
+                        return null;
+                    }
+
+                    // Todo 생성
+                    Todo todo = Todo.builder()
+                            .userId(userId)
+                            .title(convo.getTitle())
+                            .content(convo.getContent())
+                            .startDate(convo.getStartDate())
+                            .endDate(convo.getEndDate())
+                            .progress(0)
+                            .expectedDays(DayConverter.parseDays(convo.getStudyDays()))
+                            .build();
+                    todoRepository.save(todo);
+
+                    List<TodoStep> todoSteps = parsed.steps().stream()
+                            .map(step -> TodoStep.builder()
+                                    .todoId(todo.getId())
+                                    .userId(userId)
+                                    .stepDate(step.stepDate())
+                                    .description(step.description())
+                                    .isCompleted(step.isCompleted())
+                                    .build())
+                            .toList();
+
+                    todoStepRepository.saveAll(todoSteps);
+
+                    // 중복 방지를 위해 convo에 flag 저장
+                    convo.setPlanSaved(true);
+                    conversationRepo.save(convo);
+
+                    log.info("💾 Todo({}) 및 {}개의 TodoStep 저장 완료 (userId={})",
+                            todo.getTitle(), todoSteps.size(), userId);
+                } catch (Exception e) {
+                    // 파싱 실패 등은 무해하게 무시(스트림 계속)
+                    log.debug("⚠️ JSON 파싱/저장 실패: {}", e.getMessage());
+                }
+                return null;
+            }).subscribeOn(Schedulers.boundedElastic()).then();
+        } else {
+            return null;
         }
     }
 
@@ -155,6 +260,7 @@ public class GeminiChatService {
         String response = null;
         boolean streaming = false;
         String prompt = null;
+        int stepIndex = 0;
 
         try {
             switch (convo.getState()) {
@@ -184,13 +290,8 @@ public class GeminiChatService {
                 case ASK_TASK -> {
                     convo.setTitle(userMessage.trim());
                     prompt = ChatbotScript.planDetail(userMessage.trim());
-                    geminiApiClient.generateStream(prompt)
-                            .collectList()
-                            .map(chunks -> String.join("", chunks))
-                            .map(text -> text.replaceAll("```", "").trim())
-                            .subscribe(description -> {
-                                convo.setContent(description);
-                            });
+                    stepIndex = 1;
+                    streaming = true;
                     response = ChatbotScript.askStartDate(convo.getContent(), convo.getTitle());
                     convo.setState(ConversationState.ASK_START_DATE);
                 }
@@ -224,6 +325,7 @@ public class GeminiChatService {
                         int minutes = Integer.parseInt(userMessage.trim());
                         convo.setDailyMinutes(minutes);
                         prompt = ChatbotScript.planPrompt(convo);
+                        stepIndex = 2;
                         streaming = true; // ✅ Gemini SSE 호출 준비 완료
                         convo.setState(ConversationState.CONFIRM_PLAN);
                     } catch (NumberFormatException e) {
@@ -258,12 +360,12 @@ public class GeminiChatService {
             response = "오류가 발생했어 😢 잠시 후 다시 시도해줘.";
         }
 
-        return new MessageResult(response, prompt, streaming);
+        return new MessageResult(response, prompt, streaming, stepIndex);
     }
 
     /**
      * 내부 응답 모델 (Flux 전송용)
      */
-    private record MessageResult(String response, String prompt, boolean isStreaming) {
+    private record MessageResult(String response, String prompt, boolean isStreaming, int stepIndex) {
     }
 }

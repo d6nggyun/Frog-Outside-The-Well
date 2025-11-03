@@ -36,12 +36,12 @@ public class UserConversation {
     private String title;
     private String content;
 
-    @Column(name = "todo_id", nullable = false)
+    @Column(name = "todo_id")
     private Long todoId;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "start_date")
     private LocalDate startDate;
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date")
     private LocalDate endDate;
 
     private String studyDays;
