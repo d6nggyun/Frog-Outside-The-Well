@@ -12,7 +12,6 @@ import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +51,7 @@ public class GeminiChatService {
     }
 
     /**
-     * 사용자 입력 메시지 처리 (Gemini 스트리밍 포함)
+     * 사용자 메시지 처리 (Gemini 스트리밍 포함)
      */
     public Flux<String> handleUserMessageStream(Long userId, String userMessageJson) {
         String userMessage = extractMessage(userMessageJson);
@@ -61,13 +60,24 @@ public class GeminiChatService {
         return Mono.fromCallable(() -> processUserMessage(userId, userMessage))
                 .flatMapMany(result -> {
                     if (result.isStreaming()) {
-                        return geminiApiClient.generateStream(result.prompt())
-                                .flatMap(chunk -> trySaveTodoAndStepsReactive(userId, chunk, result.stepIndex())
-                                        .thenReturn(chunk))
+                        // ✅ Gemini 스트림 전체 Flux
+                        Flux<String> stream = geminiApiClient.generateStream(result.prompt())
+                                .doOnSubscribe(sub -> log.info("📡 Gemini 스트림 시작 (step={})", result.stepIndex()));
+
+                        // ✅ Flux 버퍼링 후 한 번에 저장
+                        return stream
+                                .doOnNext(chunk -> log.debug("🧩 Gemini 응답 조각: {}", chunk))
+                                .collectList()
+                                .flatMapMany(chunks -> {
+                                    log.info("📘 청크크 (chunks={})", chunks);
+                                    String merged = String.join("", chunks);
+                                    return trySaveTodoAndStepsReactive(userId, merged, result.stepIndex())
+                                            .thenMany(Flux.fromIterable(chunks)); // 원본 스트림 그대로 반환
+                                })
                                 .thenMany(
                                         Mono.defer(() -> {
                                             if (result.stepIndex() == 1) {
-                                                // ✅ Step 1: content가 저장된 이후 DB에서 reactive하게 다시 가져오기
+                                                // Step1 완료 후 질문 생성
                                                 return Mono.fromCallable(() -> {
                                                     UserConversation convo = conversationRepo.findByUserId(userId)
                                                             .orElse(null);
@@ -76,10 +86,8 @@ public class GeminiChatService {
                                                     return ChatbotScript.askStartDate(
                                                             convo.getContent() != null ? convo.getContent() : "",
                                                             convo.getTitle() != null ? convo.getTitle() : "");
-                                                })
-                                                        .subscribeOn(Schedulers.boundedElastic());
+                                                }).subscribeOn(Schedulers.boundedElastic());
                                             } else if (result.stepIndex() == 2) {
-                                                // ✅ Step 2: 계획 저장 완료
                                                 return Mono.just("✅ 계획 저장 완료");
                                             } else {
                                                 return Mono.empty();
@@ -109,25 +117,27 @@ public class GeminiChatService {
     }
 
     /**
-     * 단계별로 다른 저장 로직 수행 (Reactive Wrapper)
+     * 단계별 저장 로직 (Flux 버퍼링 기반)
      */
-    private Mono<Void> trySaveTodoAndStepsReactive(Long userId, String dataChunk, int stepIndex) {
+    private Mono<Void> trySaveTodoAndStepsReactive(Long userId, String mergedContent, int stepIndex) {
         return switch (stepIndex) {
-            case 1 -> savePlanDescription(userId, dataChunk);
-            case 2 -> saveTodoAndSteps(userId, dataChunk);
+            case 1 -> savePlanDescriptionBuffered(userId, mergedContent);
+            case 2 -> saveTodoAndStepsBuffered(userId, mergedContent);
             default -> Mono.empty();
         };
     }
 
     /**
-     * Step 1: 학습 목표 설명 저장
+     * Step 1: 계획 설명 (전체 응답 병합 후 1회 저장)
      */
-    private Mono<Void> savePlanDescription(Long userId, String dataChunk) {
-        String description = dataChunk.replaceAll("```", "").trim();
+    private Mono<Void> savePlanDescriptionBuffered(Long userId, String fullContent) {
+        log.info("📘 Initial 설명 (fullContent={})", fullContent);
+        String description = fullContent.replaceAll("```", "").trim();
         return Mono.fromRunnable(() -> {
             try {
                 conversationRepo.updateContentByUserId(userId, description);
-                log.info("📘 [Reactive] 계획 설명 저장 완료 (userId={}): {}", userId, description);
+                log.info("📘 [Buffered] 계획 설명  (description={})", description);
+                log.info("📘 [Buffered] 계획 설명 저장 완료 (userId={})", userId);
             } catch (Exception e) {
                 log.warn("⚠️ Step1 저장 실패: {}", e.getMessage());
             }
@@ -135,14 +145,14 @@ public class GeminiChatService {
     }
 
     /**
-     * Step 2: 실제 Todo + Step 생성 및 저장
+     * Step 2: 계획 JSON → Todo/Steps 생성 (전체 응답 병합 후 1회 처리)
      */
-    private Mono<Void> saveTodoAndSteps(Long userId, String dataChunk) {
-        if (dataChunk == null || !dataChunk.contains("{") || !dataChunk.contains("steps")) {
+    private Mono<Void> saveTodoAndStepsBuffered(Long userId, String fullContent) {
+        if (fullContent == null || !fullContent.contains("{") || !fullContent.contains("steps")) {
             return Mono.empty();
         }
 
-        Matcher matcher = STEPS_JSON_PATTERN.matcher(dataChunk);
+        Matcher matcher = STEPS_JSON_PATTERN.matcher(fullContent);
         if (!matcher.find())
             return Mono.empty();
 
@@ -180,17 +190,17 @@ public class GeminiChatService {
                 convo.setPlanSaved(true);
                 conversationRepo.save(convo);
 
-                log.info("💾 Todo({}) 및 {}개 Step 저장 완료 (userId={})",
+                log.info("💾 [Buffered] Todo({}) 및 {}개 Step 저장 완료 (userId={})",
                         todo.getTitle(), todoSteps.size(), userId);
             } catch (Exception e) {
-                log.warn("⚠️ Step2 JSON 저장 실패: {}", e.getMessage());
+                log.warn("⚠️ Step2 JSON 파싱/저장 실패: {}", e.getMessage());
             }
             return null;
         }).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
     /**
-     * 사용자 입력 메시지 처리 및 다음 상태 결정
+     * 사용자 입력에 따른 상태 전이 및 프롬프트 생성
      */
     @Transactional
     protected MessageResult processUserMessage(Long userId, String userMessage) {
@@ -309,9 +319,6 @@ public class GeminiChatService {
         return new MessageResult(response, prompt, streaming, stepIndex);
     }
 
-    /**
-     * 내부 메시지 결과 DTO
-     */
     private record MessageResult(String response, String prompt, boolean isStreaming, int stepIndex) {
     }
 }

@@ -12,6 +12,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import reactor.core.publisher.Flux;
 import reactor.netty.http.HttpProtocol;
@@ -74,16 +78,31 @@ public class GeminiApiClient {
                 .retrieve()
                 .bodyToFlux(String.class)
                 .flatMap(line -> {
-                    if (line.startsWith("data:")) {
+                    if (!line.startsWith("text:")) {
+                        log.info("⚠️ line 데이터 : {}", line);
+                        return Flux.empty();
+                    }
+
+                    try {
                         String json = line.substring(5).trim();
-                        log.debug("🧩 Gemini 응답 조각: {}", json);
-                        return Flux.just(json);
-                    } else {
+                        JsonNode node = new ObjectMapper().readTree(json);
+
+                        // ✅ candidates → content → parts → text 추출
+                        JsonNode textNode = node.at("/candidates/0/content/parts/0/text");
+                        if (textNode.isMissingNode()) {
+                            log.info("⚠️ text 노드 없음: {}", json);
+                            return Flux.empty();
+                        }
+
+                        String text = textNode.asText();
+                        log.info("🧩 Gemini 텍스트 조각: {}", text);
+                        return Flux.just(text);
+                    } catch (Exception e) {
+                        log.info("⚠️ Gemini 응답 파싱 실패: {}", line, e);
                         return Flux.empty();
                     }
                 })
                 .doOnSubscribe(sub -> log.info("📡 Gemini 스트림 연결됨"))
-                // 🔥 스트림 중단 시 graceful fallback
                 .onErrorResume(e -> {
                     log.error("🔥 Gemini Stream Error: {}", e.getMessage(), e);
                     return Flux.empty();
@@ -91,4 +110,39 @@ public class GeminiApiClient {
                 .doOnCancel(() -> log.warn("⚠️ Gemini 스트림이 클라이언트에 의해 취소됨"))
                 .doFinally(signal -> log.info("✅ Gemini 스트림 종료 (signal: {})", signal));
     }
+
+    // public Flux<String> generateStream(String prompt) {
+    // Map<String, Object> requestBody = Map.of(
+    // "contents", List.of(
+    // Map.of("parts", List.of(Map.of("text", prompt)))));
+
+    // log.info("🚀 Gemini 요청 시작: {}", prompt);
+
+    // return webClient.post()
+    // .uri(uriBuilder -> uriBuilder
+    // .path("/gemini-2.5-flash:streamGenerateContent")
+    // .queryParam("key", apiKey)
+    // .build())
+    // .bodyValue(requestBody)
+    // .accept(MediaType.TEXT_EVENT_STREAM)
+    // .retrieve()
+    // .bodyToFlux(String.class)
+    // .flatMap(line -> {
+    // if (line.startsWith("data:")) {
+    // String json = line.substring(5).trim();
+    // log.debug("🧩 Gemini 응답 조각: {}", json);
+    // return Flux.just(json);
+    // } else {
+    // return Flux.empty();
+    // }
+    // })
+    // .doOnSubscribe(sub -> log.info("📡 Gemini 스트림 연결됨"))
+    // // 🔥 스트림 중단 시 graceful fallback
+    // .onErrorResume(e -> {
+    // log.error("🔥 Gemini Stream Error: {}", e.getMessage(), e);
+    // return Flux.empty();
+    // })
+    // .doOnCancel(() -> log.warn("⚠️ Gemini 스트림이 클라이언트에 의해 취소됨"))
+    // .doFinally(signal -> log.info("✅ Gemini 스트림 종료 (signal: {})", signal));
+    // }
 }
