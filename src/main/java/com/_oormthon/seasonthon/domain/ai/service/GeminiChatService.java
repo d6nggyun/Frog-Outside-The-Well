@@ -9,6 +9,7 @@ import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
+import com._oormthon.seasonthon.domain.todo.enums.Day;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -262,9 +263,15 @@ public class GeminiChatService {
                     }
                 }
                 case ASK_DAYS -> {
-                    convo.setStudyDays(userMessage.trim());
-                    response = "좋아! 하루 공부 시간을 (분 단위로) 알려줘.";
-                    convo.setState(ConversationState.ASK_TIME_PER_DAY);
+                    try {
+                        DayConverter.parseDays(convo.getStudyDays());
+                        convo.setStudyDays(userMessage.trim());
+                        response = "좋아! 하루 공부 시간을 (분 단위로) 알려줘.";
+                        convo.setState(ConversationState.ASK_TIME_PER_DAY);
+                    } catch (Exception e) {
+                        response = "(예: 월,수,금) 형식으로 작성해줘!";
+                    }
+
                 }
                 case ASK_TIME_PER_DAY -> {
                     try {
