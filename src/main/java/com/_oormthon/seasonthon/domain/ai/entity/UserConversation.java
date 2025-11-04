@@ -36,9 +36,6 @@ public class UserConversation {
     private String title;
     private String content;
 
-    @Column(name = "todo_id")
-    private Long todoId;
-
     @Column(name = "start_date")
     private LocalDate startDate;
     @Column(name = "end_date")
@@ -53,8 +50,12 @@ public class UserConversation {
 
     private Integer dailyMinutes;
 
-    private boolean planSaved = false; // 기본 false
+    private boolean planSaved; // 실제 DB 저장 여부 (Todo 생성 완료 시 true)
 
-    // @Version
-    // private Long version;
+    /**
+     * Gemini가 생성한 Todo/Steps JSON을 임시로 보관하는 필드.
+     * CONFIRM_PLAN 단계에서 사용자가 "좋아"라고 확정하면 실제 DB에 저장됩니다.
+     */
+    @Column(columnDefinition = "TEXT")
+    private String pendingPlanJson;
 }

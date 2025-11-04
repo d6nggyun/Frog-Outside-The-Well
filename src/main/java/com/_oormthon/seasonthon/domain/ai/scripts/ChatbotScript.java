@@ -123,11 +123,5 @@ public class ChatbotScript {
                                 convo.getEndDate().format(formatter),
                                 convo.getStudyDays(),
                                 convo.getDailyMinutes());
-
-                // [요청]
-                // 1. 목표 달성을 위한 주간별 학습 계획을 만들어주세요.
-                // 2. 각 주차별로 학습 키워드나 마일스톤을 간단히 제시하세요.
-                // 3. 동기부여가 되는 문장으로 마무리해주세요.
-                // 4. 답변은 한국어로 간결하고 따뜻하게 작성하세요.
         }
 }

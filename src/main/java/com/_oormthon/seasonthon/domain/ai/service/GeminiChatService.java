@@ -134,9 +134,6 @@ public class GeminiChatService {
         }).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
-    /**
-     * Step 2: 계획 JSON → Todo/Steps 생성 (전체 응답 병합 후 1회 처리)
-     */
     private Mono<Void> saveTodoAndStepsBuffered(Long userId, String fullContent) {
         if (fullContent == null || !fullContent.contains("{") || !fullContent.contains("steps")) {
             return Mono.empty();
@@ -200,6 +197,7 @@ public class GeminiChatService {
                     UserConversation uc = new UserConversation();
                     uc.setUserId(userId);
                     uc.setState(ConversationState.INTRO);
+                    uc.setPlanSaved(false);
                     conversationRepo.save(uc);
                     log.info("🆕 새 대화 생성 (userId={})", userId);
                     return uc;
@@ -264,7 +262,7 @@ public class GeminiChatService {
                 }
                 case ASK_DAYS -> {
                     try {
-                        DayConverter.parseDays(convo.getStudyDays());
+                        DayConverter.parseDays(userMessage.trim());
                         convo.setStudyDays(userMessage.trim());
                         response = "좋아! 하루 공부 시간을 (분 단위로) 알려줘.";
                         convo.setState(ConversationState.ASK_TIME_PER_DAY);

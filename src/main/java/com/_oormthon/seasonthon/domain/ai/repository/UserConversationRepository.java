@@ -15,4 +15,16 @@ public interface UserConversationRepository extends JpaRepository<UserConversati
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE UserConversation u SET u.content = :content, u.planSaved = false WHERE u.userId = :userId")
     void updateContentByUserId(@Param("userId") Long userId, @Param("content") String content);
+
+    // ✅ 임시 계획 JSON 저장용
+    @Transactional
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE UserConversation u SET u.pendingPlanJson = :json, u.planSaved = false WHERE u.userId = :userId")
+    void updatePendingPlanJson(Long userId, String json);
+
+    // ✅ 임시 계획 JSON 삭제용 (수정 시 "아니"/"수정" 입력 시)
+    @Transactional
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE UserConversation u SET u.pendingPlanJson = NULL, u.planSaved = false WHERE u.userId = :userId")
+    void clearPendingPlanJson(Long userId);
 }
