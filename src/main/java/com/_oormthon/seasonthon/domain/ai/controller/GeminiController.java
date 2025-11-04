@@ -41,14 +41,17 @@ public class GeminiController implements GeminiApiSpecification {
         return chatbotScriptService.connect(userId);
     }
 
-    /**
-     * 🔹 사용자 메시지 전송용
-     */
-
     @PostMapping("/send")
     public void sendMessage(@RequestParam Long userId, @RequestBody String message) {
         log.info("📨 사용자 입력 도착 userId={}, message={}", userId, message);
         chatbotScriptService.handleUserMessage(userId, message);
+    }
+
+    @PostMapping("/disconnect")
+    public ResponseEntity<String> disconnect(@RequestParam Long userId) {
+        log.info("👋 챗봇 세션 종료 요청 userId={}", userId);
+        chatbotScriptService.disconnect(userId);
+        return ResponseEntity.ok("✅ 챗봇 세션이 종료되었습니다.");
     }
 
 }

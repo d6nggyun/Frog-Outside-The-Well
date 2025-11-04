@@ -8,11 +8,11 @@ import java.time.format.DateTimeFormatter;
 public class ChatbotScript {
         private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M월 d일");
 
-        public static String intro() {
-                return "안녕! 🐸\n나는 함께 공부계획을 세워주는 개구리 ‘꾸꾸’야!\n" +
-                                "너가 목표를 세우고 달성할 때마다 나는 우물 밖 세상을 구경할 수 있어.\n" +
-                                "나랑 함께 점프해볼래? 준비됐어?";
-        }
+        // public static String intro() {
+        // return "안녕! 🐸\n나는 함께 공부계획을 세워주는 개구리 ‘꾸꾸’야!\n" +
+        // "너가 목표를 세우고 달성할 때마다 나는 우물 밖 세상을 구경할 수 있어.\n" +
+        // "나랑 함께 점프해볼래? 준비됐어?";
+        // }
 
         public static String readyResponse(String msg) {
                 if (msg.contains("무서") || msg.contains("걱정"))
@@ -124,4 +124,23 @@ public class ChatbotScript {
                                 convo.getStudyDays(),
                                 convo.getDailyMinutes());
         }
+
+        public static String planSummary(UserConversation convo) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M월 d일");
+
+                return String.format(
+                                "우와! 정말 구체적인데? 🐸%n" +
+                                                "지금까지 나온 내용을 내가 한 번 정리해볼게!%n%n" +
+                                                "📘 [%s]%n" +
+                                                "기간: %s ~ %s%n" +
+                                                "요일: %s%n" +
+                                                "1회 집중시간: %d분%n%n" +
+                                                "이제 마지막 단계야. 이 정보를 바탕으로 너에게 맞는 상세 계획표를 만들어줄게!%n%n",
+                                convo.getTitle(),
+                                convo.getStartDate().format(formatter),
+                                convo.getEndDate().format(formatter),
+                                convo.getStudyDays(),
+                                convo.getDailyMinutes());
+        }
+
 }

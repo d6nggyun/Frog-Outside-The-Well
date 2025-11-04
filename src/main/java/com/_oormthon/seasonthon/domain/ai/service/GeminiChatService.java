@@ -86,14 +86,8 @@ public class GeminiChatService {
                                                     if (convo == null)
                                                         return "계획 정보를 찾을 수 없습니다 😢";
 
-                                                    StringBuilder sb = new StringBuilder();
-                                                    sb.append("우와! 엄청 구체적인데? 지금까지 나온 내용을 정리해볼게.\n\n[")
-                                                            .append(convo.getTitle()).append("]\n")
-                                                            .append("기간: ").append(convo.getStartDate()).append(" ~ ")
-                                                            .append(convo.getEndDate()).append("\n")
-                                                            .append("요일: ").append(convo.getStudyDays()).append("\n")
-                                                            .append("1회 집중시간: ").append(convo.getDailyMinutes())
-                                                            .append("분\n\n이제 마지막 단계야. 이 정보를 바탕으로 너에게 맞는 상세 계획표를 만들어줄게!\n\n");
+                                                    StringBuilder sb = new StringBuilder(
+                                                            ChatbotScript.planSummary(convo));
 
                                                     // ✅ steps 출력 (pendingPlanJson 기반)
                                                     if (convo.getPendingPlanJson() != null) {
@@ -201,7 +195,7 @@ public class GeminiChatService {
                 .orElseGet(() -> {
                     UserConversation uc = new UserConversation();
                     uc.setUserId(userId);
-                    uc.setState(ConversationState.INTRO);
+                    uc.setState(ConversationState.ASK_READY);
                     uc.setPlanSaved(false);
                     conversationRepo.save(uc);
                     log.info("🆕 새 대화 생성 (userId={})", userId);
@@ -215,10 +209,10 @@ public class GeminiChatService {
 
         try {
             switch (convo.getState()) {
-                case INTRO -> {
-                    response = ChatbotScript.intro();
-                    convo.setState(ConversationState.ASK_READY);
-                }
+                // case INTRO -> {
+                // response = ChatbotScript.intro();
+                // convo.setState(ConversationState.ASK_READY);
+                // }
                 case ASK_READY -> {
                     response = ChatbotScript.readyResponse(userMessage);
                     convo.setState(ConversationState.ASK_NAME);
@@ -341,7 +335,7 @@ public class GeminiChatService {
 
                 case FINISHED -> {
                     if (userMessage.contains("새로운 계획")) {
-                        convo.setState(ConversationState.INTRO);
+                        convo.setState(ConversationState.ASK_READY);
                         response = "좋아! 🐸 새로운 공부 계획을 세워보자!";
                     } else {
                         response = "이미 계획이 완성됐어 🎯 '새로운 계획'이라고 말해줘!";
