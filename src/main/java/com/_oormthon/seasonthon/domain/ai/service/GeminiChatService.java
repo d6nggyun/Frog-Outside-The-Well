@@ -80,7 +80,43 @@ public class GeminiChatService {
                                                             convo.getTitle() != null ? convo.getTitle() : "");
                                                 }).subscribeOn(Schedulers.boundedElastic());
                                             } else if (result.stepIndex() == 2) {
-                                                return Mono.just("✅ 계획 저장 완료");
+                                                return Mono.fromCallable(() -> {
+                                                    UserConversation convo = conversationRepo.findByUserId(userId)
+                                                            .orElse(null);
+                                                    if (convo == null)
+                                                        return "계획 정보를 찾을 수 없습니다 😢";
+
+                                                    StringBuilder sb = new StringBuilder();
+                                                    sb.append("우와! 엄청 구체적인데? 지금까지 나온 내용을 정리해볼게.\n\n[")
+                                                            .append(convo.getTitle()).append("]\n")
+                                                            .append("기간: ").append(convo.getStartDate()).append(" ~ ")
+                                                            .append(convo.getEndDate()).append("\n")
+                                                            .append("요일: ").append(convo.getStudyDays()).append("\n")
+                                                            .append("1회 집중시간: ").append(convo.getDailyMinutes())
+                                                            .append("분\n\n이제 마지막 단계야. 이 정보를 바탕으로 너에게 맞는 상세 계획표를 만들어줄게!\n\n");
+
+                                                    // ✅ steps 출력 (pendingPlanJson 기반)
+                                                    if (convo.getPendingPlanJson() != null) {
+                                                        try {
+                                                            TodoStepResponse parsed = objectMapper.readValue(
+                                                                    convo.getPendingPlanJson(), TodoStepResponse.class);
+                                                            sb.append("🪜 세부 계획:\n");
+                                                            for (var step : parsed.steps()) {
+                                                                sb.append("• ").append(step.stepDate())
+                                                                        .append(" — ").append(step.description())
+                                                                        .append("\n");
+                                                            }
+                                                        } catch (Exception e) {
+                                                            log.warn("⚠️ Step JSON 파싱 실패: {}", e.getMessage());
+                                                            sb.append("(세부 단계 정보를 불러올 수 없습니다)\n");
+                                                        }
+                                                    } else {
+                                                        sb.append("(세부 단계 정보가 없습니다)\n");
+                                                    }
+
+                                                    sb.append("\n어때? 수정할 부분이 있다면 말해줘.");
+                                                    return sb.toString();
+                                                }).subscribeOn(Schedulers.boundedElastic());
                                             } else {
                                                 return Mono.empty();
                                             }
@@ -147,41 +183,10 @@ public class GeminiChatService {
 
         return Mono.fromCallable(() -> {
             try {
-                TodoStepResponse parsed = objectMapper.readValue(jsonBlock, TodoStepResponse.class);
-                UserConversation convo = conversationRepo.findByUserId(userId).orElse(null);
-                if (convo == null || convo.isPlanSaved())
-                    return null;
-
-                Todo todo = Todo.builder()
-                        .userId(userId)
-                        .title(convo.getTitle())
-                        .content(convo.getContent())
-                        .startDate(convo.getStartDate())
-                        .endDate(convo.getEndDate())
-                        .progress(0)
-                        .expectedDays(DayConverter.parseDays(convo.getStudyDays()))
-                        .isCompleted(false)
-                        .build();
-                todoRepository.save(todo);
-
-                List<TodoStep> todoSteps = parsed.steps().stream()
-                        .map(step -> TodoStep.builder()
-                                .todoId(todo.getId())
-                                .userId(userId)
-                                .stepDate(step.stepDate())
-                                .description(step.description())
-                                .isCompleted(step.isCompleted())
-                                .build())
-                        .toList();
-
-                todoStepRepository.saveAll(todoSteps);
-                convo.setPlanSaved(true);
-                conversationRepo.save(convo);
-
-                log.info("💾 [Buffered] Todo({}) 및 {}개 Step 저장 완료 (userId={})",
-                        todo.getTitle(), todoSteps.size(), userId);
+                conversationRepo.updatePendingPlanJson(userId, jsonBlock);
+                log.info("📝 [Buffered] 계획 JSON 임시 저장 완료 (userId={})", userId);
             } catch (Exception e) {
-                log.warn("⚠️ Step2 JSON 파싱/저장 실패: {}", e.getMessage());
+                log.warn("⚠️ 임시 저장 실패: {}", e.getMessage());
             }
             return null;
         }).subscribeOn(Schedulers.boundedElastic()).then();
@@ -235,7 +240,7 @@ public class GeminiChatService {
                 }
                 case ASK_TASK -> {
                     convo.setTitle(userMessage.trim());
-                    prompt = ChatbotScript.planDetail(userMessage.trim());
+                    prompt = ChatbotScript.planDetail(convo.getUserAge(), userMessage.trim());
                     stepIndex = 1;
                     streaming = true;
                     convo.setState(ConversationState.ASK_START_DATE);
@@ -284,16 +289,56 @@ public class GeminiChatService {
                     }
                 }
                 case CONFIRM_PLAN -> {
-                    if (userMessage.contains("좋아") || userMessage.contains("응")) {
+                    if (userMessage.contains("좋아") || userMessage.contains("응") || userMessage.contains("저장")) {
+                        try {
+                            if (convo.getPendingPlanJson() != null && !convo.isPlanSaved()) {
+                                TodoStepResponse parsed = objectMapper.readValue(convo.getPendingPlanJson(),
+                                        TodoStepResponse.class);
+
+                                Todo todo = Todo.builder()
+                                        .userId(userId)
+                                        .title(convo.getTitle())
+                                        .content(convo.getContent())
+                                        .startDate(convo.getStartDate())
+                                        .endDate(convo.getEndDate())
+                                        .progress(0)
+                                        .expectedDays(DayConverter.parseDays(convo.getStudyDays()))
+                                        .isCompleted(false)
+                                        .build();
+                                todoRepository.save(todo);
+
+                                List<TodoStep> todoSteps = parsed.steps().stream()
+                                        .map(step -> TodoStep.builder()
+                                                .todoId(todo.getId())
+                                                .userId(userId)
+                                                .stepDate(step.stepDate())
+                                                .description(step.description())
+                                                .isCompleted(step.isCompleted())
+                                                .build())
+                                        .toList();
+                                todoStepRepository.saveAll(todoSteps);
+
+                                convo.setPlanSaved(true);
+                                convo.setPendingPlanJson(null); // ✅ 임시 JSON 제거
+                                conversationRepo.save(convo);
+
+                                log.info("💾 CONFIRM_PLAN 단계에서 Todo 및 Steps 최종 저장 완료 (userId={})", userId);
+                            }
+                        } catch (Exception e) {
+                            log.error("❌ CONFIRM_PLAN 단계 저장 중 오류", e);
+                        }
+
                         response = "좋아! 🎉 이 계획으로 진행할게. 화이팅 💪";
                         convo.setState(ConversationState.FINISHED);
                     } else if (userMessage.contains("아니") || userMessage.contains("수정")) {
-                        response = "괜찮아 😊 어떤 점을 수정할까?";
+                        convo.setPendingPlanJson(null); // ❌ 기존 계획 삭제
+                        response = "괜찮아 😊 어떤 점을 수정할까? 목표부터 다시 정해보자";
                         convo.setState(ConversationState.ASK_TASK);
                     } else {
-                        response = "이 계획으로 진행할까? (좋아 / 수정)";
+                        response = "이 계획으로 진행할까? (좋아 / 응응 / 아니 / 수정 / 저장)으로 답해줘줘";
                     }
                 }
+
                 case FINISHED -> {
                     if (userMessage.contains("새로운 계획")) {
                         convo.setState(ConversationState.INTRO);
