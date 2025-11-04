@@ -12,6 +12,8 @@ import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,38 +27,20 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Slf4j
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class GeminiChatService {
 
     private final UserConversationRepository conversationRepo;
     private final GeminiApiClient geminiApiClient;
     private final TodoStepRepository todoStepRepository;
     private final TodoRepository todoRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private static final Pattern STEPS_JSON_PATTERN = Pattern.compile("\\{.*\"steps\"\\s*:\\s*\\[.*\\].*\\}",
             Pattern.DOTALL);
-
-    private String extractDescription(String content) {
-        if (content == null || !content.contains(":")) {
-            return "";
-        }
-        String[] parts = content.split(":", 2);
-        return parts[1].replace("```", "").trim();
-    }
-
-    public GeminiChatService(
-            UserConversationRepository conversationRepo,
-            GeminiApiClient geminiApiClient,
-            TodoStepRepository todoStepRepository,
-            TodoRepository todoRepository) {
-        this.conversationRepo = conversationRepo;
-        this.geminiApiClient = geminiApiClient;
-        this.todoStepRepository = todoStepRepository;
-        this.todoRepository = todoRepository;
-    }
 
     /**
      * 사용자 메시지 처리 (Gemini 스트리밍 포함)
@@ -77,7 +61,6 @@ public class GeminiChatService {
                                 .doOnNext(chunk -> log.debug("🧩 Gemini 응답 조각: {}", chunk))
                                 .collectList()
                                 .flatMapMany(chunks -> {
-                                    log.info("📘 청크 (chunks={})", chunks);
                                     String merged = String.join("", chunks);
                                     return trySaveTodoAndStepsReactive(userId, merged, result.stepIndex())
                                             .thenMany(Flux.fromIterable(chunks)); // 원본 스트림 그대로 반환
@@ -138,11 +121,7 @@ public class GeminiChatService {
     /**
      * Step 1: 계획 설명 (전체 응답 병합 후 1회 저장)
      */
-    private Mono<Void> savePlanDescriptionBuffered(Long userId, String fullContent) {
-        log.info("📘 Initial 설명 (fullContent={})", fullContent);
-
-        String description = extractDescription(fullContent);
-
+    private Mono<Void> savePlanDescriptionBuffered(Long userId, String description) {
         return Mono.fromRunnable(() -> {
             try {
                 conversationRepo.updateContentByUserId(userId, description);
@@ -158,7 +137,6 @@ public class GeminiChatService {
      * Step 2: 계획 JSON → Todo/Steps 생성 (전체 응답 병합 후 1회 처리)
      */
     private Mono<Void> saveTodoAndStepsBuffered(Long userId, String fullContent) {
-        log.info("⚠️ fullContent : {}", fullContent);
         if (fullContent == null || !fullContent.contains("{") || !fullContent.contains("steps")) {
             return Mono.empty();
         }
@@ -184,6 +162,7 @@ public class GeminiChatService {
                         .endDate(convo.getEndDate())
                         .progress(0)
                         .expectedDays(DayConverter.parseDays(convo.getStudyDays()))
+                        .isCompleted(false)
                         .build();
                 todoRepository.save(todo);
 

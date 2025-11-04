@@ -20,6 +20,7 @@ import reactor.netty.http.client.HttpClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
@@ -74,10 +75,12 @@ public class GeminiApiClient {
 
         log.info("🚀 Gemini SSE 요청 시작: {}", prompt);
         StringBuilder buffer = new StringBuilder();
-        int[] openBraces = { 0 };
+        AtomicInteger curly = new AtomicInteger(0);
+        AtomicInteger square = new AtomicInteger(0);
+
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/gemini-2.0-flash:streamGenerateContent")
+                        .path("/gemini-2.5-flash:streamGenerateContent")
                         .queryParam("key", apiKey)
                         .build())
                 .bodyValue(requestBody)
@@ -85,32 +88,39 @@ public class GeminiApiClient {
                 .retrieve()
                 .bodyToFlux(String.class)
                 .flatMap(line -> {
-                    String trimmed = line.trim();
-                    if (trimmed.isEmpty())
+                    if (line == null || line.isBlank())
                         return Flux.empty();
-                    buffer.append(trimmed);
-                    for (char c : trimmed.toCharArray()) {
+
+                    buffer.append(line.trim());
+                    for (char c : line.toCharArray()) {
                         if (c == '{')
-                            openBraces[0]++;
+                            curly.incrementAndGet();
                         else if (c == '}')
-                            openBraces[0]--;
+                            curly.decrementAndGet();
+                        else if (c == '[')
+                            square.incrementAndGet();
+                        else if (c == ']')
+                            square.decrementAndGet();
                     }
-                    if (openBraces[0] != 0)
+
+                    // JSON 구조가 아직 닫히지 않으면 계속 누적
+                    if (curly.get() > 0 || square.get() > 0) {
                         return Flux.empty();
+                    }
                     // JSON 불완전 → 대기
                     String json = buffer.toString();
                     buffer.setLength(0);
+                    curly.set(0);
+                    square.set(0);
 
                     try {
                         JsonNode node = mapper.readTree(json);
-                        JsonNode textNode = node.at("/candidates/0/content/parts/0/text");
-                        if (textNode.isMissingNode()) {
-                            return Flux.empty();
+                        if (node.isArray()) {
+                            return Flux.fromIterable(node)
+                                    .flatMap(this::extractText);
+                        } else {
+                            return extractText(node);
                         }
-
-                        String cleanedDescription = cleanJsonResponse(textNode.asText());
-                        log.info("🧩 Gemini partial text: {}", cleanedDescription);
-                        return Flux.just(cleanedDescription);
 
                     } catch (Exception e) {
                         log.warn("⚠️ SSE 파싱 실패: {}", json, e);
@@ -121,5 +131,14 @@ public class GeminiApiClient {
                 .doOnError(e -> log.error("🔥 Gemini SSE 오류 발생", e))
                 .doOnCancel(() -> log.warn("⚠️ Gemini SSE 스트림이 클라이언트에 의해 취소됨"))
                 .doFinally(signal -> log.info("✅ Gemini SSE 스트림 종료 (signal: {})", signal));
+    }
+
+    private Flux<String> extractText(JsonNode node) {
+        JsonNode textNode = node.at("/candidates/0/content/parts/0/text");
+        if (textNode.isMissingNode())
+            return Flux.empty();
+        String cleaned = cleanJsonResponse(textNode.asText());
+        log.info("🧩 Gemini 응답 텍스트 조각: {}", cleaned);
+        return Flux.just(cleaned);
     }
 }
