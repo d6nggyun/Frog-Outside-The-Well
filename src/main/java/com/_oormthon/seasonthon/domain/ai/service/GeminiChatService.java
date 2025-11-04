@@ -108,7 +108,7 @@ public class GeminiChatService {
                                                         sb.append("(세부 단계 정보가 없습니다)\n");
                                                     }
 
-                                                    sb.append("\n어때? 수정할 부분이 있다면 말해줘.");
+                                                    sb.append("\n이 계획으로 진행해도 될까?");
                                                     return sb.toString();
                                                 }).subscribeOn(Schedulers.boundedElastic());
                                             } else {
