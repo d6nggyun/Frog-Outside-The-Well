@@ -35,6 +35,12 @@ public interface DailyLogApiSpecification {
         })
         ResponseEntity<DailyLogBeforeResponse> getTodayBefore(@AuthenticationPrincipal User user);
 
+        @Operation(summary = "특정 날짜의 DailyLogBefore 조회", description = "요청된 날짜(`date`)의 DailyLogBefore를 조회합니다. 기록이 없으면 204(No Content)를 반환합니다.", responses = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "DailyLogBefore 조회 성공", content = @Content(schema = @Schema(implementation = DailyLogBeforeResponse.class))),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "요청한 날짜의 기록이 없습니다.")
+        })
+        ResponseEntity<DailyLogBeforeResponse> getBeforeByDate(@AuthenticationPrincipal User user, String dateStr);
+
         @Operation(summary = "이번 주 WeatherType 통계", description = "사용자의 이번 주 DailyLogBefore 장소별 합계를 조회합니다.", responses = {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "WeatherType 합계 조회")
         })
@@ -51,6 +57,13 @@ public interface DailyLogApiSpecification {
                         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한이 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class)))
         })
         ResponseEntity<DailyLogAfterResponse> createAfter(@AuthenticationPrincipal User user,
+                        @Valid DailyLogAfterRequest request);
+
+        @Operation(summary = "특정 날짜의 DailyLogAfter 생성", description = "요청된 날짜(`date`)의 DailyLogAfter를 생성합니다. `date` 파라미터가 없을 경우 오늘 날짜로 생성됩니다.", responses = {
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "DailyLogAfter 생성 완료", content = @Content(schema = @Schema(implementation = DailyLogAfterResponse.class))),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한이 없습니다.", content = @Content(schema = @Schema(implementation = ErrorResponseEntity.class)))
+        })
+        ResponseEntity<DailyLogAfterResponse> createAfterByDate(@AuthenticationPrincipal User user, String dateStr,
                         @Valid DailyLogAfterRequest request);
 
         @Operation(summary = "오늘 DailyLogAfter 조회", description = "사용자의 오늘 DailyLogAfter를 조회합니다.", responses = {

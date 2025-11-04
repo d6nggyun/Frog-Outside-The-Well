@@ -81,6 +81,14 @@ public class DailyLogServiceImpl implements DailyLogService {
                                 .map(DailyLogBeforeResponse::fromEntity);
         }
 
+        @Override
+        public Optional<DailyLogBeforeResponse> getBeforeByDate(Long userId, LocalDate date) {
+                return dailyLogBeforeRepository.findByUserIdAndCreatedAtBetween(userId, date, date)
+                                .stream()
+                                .findFirst()
+                                .map(DailyLogBeforeResponse::fromEntity);
+        }
+
         // ===== 오늘의 DailyLogAfter =====
         @Override
         public Optional<DailyLogAfterResponse> getTodayAfter(Long userId) {
@@ -89,6 +97,14 @@ public class DailyLogServiceImpl implements DailyLogService {
                                 .stream()
                                 .findFirst()
                                 .map(DailyLogAfterResponse::fromEntity);
+        }
+
+        @Override
+        public DailyLogAfterResponse createAfterByDate(User user, LocalDate date, DailyLogAfterRequest request) {
+                DailyLogAfter entity = DailyLogAfter.createDailyLogAfter(user, request);
+                entity.setCreatedAt(date); // 작성 날짜 지정 (createdAt이 LocalDateTime인 경우)
+                DailyLogAfter saved = dailyLogAfterRepository.save(entity);
+                return DailyLogAfterResponse.fromEntity(saved);
         }
 
         // ===== Helper =====

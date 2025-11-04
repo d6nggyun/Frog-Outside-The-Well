@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -40,11 +41,33 @@ public class DailyLogController implements DailyLogApiSpecification {
         return ResponseEntity.status(HttpStatus.CREATED).body(dailyLogService.createAfter(user, request));
     }
 
+    @PostMapping("/after/date")
+    public ResponseEntity<DailyLogAfterResponse> createAfterByDate(
+            @AuthenticationPrincipal User user,
+            @RequestParam(value = "date", required = false) String dateStr,
+            @RequestBody DailyLogAfterRequest request) {
+
+        LocalDate date = (dateStr != null) ? LocalDate.parse(dateStr) : LocalDate.now();
+        DailyLogAfterResponse response = dailyLogService.createAfterByDate(user, date, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     // 오늘의 DailyLogBefore 조회
-    @GetMapping("/before/today")
+    @GetMapping("/before")
     public ResponseEntity<DailyLogBeforeResponse> getTodayBefore(@AuthenticationPrincipal User user) {
         return dailyLogService.getTodayBefore(user.getUserId())
                 .map(log -> ResponseEntity.status(HttpStatus.OK).body(log))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
+    }
+
+    @GetMapping("/before/date")
+    public ResponseEntity<DailyLogBeforeResponse> getBeforeByDate(
+            @AuthenticationPrincipal User user,
+            @RequestParam("date") String dateStr) {
+
+        LocalDate date = LocalDate.parse(dateStr);
+        return dailyLogService.getBeforeByDate(user.getUserId(), date)
+                .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 

@@ -7,6 +7,7 @@ import com._oormthon.seasonthon.domain.dailyLog.dto.response.DailyLogBeforeRespo
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.dailyLog.enums.WeatherType;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
@@ -18,7 +19,11 @@ public interface DailyLogService {
     // DailyLogAfter
     DailyLogAfterResponse createAfter(User user, DailyLogAfterRequest request);
 
+    DailyLogAfterResponse createAfterByDate(User user, LocalDate date, DailyLogAfterRequest request);
+
     Optional<DailyLogBeforeResponse> getTodayBefore(Long userId);
+
+    Optional<DailyLogBeforeResponse> getBeforeByDate(Long userId, LocalDate date);
 
     Optional<DailyLogAfterResponse> getTodayAfter(Long userId);
 
