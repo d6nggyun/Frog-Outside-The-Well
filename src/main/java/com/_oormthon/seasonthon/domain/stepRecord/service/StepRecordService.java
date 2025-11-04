@@ -57,6 +57,7 @@ public class StepRecordService {
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
         stepRecord.pauseStep(request.endTime(), request.duration());
+        todoStep.updateTotalDuration(request.duration());
 
         Boolean isCompletedTodaySteps = checkAllStepsCompletedToday(user);
 
@@ -65,29 +66,31 @@ public class StepRecordService {
 
     @Transactional
     public StepRecordResponse stopStep(User user, Long stepId, StepStopRequest request) {
+        Long userId = user.getUserId();
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
-        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
+        stepQueryService.validateStepOwnership(userId, stepId);
 
-        StepRecord stepRecord = stepRecordQueryService.getStepRecordByUserIdAndStepId(user.getUserId(), stepId);
+        StepRecord stepRecord = stepRecordQueryService.getStepRecordByUserIdAndStepId(userId, stepId);
 
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
         stepRecord.stopStep(request.endTime(), request.duration());
 
-        completeStep(todoStep);
+        completeStep(todoStep, request.endTime());
+        todoStep.updateTotalDuration(request.duration());
 
-        StepCalendar stepCalendar = stepCalendarService.saveStepCalendar(user.getUserId(), LocalDate.now());
-        stepCalendarService.saveStepCalendarTodoStep(stepCalendar.getId(), stepId);
+        StepCalendar stepCalendar = stepCalendarService.saveAndUpdateStepCalendar(userId, todoStep.getStepDate());
+        stepCalendarService.saveStepCalendarTodoStep(userId, stepCalendar.getId(), stepId);
 
         Boolean isCompletedTodaySteps = checkAllStepsCompletedToday(user);
 
         return StepRecordResponse.of(stepRecord, todo.getProgress(), isCompletedTodaySteps);
     }
 
-    private void completeStep(TodoStep todoStep) {
+    private void completeStep(TodoStep todoStep, LocalDateTime endTime) {
         if (todoStep.isCompleted())
             return;
-        todoStep.completeStep();
+        todoStep.completeStep(endTime);
 
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());

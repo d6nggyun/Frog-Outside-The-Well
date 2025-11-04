@@ -44,7 +44,7 @@ public class StepCalendarService {
         return ListStepCalendarResponse.from(stepCalendarResponses, TaskToDo);
     }
 
-    public StepCalendar saveStepCalendar(Long userId, LocalDate date) {
+    public StepCalendar saveAndUpdateStepCalendar(Long userId, LocalDate date) {
         StepCalendar stepCalendar = stepCalendarRepository.findByUserIdAndCalendarDate(userId, date)
                 .orElseGet(() -> {
                     StepCalendar newStepCalendar = StepCalendar.builder()
@@ -55,8 +55,8 @@ public class StepCalendarService {
                     return stepCalendarRepository.save(newStepCalendar);
                 });
 
-        int totalDailySteps = stepQueryService.countTodoStepsByUserIdAndDate(userId, date);
-        int completedDailySteps = stepQueryService.countCompletedTodoStepsByUserIdAndDate(userId, date);
+        int totalDailySteps = stepQueryService.countTodoStepsByUserIdAndStepDate(userId, date);
+        int completedDailySteps = stepQueryService.countCompletedTodoStepsByUserIdAndStepDate(userId, date);
         int percentage = totalDailySteps == 0 ? 0 : (completedDailySteps * 100 / totalDailySteps);
 
         stepCalendar.updatePercentage(percentage);
@@ -64,13 +64,13 @@ public class StepCalendarService {
         return stepCalendar;
     }
 
-    public void saveStepCalendarTodoStep(Long stepCalendarId, Long todoStepId) {
+    public void saveStepCalendarTodoStep(Long userId, Long stepCalendarId, Long todoStepId) {
         boolean exists = stepCalendarTodoStepRepository
-                .existsByStepCalendarIdAndTodoStepId(stepCalendarId, todoStepId);
+                .existsByUserIdAndStepCalendarIdAndTodoStepId(userId, stepCalendarId, todoStepId);
 
         if (!exists) {
             stepCalendarTodoStepRepository
-                    .save(StepCalendarTodoStep.builder().stepCalendarId(stepCalendarId).todoStepId(todoStepId).build());
+                    .save(StepCalendarTodoStep.builder().userId(userId).stepCalendarId(stepCalendarId).todoStepId(todoStepId).build());
         }
     }
 

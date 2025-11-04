@@ -47,7 +47,7 @@ public interface UserApiSpecification {
 
     @Operation(
             summary = "회원 정보 수정",
-            description = "로그인한 사용자의 정보를 수정합니다.<br>" +
+            description = "로그인한 사용자의 정보를 수정합니다.<br><br>" +
                     "입력되지 않은 필드는 기존 값이 유지됩니다.<br><br>" +
                     "School Enum 값: ELEMENTARY, MIDDLE, HIGH, UNIVERSITY",
             responses = {

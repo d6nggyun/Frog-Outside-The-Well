@@ -34,7 +34,7 @@ public class StepRecord {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    private Long duration;
+    private long duration = 0L;
 
     @Column(name = "break_count")
     private int breakCount = 0;
@@ -47,12 +47,11 @@ public class StepRecord {
     private LocalDate createdAt;
 
     @Builder
-    private StepRecord(Long stepId, Long userId, LocalDateTime startTime, LocalDateTime endTime, Long duration, Boolean isCompleted) {
+    private StepRecord(Long stepId, Long userId, LocalDateTime startTime, LocalDateTime endTime, Boolean isCompleted) {
         this.stepId = stepId;
         this.userId = userId;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.duration = duration;
         this.isCompleted = isCompleted;
     }
 
@@ -62,7 +61,6 @@ public class StepRecord {
                 .userId(userId)
                 .startTime(startTime)
                 .endTime(null)
-                .duration(0L)
                 .isCompleted(false)
                 .build();
     }

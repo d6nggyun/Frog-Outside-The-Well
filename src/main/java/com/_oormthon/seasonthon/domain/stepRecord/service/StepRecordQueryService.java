@@ -39,4 +39,8 @@ public class StepRecordQueryService {
     public List<TodoDurationGroup> findTodoDurationGroup(Long userId, LocalDate date) {
         return stepRecordRepository.findTodoDurationGroup(userId, date);
     }
+
+    public void deleteByStepId(Long stepId) {
+        stepRecordRepository.deleteByStepId(stepId);
+    }
 }

@@ -34,11 +34,11 @@ public class StepQueryService {
         }
     }
 
-    public int countTodoStepsByUserIdAndDate(Long userId, LocalDate date) {
+    public int countTodoStepsByUserIdAndStepDate(Long userId, LocalDate date) {
         return todoStepRepository.countByUserIdAndStepDate(userId, date);
     }
 
-    public int countCompletedTodoStepsByUserIdAndDate(Long userId, LocalDate date) {
+    public int countCompletedTodoStepsByUserIdAndStepDate(Long userId, LocalDate date) {
         return todoStepRepository.countByUserIdAndIsCompletedTrueAndStepDate(userId, date);
     }
 
@@ -54,11 +54,27 @@ public class StepQueryService {
         return todoStepRepository.findAllMissedStepResponseByUserIdAndStepDate(userId, now);
     }
 
+    public List<StepResponse> findAllCompletedMissedStepsByUserIdAndStepDate(Long userId, LocalDate yesterday, LocalDate now) {
+        return todoStepRepository.findAllCompletedMissedStepResponseByUserIdAndStepDate(userId, yesterday, now);
+    }
+
+    public List<TodoStep> getAllTodoStepByTodoId(Long todoId) {
+        return todoStepRepository.findAllByTodoId(todoId);
+    }
+  
+    public List<TodoStep> getTodoStepsByUserIdAndMonth(Long userId, LocalDate startDate, LocalDate endDate) {
+        return todoStepRepository.findAllTodoStepOverlappingPeriod(userId, startDate, endDate);
+    }
+
     public List<StepResponse> findAllStepsByUserIdAndTodoIdAndStepDate(Long userId, Long todoId, LocalDate date) {
         return todoStepRepository.findAllStepResponseByUserIdAndStepDateAndTodoId(userId, todoId, date);
     }
 
     public List<StepResponse> findAllMissedStepsByUserIdAndTodoIdAndStepDate(Long userId, Long todoId, LocalDate date) {
         return todoStepRepository.findAllMissedStepResponseByUserIdAndStepDateAndTodoId(userId, todoId, date);
+    }
+
+    public List<StepResponse> findAllCompletedMissedStepsByUserIdAndTodoIdAndStepDate(Long userId, Long todoId, LocalDate yesterday, LocalDate now) {
+        return todoStepRepository.findAllCompletedMissedStepResponseByUserIdAndStepDateAndTodoId(userId, todoId, yesterday, now);
     }
 }

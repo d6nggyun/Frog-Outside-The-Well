@@ -9,7 +9,7 @@ import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarQueryService;
 import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarService;
-import com._oormthon.seasonthon.domain.stepRecord.repository.StepRecordRepository;
+import com._oormthon.seasonthon.domain.stepRecord.service.StepRecordQueryService;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.enums.TodoText;
@@ -34,11 +34,11 @@ import java.util.stream.Collectors;
 public class StepService {
 
     private final TodoStepRepository todoStepRepository;
-    private final StepRecordRepository stepRecordRepository;
     private final StepQueryService stepQueryService;
     private final TodoQueryService todoQueryService;
     private final StepCalendarService stepCalendarService;
     private final StepCalendarQueryService stepCalendarQueryService;
+    private final StepRecordQueryService stepRecordQueryService;
 
     @Transactional(readOnly = true)
     public TodoStepResponse getTodoSteps(User user, Long todoId) {
@@ -58,8 +58,11 @@ public class StepService {
                 .findAllStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
         List<StepResponse> missedStepResponses = stepQueryService
                 .findAllMissedStepsByUserIdAndStepDate(user.getUserId(), LocalDate.now());
+        List<StepResponse> completedMissedStepResponses = stepQueryService
+                .findAllCompletedMissedStepsByUserIdAndStepDate(user.getUserId(),
+                        LocalDate.now().minusDays(1), LocalDate.now());
 
-        return OneStepResponse.of(todayStepResponses, missedStepResponses);
+        return OneStepResponse.of(todayStepResponses, missedStepResponses, completedMissedStepResponses);
     }
 
     @Transactional(readOnly = true)
@@ -68,8 +71,11 @@ public class StepService {
                 .findAllStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId, LocalDate.now());
         List<StepResponse> missedStepResponses = stepQueryService
                 .findAllMissedStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId, LocalDate.now());
+        List<StepResponse> completedMissedStepResponses = stepQueryService
+                .findAllCompletedMissedStepsByUserIdAndTodoIdAndStepDate(user.getUserId(), todoId,
+                        LocalDate.now().minusDays(1), LocalDate.now());
 
-        return OneStepResponse.of(todayStepResponses, missedStepResponses);
+        return OneStepResponse.of(todayStepResponses, missedStepResponses, completedMissedStepResponses);
     }
 
     @Transactional
@@ -130,15 +136,15 @@ public class StepService {
 
     @Transactional
     public List<StepResponse> deleteStep(User user, Long stepId) {
-        stepQueryService.getTodoStepById(stepId);
-        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
-
         TodoStep todoStep = stepQueryService.getTodoStepById(stepId);
+        stepQueryService.validateStepOwnership(user.getUserId(), stepId);
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
+        LocalDate date = todoStep.getStepDate();
 
         stepCalendarQueryService.deleteByTodoSteps(List.of(todoStep));
-
         todoStepRepository.deleteById(stepId);
+        stepRecordQueryService.deleteByStepId(stepId);
+        stepCalendarService.saveAndUpdateStepCalendar(user.getUserId(), date);
 
         return newTodoStepResponse(todo);
     }
