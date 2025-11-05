@@ -80,41 +80,64 @@ public class ChatbotScript {
 
         public static String planPrompt(UserConversation convo) {
                 return String.format("""
-                                당신은 일정 관리 보조 AI입니다.
-                                주어진 큰 업무를 실천 가능한 작은 Todo 항목들로 나누세요.
-                                사용자 정보를 바탕으로 현실적이고 동기부여가 되는 학습 계획을 제시하세요.
+                                                            당신은 일정 관리 보조 AI입니다.
+                                                            주어진 큰 업무를 사용자의 목표와 기간을 기반으로 실천 가능한 세부 단계(step)들을 제안하고,
+                                                            각 단계마다 도움이 되는 구체적인 팁(tips)을 함께 생성해야 합니다.
+                                                            사용자 정보를 바탕으로 현실적이고 동기부여가 되는 학습 계획을 제시하세요.
 
-                                [사용자 정보]
-                                - 이름: %s
-                                - 나이: %d
-                                - 주제: %s
-                                - 업무 설명: %s
-                                - 기간: %s ~ %s
-                                - 공부 요일: %s
-                                - 하루 공부 시간: %d분
-                                반드시 아래 JSON 스키마를 따르세요.
-                                마크다운 코드블록(````json`) 없이 순수 JSON만 반환하세요.
+                                                            [사용자 정보]
+                                                            - 이름: %s
+                                                            - 나이: %d
+                                                            - 주제: %s
+                                                            - 업무 설명: %s
+                                                            - 기간: %s ~ %s
+                                                            - 공부 요일: %s
+                                                            - 하루 공부 시간: %d분
+                                [출력 규칙]
+                                                            - 반드시 아래 JSON 스키마를 따르세요.
+                                                            - 마크다운 코드블록(````json`) 없이 순수 JSON만 반환
+                                - 각 step에는 "description"과 "tips" 배열을 반드시 포함
+                                - tip은 3~5개, '~하기', '~정하기' 등 명사형 어미로 끝내기
+                                                            - 단계 순서는 시간 흐름이나 수행 순서에 맞게 정렬
+                                                            - description의 내용은 항상 ~하기나 명사형으로 마무리하세요.
+                                                            - 시작일과 마감일은 항상 정확하게 고려하세요.
 
-                                description의 내용은 항상 ~하기나 명사형으로 마무리하세요.
-
-                                시작일과 마감일은 항상 정확하게 고려하세요.
-                                {
-                                    "dDay": "D-3",
-                                    "title": "큰 업무 제목",
-                                    "endDate": "2025-09-05",
-                                    "progressText": "진행 상황 설명",
-                                    "progress": 0,
-                                    "steps": [
-                                      {
-                                        "stepDate": "2025-09-02",
-                                        "stepOrder": 1,
-                                        "description": "세부 작업 설명",
-                                        "count": 0,
-                                        "isCompleted": false
-                                      }
-                                    ]
-                                }
-                                                                """,
+                                [출력 예시]
+                                                            {
+                                                                "dDay": "D-3",
+                                                                "title": "영어 수행평가 준비",
+                                                                "endDate": "2025-09-05",
+                                                                "progressText": "진행 상황 설명",
+                                                                "progress": 0,
+                                                                "steps": [
+                                                                  {
+                                                                    "stepDate": "2025-09-02",
+                                                                    "stepOrder": 1,
+                                                                    "description": "여행 목적지 정하기 & 일정 개요 구성",
+                                                                    "count": 0,
+                                                                    "isCompleted": false,
+                                	"tips": [
+                                                                    "좋아하는 테마(자연/도시/문화) 먼저 고르기",
+                                                                    "현실성 고려(기간, 거리, 비용)",
+                                                                    "영어 표현이 쉬운 나라 선택",
+                                                                    "하루별 핵심 활동 1~2개만 정리"
+                                                                  ]
+                                                                  },
+                                	{
+                                                                    "stepDate": "2025-09-03",
+                                                                    "stepOrder": 2,
+                                                                    "description": "필요한 표현과 문장 정리하기",
+                                                                    "count": 0,
+                                                                    "isCompleted": false,
+                                	"tips": [
+                                                                    "주제별 핵심 문장 5개 정리하기",
+                                                                    "자주 쓰는 연결 표현 익히기",
+                                                                    "발음이 어려운 단어 연습하기"
+                                                                  ]
+                                                                  },
+                                                                ]
+                                                            }
+                                                                                            """,
                                 convo.getUserName(),
                                 convo.getUserAge(),
                                 convo.getTitle(),

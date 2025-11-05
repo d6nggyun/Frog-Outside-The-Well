@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "todo_step")
@@ -51,13 +52,18 @@ public class TodoStep {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "tips")
+    private List<String> tips;
+
     @Builder
-    private TodoStep(Long todoId, Long userId, LocalDate stepDate, String description, Boolean isCompleted) {
+    private TodoStep(Long todoId, Long userId, LocalDate stepDate, String description, Boolean isCompleted,
+            List<String> tips) {
         this.todoId = todoId;
         this.userId = userId;
         this.stepDate = stepDate;
         this.description = description;
         this.isCompleted = isCompleted;
+        this.tips = tips;
     }
 
     public static TodoStep createTodoStep(Long todoId, Long userId, StepRequest stepRequest) {
@@ -67,6 +73,7 @@ public class TodoStep {
                 .stepDate(stepRequest.stepDate())
                 .description(stepRequest.description())
                 .isCompleted(false)
+                .tips(stepRequest.tips())
                 .build();
     }
 

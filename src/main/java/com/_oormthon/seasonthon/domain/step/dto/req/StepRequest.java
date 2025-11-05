@@ -5,17 +5,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Schema(description = "Step 생성 요청")
 public record StepRequest(
 
-        @Schema(description = "날짜", example = "2025-09-02")
-        @NotNull(message = "날짜가 비어있습니다.")
-        LocalDate stepDate,
+                @Schema(description = "날짜", example = "2025-09-02") @NotNull(message = "날짜가 비어있습니다.") LocalDate stepDate,
 
-        @Schema(description = "내용", example = "ToDo ERD 설계")
-        @NotBlank(message = "내용이 비어있습니다.")
-        String description
+                @Schema(description = "내용", example = "ToDo ERD 설계") @NotBlank(message = "내용이 비어있습니다.") String description,
+
+                @Schema(description = "내용", example = "tips") @NotBlank(message = "내용이 비어있습니다.") List<String> tips
 
 ) {
 }

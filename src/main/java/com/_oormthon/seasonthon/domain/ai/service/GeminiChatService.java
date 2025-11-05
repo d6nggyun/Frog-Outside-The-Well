@@ -93,6 +93,14 @@ public class GeminiChatService {
                                                                 sb.append("• ").append(step.stepDate())
                                                                         .append(" — ").append(step.description())
                                                                         .append("\n");
+                                                                // ✅ Tips 출력 추가
+                                                                if (step.tips() != null && !step.tips().isEmpty()) {
+                                                                    for (String tip : step.tips()) {
+                                                                        sb.append("   💡 ").append(tip).append("\n");
+                                                                    }
+                                                                }
+
+                                                                sb.append("\n"); // step 간 간격
                                                             }
                                                         } catch (Exception e) {
                                                             log.warn("⚠️ Step JSON 파싱 실패: {}", e.getMessage());

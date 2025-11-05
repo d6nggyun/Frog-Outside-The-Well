@@ -132,6 +132,7 @@ public class GeminiService {
                                                         .stepDate(step.stepDate())
                                                         .description(step.description())
                                                         .isCompleted(step.isCompleted())
+                                                        .tips(step.tips())
                                                         .build())
                                         .toList();
                         List<TodoStep> savedSteps = todoStepRepository.saveAll(todoSteps);
