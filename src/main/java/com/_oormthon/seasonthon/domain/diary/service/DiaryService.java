@@ -41,12 +41,10 @@ public class DiaryService {
     }
 
     @Transactional(readOnly = true)
-    public DiaryDetailResponse getDiaryDetail(User user, LocalDate date) {
-        DailyLogBefore dailyLogBefore = getDailyLogBefore(user.getUserId(), date);
-        DailyLogAfter dailyLogAfter = getDailyLogAfter(user.getUserId(), date);
+    public List<TodayCompletedTodoResponse> getTodayCompletedTodoResponses(User user, LocalDate date) {
 
-        List<TodoDurationGroup> todoDurationGroups =
-                stepRecordQueryService.findTodoDurationGroup(user.getUserId(), date);
+        List<TodoDurationGroup> todoDurationGroups = stepRecordQueryService.findTodoDurationGroup(user.getUserId(),
+                date);
 
         long total = todoDurationGroups.stream()
                 .map(TodoDurationGroup::getTotalDuration)
@@ -56,14 +54,43 @@ public class DiaryService {
 
         List<TodayCompletedTodoResponse> todayCompletedTodoResponses = todoDurationGroups.stream()
                 .map(tdg -> {
-                        Long secs = tdg.getTotalDuration() == null ? 0L : tdg.getTotalDuration();
-                        Double ratio = (total == 0) ? 0.0 : (double) secs / total;
-                        return TodayCompletedTodoResponse.of(
-                                tdg.getTodoId(),
-                                tdg.getTodoTitle(),
-                                secs,
-                                ratio
-                        );
+                    Long secs = tdg.getTotalDuration() == null ? 0L : tdg.getTotalDuration();
+                    Double ratio = (total == 0) ? 0.0 : (double) secs / total;
+                    return TodayCompletedTodoResponse.of(
+                            tdg.getTodoId(),
+                            tdg.getTodoTitle(),
+                            secs,
+                            ratio);
+                })
+                .sorted(Comparator.comparingDouble(TodayCompletedTodoResponse::ratio).reversed())
+                .toList();
+
+        return todayCompletedTodoResponses;
+    }
+
+    @Transactional(readOnly = true)
+    public DiaryDetailResponse getDiaryDetail(User user, LocalDate date) {
+        DailyLogBefore dailyLogBefore = getDailyLogBefore(user.getUserId(), date);
+        DailyLogAfter dailyLogAfter = getDailyLogAfter(user.getUserId(), date);
+
+        List<TodoDurationGroup> todoDurationGroups = stepRecordQueryService.findTodoDurationGroup(user.getUserId(),
+                date);
+
+        long total = todoDurationGroups.stream()
+                .map(TodoDurationGroup::getTotalDuration)
+                .filter(Objects::nonNull)
+                .mapToLong(Long::longValue)
+                .sum();
+
+        List<TodayCompletedTodoResponse> todayCompletedTodoResponses = todoDurationGroups.stream()
+                .map(tdg -> {
+                    Long secs = tdg.getTotalDuration() == null ? 0L : tdg.getTotalDuration();
+                    Double ratio = (total == 0) ? 0.0 : (double) secs / total;
+                    return TodayCompletedTodoResponse.of(
+                            tdg.getTodoId(),
+                            tdg.getTodoTitle(),
+                            secs,
+                            ratio);
                 })
                 .sorted(Comparator.comparingDouble(TodayCompletedTodoResponse::ratio).reversed())
                 .toList();
