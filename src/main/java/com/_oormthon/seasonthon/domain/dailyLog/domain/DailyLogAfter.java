@@ -54,7 +54,7 @@ public class DailyLogAfter {
 
     // 작성날 (자동 저장)
     @CreationTimestamp
-    @Column(updatable = false, nullable = false)
+    @Column(updatable = true, nullable = false)
     private LocalDate createdAt;
 
     public static DailyLogAfter createDailyLogAfter(User user, DailyLogAfterRequest dailyLogAfterRequest) {
