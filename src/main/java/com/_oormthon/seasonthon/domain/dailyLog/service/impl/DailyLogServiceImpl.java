@@ -32,8 +32,15 @@ public class DailyLogServiceImpl implements DailyLogService {
         // ===== DailyLogBefore 생성 =====
         @Override
         public DailyLogBeforeResponse createBefore(User user, DailyLogBeforeRequest request) {
-                DailyLogBefore entity = DailyLogBefore.createDailyLogBefore(user, request);
+                LocalDate today = LocalDate.now();
+                // 중복 방지 로직
+                dailyLogBeforeRepository.findByUserIdAndCreatedAt(user.getUserId(), today)
+                                .ifPresent(existing -> {
+                                        throw new IllegalStateException("오늘의 일일 로그(Before)는 이미 작성되었습니다.");
+                                });
 
+                DailyLogBefore entity = DailyLogBefore.createDailyLogBefore(user, request);
+                entity.setCreatedAt(today);
                 DailyLogBefore saved = dailyLogBeforeRepository.save(entity);
                 return DailyLogBeforeResponse.fromEntity(saved);
         }
@@ -41,8 +48,16 @@ public class DailyLogServiceImpl implements DailyLogService {
         // ===== DailyLogAfter 생성 =====
         @Override
         public DailyLogAfterResponse createAfter(User user, DailyLogAfterRequest request) {
-                DailyLogAfter entity = DailyLogAfter.createDailyLogAfter(user, request);
+                LocalDate today = LocalDate.now();
 
+                // 중복 방지 로직
+                dailyLogAfterRepository.findByUserIdAndCreatedAt(user.getUserId(), today)
+                                .ifPresent(existing -> {
+                                        throw new IllegalStateException("오늘의 일일 로그(After)는 이미 작성되었습니다.");
+                                });
+
+                DailyLogAfter entity = DailyLogAfter.createDailyLogAfter(user, request);
+                entity.setCreatedAt(today);
                 DailyLogAfter saved = dailyLogAfterRepository.save(entity);
                 return DailyLogAfterResponse.fromEntity(saved);
         }
@@ -101,8 +116,15 @@ public class DailyLogServiceImpl implements DailyLogService {
 
         @Override
         public DailyLogAfterResponse createAfterByDate(User user, LocalDate date, DailyLogAfterRequest request) {
+
+                // 중복 방지 로직
+                dailyLogAfterRepository.findByUserIdAndCreatedAt(user.getUserId(), date)
+                                .ifPresent(existing -> {
+                                        throw new IllegalStateException(date + "의 일일 로그(After)는 이미 작성되었습니다.");
+                                });
+
                 DailyLogAfter entity = DailyLogAfter.createDailyLogAfter(user, request);
-                entity.setCreatedAt(date); // 작성 날짜 지정 (createdAt이 LocalDateTime인 경우)
+                entity.setCreatedAt(date);
                 DailyLogAfter saved = dailyLogAfterRepository.save(entity);
                 return DailyLogAfterResponse.fromEntity(saved);
         }

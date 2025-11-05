@@ -52,9 +52,7 @@ public class DailyLogAfter {
     // 사진 (파일 경로나 URL)
     private String photoUrl;
 
-    // 작성날 (자동 저장)
-    @CreationTimestamp
-    @Column(updatable = false, nullable = false)
+    // 작성날
     private LocalDate createdAt;
 
     public static DailyLogAfter createDailyLogAfter(User user, DailyLogAfterRequest dailyLogAfterRequest) {

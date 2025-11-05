@@ -26,12 +26,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponseEntity> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponseEntity> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex) {
         ErrorCode errorCode = ErrorCode.VALIDATION_FAILED;
         List<String> errors = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .toList();
-        return ErrorResponseEntity.toResponseEntity(errorCode,"요청한 값이 올바르지 않습니다.", errors);
+        return ErrorResponseEntity.toResponseEntity(errorCode, "요청한 값이 올바르지 않습니다.", errors);
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)
@@ -54,6 +55,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseEntity> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
         ErrorCode errorCode = ErrorCode.METHOD_NOT_ALLOWED;
         String message = "지원하지 않는 HTTP 메서드입니다: " + ex.getMethod();
+        return ErrorResponseEntity.toResponseEntity(errorCode, message, null);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponseEntity> handleIllegalStateException(IllegalStateException ex) {
+        ErrorCode errorCode = ErrorCode.DUPLICATE_RESOURCE; // 새 코드가 없다면 아래 설명 참고
+        String message = ex.getMessage() != null ? ex.getMessage() : "이미 존재하는 데이터입니다.";
         return ErrorResponseEntity.toResponseEntity(errorCode, message, null);
     }
 }

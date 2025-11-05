@@ -36,6 +36,8 @@ public enum ErrorCode {
     DAILY_LOG_AFTER_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "Daily Log After을 찾을 수 없습니다."),
     DAILY_LOG_BEFORE_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "Daily Log Before을 찾을 수 없습니다."),
 
+    DUPLICATE_RESOURCE(HttpStatus.CONFLICT, 409, "이미 존재하는 리소스입니다."),
+
     // Validation
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, 400, "요청한 값이 올바르지 않습니다.");
 

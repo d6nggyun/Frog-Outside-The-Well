@@ -46,8 +46,6 @@ public class DailyLogBefore {
     private WeatherType weather;
 
     // 작성날 (자동 저장)
-    @CreationTimestamp
-    @Column(updatable = false, nullable = false)
     private LocalDate createdAt;
 
     public static DailyLogBefore createDailyLogBefore(User user, DailyLogBeforeRequest dailyLogBeforeRequest) {
