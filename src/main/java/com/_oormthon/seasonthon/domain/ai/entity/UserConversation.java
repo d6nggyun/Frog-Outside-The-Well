@@ -10,14 +10,14 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "user_conversation", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "user_id")
-})
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "user_conversation", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "user_id")
+})
 public class UserConversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

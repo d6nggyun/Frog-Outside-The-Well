@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,22 +32,29 @@ class ConversationStateService {
     private final TodoRepository todoRepository;
     private final ObjectMapper objectMapper;
 
-    /**
-     * processUserMessageTransactional 은 모든 DB 상태 변경을 포함하고
-     * `@Transactional` 이 보장되어야 하는 로직을 담습니다.
-     */
+    @Transactional
+    public UserConversation findOrCreateUserConversation(Long userId) {
+        return conversationRepo.findByUserId(userId)
+                .orElseGet(() -> {
+                    try {
+                        UserConversation uc = new UserConversation();
+                        uc.setUserId(userId);
+                        uc.setState(ConversationState.ASK_READY);
+                        uc.setPlanSaved(false);
+                        UserConversation saved = conversationRepo.saveAndFlush(uc);
+                        log.info("🆕 새 대화 생성 (userId={})", userId);
+                        return saved;
+                    } catch (DataIntegrityViolationException e) {
+                        log.warn("⚠️ 동시 생성 경합 발생 (userId={}) → 재조회 수행", userId);
+                        return conversationRepo.findByUserId(userId)
+                                .orElseThrow(() -> new IllegalStateException("UserConversation 생성 실패 후 조회 불가"));
+                    }
+                });
+    }
+
     @Transactional
     public MessageResult processUserMessageTransactional(Long userId, String userMessage) {
-        UserConversation convo = conversationRepo.findByUserId(userId)
-                .orElseGet(() -> {
-                    UserConversation uc = new UserConversation();
-                    uc.setUserId(userId);
-                    uc.setState(ConversationState.ASK_READY);
-                    uc.setPlanSaved(false);
-                    conversationRepo.save(uc);
-                    log.info("🆕 새 대화 생성 (userId={})", userId);
-                    return uc;
-                });
+        UserConversation convo = findOrCreateUserConversation(userId);
 
         String response = null;
         boolean streaming = false;
@@ -173,7 +181,7 @@ class ConversationStateService {
                         response = "괜찮아 😊 어떤 점을 수정할까? 목표부터 다시 정해보자";
                         convo.setState(ConversationState.ASK_TASK);
                     } else {
-                        response = "이 계획으로 진행할까? (좋아 / 응응 / 아니 / 수정 / 저장)으로 답해줘줘";
+                        response = "이 계획으로 진행할까? (좋아 / 응 / 아니 / 수정 / 저장)으로 답해줘줘";
                     }
                 }
 
