@@ -31,6 +31,7 @@ public enum ErrorCode {
     STEP_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "Step을 찾을 수 없습니다."),
     STEP_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "Step 기록을 찾을 수 없습니다."),
     STEP_NOT_STARTED(HttpStatus.BAD_REQUEST, 400, "시작되지 않은 Step입니다."),
+    STEP_INVALID_DURATION(HttpStatus.BAD_REQUEST, 400, "유효하지 않은 duration 값입니다."),
 
     // Daily Log
     DAILY_LOG_AFTER_NOT_FOUND(HttpStatus.NOT_FOUND, 404, "Daily Log After을 찾을 수 없습니다."),

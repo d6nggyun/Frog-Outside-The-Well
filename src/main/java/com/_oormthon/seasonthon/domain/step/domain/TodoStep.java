@@ -3,6 +3,8 @@ package com._oormthon.seasonthon.domain.step.domain;
 import com._oormthon.seasonthon.domain.step.dto.req.StepRequest;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequestId;
+import com._oormthon.seasonthon.global.exception.CustomException;
+import com._oormthon.seasonthon.global.exception.ErrorCode;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -96,7 +98,7 @@ public class TodoStep {
 
     public void updateTotalDuration(Long duration) {
         if (duration == null || duration < 0) {
-            duration = 0L;
+            throw new CustomException(ErrorCode.STEP_INVALID_DURATION);
         }
         this.totalDuration += duration;
     }
