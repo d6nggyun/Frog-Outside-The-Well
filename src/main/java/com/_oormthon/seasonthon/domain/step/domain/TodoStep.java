@@ -95,6 +95,9 @@ public class TodoStep {
     }
 
     public void updateTotalDuration(Long duration) {
+        if (duration == null || duration < 0) {
+            duration = 0L;
+        }
         this.totalDuration += duration;
     }
 }
