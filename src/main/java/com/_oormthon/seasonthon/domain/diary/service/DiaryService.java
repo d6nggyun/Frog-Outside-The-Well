@@ -1,17 +1,13 @@
 package com._oormthon.seasonthon.domain.diary.service;
 
-import com._oormthon.seasonthon.domain.diary.dto.res.DiaryDetailResponse;
-import com._oormthon.seasonthon.domain.diary.dto.res.DiaryResponse;
 import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogAfter;
 import com._oormthon.seasonthon.domain.dailyLog.domain.DailyLogBefore;
+import com._oormthon.seasonthon.domain.diary.dto.res.DiaryDetailResponse;
+import com._oormthon.seasonthon.domain.diary.dto.res.DiaryResponse;
 import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.domain.dailyLog.repository.DailyLogAfterRepository;
-import com._oormthon.seasonthon.domain.dailyLog.repository.DailyLogBeforeRepository;
 import com._oormthon.seasonthon.domain.step.domain.TodoDurationGroup;
 import com._oormthon.seasonthon.domain.stepRecord.service.StepRecordQueryService;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodayCompletedTodoResponse;
-import com._oormthon.seasonthon.global.exception.CustomException;
-import com._oormthon.seasonthon.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,8 +24,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class DiaryService {
 
-    private final DailyLogBeforeRepository dailyLogBeforeRepository;
-    private final DailyLogAfterRepository dailyLogAfterRepository;
+    private final DiaryQueryService diaryQueryService;
     private final StepRecordQueryService stepRecordQueryService;
 
     @Transactional(readOnly = true)
@@ -37,7 +32,7 @@ public class DiaryService {
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
-        return dailyLogAfterRepository.findAllMoodByUserIdAndCreatedAtBetween(user.getUserId(), startDate, endDate);
+        return diaryQueryService.findAllDiaries(user.getUserId(), startDate, endDate);
     }
 
     @Transactional(readOnly = true)
@@ -99,18 +94,10 @@ public class DiaryService {
     }
 
     private DailyLogBefore getDailyLogBefore(Long userId, LocalDate date) {
-        return dailyLogBeforeRepository.findByUserIdAndCreatedAt(userId, date)
-                .orElseThrow(() -> {
-                    log.warn("Daily Log Before을 찾을 수 없습니다. userId: {}, date: {}", userId, date);
-                    return new CustomException(ErrorCode.DAILY_LOG_BEFORE_NOT_FOUND);
-                });
+        return diaryQueryService.findDailyLogBefore(userId, date);
     }
 
     private DailyLogAfter getDailyLogAfter(Long userId, LocalDate date) {
-        return dailyLogAfterRepository.findByUserIdAndCreatedAt(userId, date)
-                .orElseThrow(() -> {
-                    log.warn("Daily Log After을 찾을 수 없습니다. userId: {}, date: {}", userId, date);
-                    return new CustomException(ErrorCode.DAILY_LOG_AFTER_NOT_FOUND);
-                });
+        return diaryQueryService.findDailyLogAfter(userId, date);
     }
 }

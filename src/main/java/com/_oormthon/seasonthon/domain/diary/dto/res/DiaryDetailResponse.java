@@ -44,10 +44,11 @@ public record DiaryDetailResponse(
                                 dailyLogBefore.getEmotion(),
                                 dailyLogBefore.getEnergy(),
                                 dailyLogBefore.getWeather(),
-                                dailyLogAfter.getMood(),
-                                dailyLogAfter.getFocusLevel(),
-                                dailyLogAfter.getCompletionLevel(),
-                                dailyLogAfter.getMemo(),
-                                dailyLogAfter.getPhotoUrl());
+                                dailyLogAfter != null ? dailyLogAfter.getMood() : null,
+                                dailyLogAfter != null ? dailyLogAfter.getFocusLevel() : null,
+                                dailyLogAfter != null ? dailyLogAfter.getCompletionLevel() : null,
+                                dailyLogAfter != null ? dailyLogAfter.getMemo() : null,
+                                dailyLogAfter != null ? dailyLogAfter.getPhotoUrl() : null
+                );
         }
 }
