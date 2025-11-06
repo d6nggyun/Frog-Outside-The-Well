@@ -18,7 +18,7 @@ import java.time.YearMonth;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -66,11 +66,10 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public DiaryDetailResponse getDiaryDetail(User user, LocalDate date) {
-        DailyLogBefore dailyLogBefore = safeGet(() -> getDailyLogBefore(user.getUserId(), date));
-        DailyLogAfter dailyLogAfter = safeGet(() -> getDailyLogAfter(user.getUserId(), date));
+        DailyLogBefore dailyLogBefore = getDailyLogBefore(user.getUserId(), date);
+        Optional<DailyLogAfter> dailyLogAfter = getDailyLogAfter(user.getUserId(), date);
 
-        List<TodoDurationGroup> todoDurationGroups = stepRecordQueryService.findTodoDurationGroup(user.getUserId(),
-                date);
+        List<TodoDurationGroup> todoDurationGroups = stepRecordQueryService.findTodoDurationGroup(user.getUserId(), date);
 
         long total = todoDurationGroups.stream()
                 .map(TodoDurationGroup::getTotalDuration)
@@ -98,16 +97,7 @@ public class DiaryService {
         return diaryQueryService.findDailyLogBefore(userId, date);
     }
 
-    private DailyLogAfter getDailyLogAfter(Long userId, LocalDate date) {
+    private Optional<DailyLogAfter> getDailyLogAfter(Long userId, LocalDate date) {
         return diaryQueryService.findDailyLogAfter(userId, date);
     }
-
-    private <T> T safeGet(Supplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
 }

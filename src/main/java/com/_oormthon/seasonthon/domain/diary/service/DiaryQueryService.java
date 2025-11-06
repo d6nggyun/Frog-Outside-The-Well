@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,11 +35,7 @@ public class DiaryQueryService {
                 });
     }
 
-    public DailyLogAfter findDailyLogAfter(Long userId, LocalDate date) {
-        return dailyLogAfterRepository.findByUserIdAndCreatedAt(userId, date)
-                .orElseThrow(() -> {
-                    log.warn("Daily Log After을 찾을 수 없습니다. userId: {}, date: {}", userId, date);
-                    return new CustomException(ErrorCode.DAILY_LOG_AFTER_NOT_FOUND);
-                });
+    public Optional<DailyLogAfter> findDailyLogAfter(Long userId, LocalDate date) {
+        return dailyLogAfterRepository.findByUserIdAndCreatedAt(userId, date);
     }
 }
