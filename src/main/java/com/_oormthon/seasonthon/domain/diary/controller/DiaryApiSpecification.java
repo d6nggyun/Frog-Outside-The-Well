@@ -38,7 +38,8 @@ public interface DiaryApiSpecification {
 
     @Operation(
             summary = "특정 달의 Diary 상세 조회",
-            description = "LocalDate 값을 기반으로 해당 일의 Diary 상세 정보를 조회합니다.",
+            description = "LocalDate 값을 기반으로 해당 일의 Diary 상세 정보를 조회합니다." +
+                    "<br><br> DailyLogAfter에 해당하는 mood, focusLevel, completionLevel, memo, photoUrl 에 대해서는 DailyLogAfter가 존재하지 않을 시에 null로 전송됩니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "특정 달의 Diary 상세 조회",
                             content = @Content(
