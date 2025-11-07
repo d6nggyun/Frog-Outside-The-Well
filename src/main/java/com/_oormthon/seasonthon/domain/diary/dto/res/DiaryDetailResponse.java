@@ -9,6 +9,7 @@ import com._oormthon.seasonthon.domain.todo.dto.res.TodayCompletedTodoResponse;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public record DiaryDetailResponse(
 
@@ -34,21 +35,21 @@ public record DiaryDetailResponse(
 
 ) {
         public static DiaryDetailResponse of(
-                        LocalDate date,
-                        List<TodayCompletedTodoResponse> todayCompletedTodoResponses,
-                        DailyLogBefore dailyLogBefore,
-                        DailyLogAfter dailyLogAfter) {
+                LocalDate date,
+                List<TodayCompletedTodoResponse> todayCompletedTodoResponses,
+                DailyLogBefore dailyLogBefore,
+                Optional<DailyLogAfter> dailyLogAfter) {
                 return new DiaryDetailResponse(
                                 date,
                                 todayCompletedTodoResponses,
                                 dailyLogBefore.getEmotion(),
                                 dailyLogBefore.getEnergy(),
                                 dailyLogBefore.getWeather(),
-                                dailyLogAfter != null ? dailyLogAfter.getMood() : null,
-                                dailyLogAfter != null ? dailyLogAfter.getFocusLevel() : null,
-                                dailyLogAfter != null ? dailyLogAfter.getCompletionLevel() : null,
-                                dailyLogAfter != null ? dailyLogAfter.getMemo() : null,
-                                dailyLogAfter != null ? dailyLogAfter.getPhotoUrl() : null
+                                dailyLogAfter.map(DailyLogAfter::getMood).orElse(null),
+                                dailyLogAfter.map(DailyLogAfter::getFocusLevel).orElse(null),
+                                dailyLogAfter.map(DailyLogAfter::getCompletionLevel).orElse(null),
+                                dailyLogAfter.map(DailyLogAfter::getMemo).orElse(null),
+                                dailyLogAfter.map(DailyLogAfter::getPhotoUrl).orElse(null)
                 );
         }
 }

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DailyLogAfterRepository extends JpaRepository<DailyLogAfter, Long> {
+
     List<DailyLogAfter> findByUserIdAndCreatedAtBetween(Long userId, LocalDate start, LocalDate end);
 
     @Query("""
