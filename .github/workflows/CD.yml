@@ -77,11 +77,13 @@ jobs:
               -p ${NEW_PORT}:8080 \
               $IMAGE
             
+            HEALTH_PATH="/api/test/jwt"
+            
             # 새 컨테이너 상태 확인
             echo "Health check for new container..."
             for i in {1..20}; do
               sleep 5
-              STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${NEW_PORT}/actuator/health || echo "000")
+              STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${NEW_PORT}${HEALTH_PATH}" || echo "000")
               echo "Health check status: $STATUS_CODE"
             
               if [ "$STATUS_CODE" = "200" ]; then
