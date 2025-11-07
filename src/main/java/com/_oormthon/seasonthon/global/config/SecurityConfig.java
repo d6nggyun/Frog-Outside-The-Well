@@ -2,6 +2,8 @@ package com._oormthon.seasonthon.global.config;
 
 import com._oormthon.seasonthon.global.config.jwt.JwtExceptionFilter;
 import com._oormthon.seasonthon.global.config.jwt.JwtFilter;
+import com._oormthon.seasonthon.global.config.jwt.handler.JwtAccessDeniedHandler;
+import com._oormthon.seasonthon.global.config.jwt.handler.JwtAuthenticationEntryPoint;
 import com._oormthon.seasonthon.global.config.oauth.CustomOAuth2UserService;
 import com._oormthon.seasonthon.global.config.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +43,8 @@ public class SecurityConfig {
         private final JwtExceptionFilter jwtExceptionFilter;
         private final CustomOAuth2UserService oAuth2UserService;
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
+        private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+        private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -67,6 +71,11 @@ public class SecurityConfig {
                                 .oauth2Login(oauth -> oauth
                                                 .userInfoEndpoint(user -> user.userService(oAuth2UserService))
                                                 .successHandler(oAuth2SuccessHandler))
+
+                                .exceptionHandling(exception -> exception
+                                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                                        .accessDeniedHandler(jwtAccessDeniedHandler)
+                                )
 
                                 // JWT 필터 등록
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
