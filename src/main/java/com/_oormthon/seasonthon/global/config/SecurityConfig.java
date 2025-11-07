@@ -20,25 +20,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private static final String[] SWAGGER_WHITELIST = {
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/swagger-ui/index.html",
-                        "/v3/api-docs/**"
-        };
-
-        private static final String[] JWT_WHITELIST = {
-                        "/api/test/jwt",
-                        "/oauth2/**",
-                        "/login/oauth2/**"
-        };
-
-        private static final String[] AI_WHITELIST = {
-                        "/api/v1/ai/connect/**",
-                        "/api/v1/ai/send/**",
-                        "/api/v1/ai/**"
-        };
-
         private final JwtFilter jwtFilter;
         private final JwtExceptionFilter jwtExceptionFilter;
         private final CustomOAuth2UserService oAuth2UserService;
@@ -83,4 +64,24 @@ public class SecurityConfig {
 
                                 .build();
         }
+
+        private static final String[] SWAGGER_WHITELIST = {
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                "/swagger-ui/index.html",
+                "/v3/api-docs/**"
+        };
+
+        private static final String[] JWT_WHITELIST = {
+                "/api/test/jwt",
+                "/oauth2/**",
+                "/login/oauth2/**",
+                "/actuator/health"
+        };
+
+        private static final String[] AI_WHITELIST = {
+                "/api/v1/ai/connect/**",
+                "/api/v1/ai/send/**",
+                "/api/v1/ai/**"
+        };
 }
