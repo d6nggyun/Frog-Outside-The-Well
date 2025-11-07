@@ -8,7 +8,9 @@ on:
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    name: Deploy to EC2 (blue/green)
 
     steps:
       - name: Checkout code
@@ -24,19 +26,42 @@ jobs:
           port: ${{ secrets.AWS_EC2_PORT }}
           script: |
             cd /home/ubuntu
-            docker pull ${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_REPO}}
             
-            # 기존 컨테이너 중지 및 삭제
-            if [ "$(docker ps -aq -f name=${{secrets.DOCKER_REPO}})" ]; then
-              docker stop ${{secrets.DOCKER_REPO}}
-              docker rm ${{secrets.DOCKER_REPO}}
+            APP_NAME=${{ secrets.DOCKER_REPO }}
+            IMAGE=${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_REPO}}
+            
+            COLOR_FILE=/home/ubuntu/deploy_color
+            
+            # 현재 색 / 다음 색/ 포트 결정
+            if [ -f "$COLOR_FILE" ] && [ "$(cat $COLOR_FILE)" = "blue" ]; then
+              CURRENT_COLOR=blue
+              NEW_COLOR=green
+              CURRENT_PORT=8080
+              NEW_PORT=8081
+            else
+              CURRENT_COLOR=green
+              NEW_COLOR=blue
+              CURRENT_PORT=8081
+              NEW_PORT=8080
             fi
             
-            docker image prune -f
+            echo "Current color: $CURRENT_COLOR"
+            echo "New color: $NEW_COLOR"
             
-             # 새 컨테이너 실행
+            docker pull $IMAGE
+            
+            NEW_CONTAINER_NAME=${APP_NAME}-${NEW_COLOR}
+            OLD_CONTAINER_NAME=${APP_NAME}-${CURRENT_COLOR}
+            
+            # 새 컨테이너 자리에 기존 게 있으면 정리
+            if [ "$(docker ps -aq -f name=$NEW_CONTAINER_NAME)" ]; then
+              docker stop $NEW_CONTAINER_NAME || true
+              docker rm $NEW_CONTAINER_NAME || true
+            fi
+            
+            # 새 컨테이너 먼저 실행
             docker run -d \
-              --name ${{secrets.DOCKER_REPO}} \
+              --name $NEW_CONTAINER_NAME \
               --env SPRING_PROFILES_ACTIVE=prod \
               --env JAVA_TOOL_OPTIONS="-Duser.timezone=Asia/Seoul" \
               --env 'MYSQL_URL=${{ secrets.MYSQL_URL }}' \
@@ -49,5 +74,40 @@ jobs:
               --env KAKAO_CLIENT_REDIRECT_URI=${{ secrets.KAKAO_CLIENT_REDIRECT_URI }} \
               --env GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
               --env GEMINI_MODEL=${{ secrets.GEMINI_MODEL }} \
-              -p 8080:8080 \
-                ${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_REPO}}
+              -p ${NEW_PORT}:8080 \
+              $IMAGE
+            
+            # 새 컨테이너 상태 확인
+            echo "Health check for new container..."
+            for i in {1..20}; do
+              sleep 5
+              STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${NEW_PORT}/actuator/health || echo "000")
+              echo "Health check status: $STATUS_CODE"
+            
+              if [ "$STATUS_CODE" = "200" ]; then
+                   echo "New version is healthy!"
+                   break
+              fi
+            
+              if [ "$i" -eq 20 ]; then
+                  echo "New version did not become healthy in time. Aborting."
+                  docker logs $NEW_CONTAINER_NAME || true
+                  exit 1
+              fi
+            done
+            
+            # 캐디 포트 전환
+            echo "Switching traffic to new container..."
+            
+            sudo sed -i "s/reverse_proxy localhost:[0-9]\\+/reverse_proxy localhost:${NEW_PORT}/" /etc/caddy/Caddyfile
+            sudo systemctl reload caddy
+            
+            if [ "$(docker ps -q -f name=$OLD_CONTAINER_NAME)" ]; then
+              echo "Stopping old container..."
+              docker stop $OLD_CONTAINER_NAME || true
+              docker rm $OLD_CONTAINER_NAME || true
+            fi
+            
+            docker image prune -f
+            
+            echo $NEW_COLOR > $COLOR_FILE
