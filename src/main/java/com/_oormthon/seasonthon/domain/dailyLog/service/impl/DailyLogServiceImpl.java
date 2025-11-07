@@ -50,6 +50,11 @@ public class DailyLogServiceImpl implements DailyLogService {
         public DailyLogAfterResponse createAfter(User user, DailyLogAfterRequest request) {
                 LocalDate today = LocalDate.now();
 
+                // DailyLogBefore 생성 여부 확인
+                dailyLogBeforeRepository.findByUserIdAndCreatedAt(user.getUserId(), today).ifPresent(existing -> {
+                        throw new IllegalStateException("오늘의 일일 로그(Before)이 작성되지 않았습니다.");
+                });
+
                 // 중복 방지 로직
                 dailyLogAfterRepository.findByUserIdAndCreatedAt(user.getUserId(), today)
                                 .ifPresent(existing -> {
@@ -116,6 +121,12 @@ public class DailyLogServiceImpl implements DailyLogService {
 
         @Override
         public DailyLogAfterResponse createAfterByDate(User user, LocalDate date, DailyLogAfterRequest request) {
+
+                // DailyLogBefore 생성 여부 확인
+                dailyLogBeforeRepository.findByUserIdAndCreatedAt(user.getUserId(), date)
+                                .ifPresent(existing -> {
+                                        throw new IllegalStateException(date + "의 일일 로그(Before)이 작성되지 않았습니다.");
+                                });
 
                 // 중복 방지 로직
                 dailyLogAfterRepository.findByUserIdAndCreatedAt(user.getUserId(), date)
