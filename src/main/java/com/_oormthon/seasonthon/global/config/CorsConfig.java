@@ -24,7 +24,7 @@ public class CorsConfig {
                 "http://localhost:5173",
                 "https://2025-seasonthon-team-36-fe.vercel.app"));
         configuration.addAllowedHeader("*");
-        configuration.addAllowedMethod("*");
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

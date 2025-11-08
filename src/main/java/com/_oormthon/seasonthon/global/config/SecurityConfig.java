@@ -2,6 +2,8 @@ package com._oormthon.seasonthon.global.config;
 
 import com._oormthon.seasonthon.global.config.jwt.JwtExceptionFilter;
 import com._oormthon.seasonthon.global.config.jwt.JwtFilter;
+import com._oormthon.seasonthon.global.config.jwt.handler.JwtAccessDeniedHandler;
+import com._oormthon.seasonthon.global.config.jwt.handler.JwtAuthenticationEntryPoint;
 import com._oormthon.seasonthon.global.config.oauth.CustomOAuth2UserService;
 import com._oormthon.seasonthon.global.config.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -18,29 +20,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private static final String[] SWAGGER_WHITELIST = {
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/swagger-ui/index.html",
-                        "/v3/api-docs/**"
-        };
-
-        private static final String[] JWT_WHITELIST = {
-                        "/api/test/jwt",
-                        "/oauth2/**",
-                        "/login/oauth2/**"
-        };
-
-        private static final String[] AI_WHITELIST = {
-                        "/api/v1/ai/connect/**",
-                        "/api/v1/ai/send/**",
-                        "/api/v1/ai/**"
-        };
-
         private final JwtFilter jwtFilter;
         private final JwtExceptionFilter jwtExceptionFilter;
         private final CustomOAuth2UserService oAuth2UserService;
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
+        private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+        private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -68,10 +53,34 @@ public class SecurityConfig {
                                                 .userInfoEndpoint(user -> user.userService(oAuth2UserService))
                                                 .successHandler(oAuth2SuccessHandler))
 
+                                .exceptionHandling(exception -> exception
+                                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                                        .accessDeniedHandler(jwtAccessDeniedHandler)
+                                )
+
                                 // JWT 필터 등록
                                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                                 .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
 
                                 .build();
         }
+
+        private static final String[] SWAGGER_WHITELIST = {
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                "/swagger-ui/index.html",
+                "/v3/api-docs/**"
+        };
+
+        private static final String[] JWT_WHITELIST = {
+                "/api/test/jwt",
+                "/oauth2/**",
+                "/login/oauth2/**"
+        };
+
+        private static final String[] AI_WHITELIST = {
+                "/api/v1/ai/connect/**",
+                "/api/v1/ai/send/**",
+                "/api/v1/ai/**"
+        };
 }
