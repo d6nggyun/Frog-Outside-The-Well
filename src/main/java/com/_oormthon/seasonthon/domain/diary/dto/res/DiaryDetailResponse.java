@@ -37,14 +37,14 @@ public record DiaryDetailResponse(
         public static DiaryDetailResponse of(
                 LocalDate date,
                 List<TodayCompletedTodoResponse> todayCompletedTodoResponses,
-                DailyLogBefore dailyLogBefore,
+                Optional<DailyLogBefore> dailyLogBefore,
                 Optional<DailyLogAfter> dailyLogAfter) {
                 return new DiaryDetailResponse(
                                 date,
                                 todayCompletedTodoResponses,
-                                dailyLogBefore.getEmotion(),
-                                dailyLogBefore.getEnergy(),
-                                dailyLogBefore.getWeather(),
+                                dailyLogBefore.map(DailyLogBefore::getEmotion).orElse(null),
+                                dailyLogBefore.map(DailyLogBefore::getEnergy).orElse(null),
+                                dailyLogBefore.map(DailyLogBefore::getWeather).orElse(null),
                                 dailyLogAfter.map(DailyLogAfter::getMood).orElse(null),
                                 dailyLogAfter.map(DailyLogAfter::getFocusLevel).orElse(null),
                                 dailyLogAfter.map(DailyLogAfter::getCompletionLevel).orElse(null),
