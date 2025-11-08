@@ -31,28 +31,30 @@ public class DailyLogAfter {
     @Column(nullable = false, length = 20)
     private Mood mood;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = true)
     private Long userId;
 
     // 집중도: 1~5
     @Min(1)
     @Max(5)
-    @Column(nullable = false)
-    private int focusLevel;
+    @Column(nullable = true)
+    private Integer focusLevel;
 
     // 완성도: 0, 25, 50, 75, 100
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = true, length = 10)
     private CompletionLevel completionLevel;
 
     // 메모
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String memo;
 
     // 사진 (파일 경로나 URL)
+    @Column(nullable = true)
     private String photoUrl;
 
     // 작성날
+    @Column(nullable = true)
     private LocalDate createdAt;
 
     public static DailyLogAfter createDailyLogAfter(User user, DailyLogAfterRequest dailyLogAfterRequest) {

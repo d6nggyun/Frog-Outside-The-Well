@@ -14,10 +14,10 @@ public record DailyLogAfterRequest(
                                 "HAPPY", "EXCITED", "CALM", "NORMAL", "THRILLING", "FRUSTRATED", "DEPRESSED", "EMPTY",
                                 "ANGRY", "DISAPPOINTED" }) @NotNull Mood mood,
 
-                @Schema(description = "집중도 (1~5)", example = "3", minimum = "1", maximum = "5") @Min(1) @Max(5) @NotNull int focusLevel,
+                @Schema(description = "집중도 (1~5)", example = "3", minimum = "1", maximum = "5") @Min(1) @Max(5) Integer focusLevel,
 
                 @Schema(description = "완성도", example = "FIFTY", allowableValues = { "ZERO", "TWENTY_FIVE", "FIFTY",
-                                "SEVENTY_FIVE", "ONE_HUNDRED" }) @NotNull CompletionLevel completionLevel,
+                                "SEVENTY_FIVE", "ONE_HUNDRED" }) CompletionLevel completionLevel,
 
                 @Schema(description = "메모", example = "오늘 공부 집중 잘했음") String memo,
 

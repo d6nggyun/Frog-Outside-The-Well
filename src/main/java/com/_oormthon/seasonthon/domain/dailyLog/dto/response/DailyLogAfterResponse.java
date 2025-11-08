@@ -16,7 +16,7 @@ public record DailyLogAfterResponse(
 
         @Schema(description = "사용자 ID", example = "1") Long userId,
 
-        @Schema(description = "집중도 (1~5)", example = "4") int focusLevel,
+        @Schema(description = "집중도 (1~5)", example = "4") Integer focusLevel,
 
         @Schema(description = "완성도", example = "COMPLETE") CompletionLevel completionLevel,
 
