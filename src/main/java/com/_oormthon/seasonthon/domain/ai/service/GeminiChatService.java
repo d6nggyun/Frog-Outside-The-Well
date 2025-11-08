@@ -44,83 +44,83 @@ public class GeminiChatService {
         return Mono.fromCallable(() -> conversationStateService.processUserMessageTransactional(userId, userMessage))
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMapMany(result -> {
-                    if (result.isStreaming()) {
-                        Flux<String> stream = geminiApiClient.generateStream(result.prompt())
-                                .doOnSubscribe(sub -> log.info("📡 Gemini 스트림 시작 (step={})", result.stepIndex()));
-
-                        // 여긴 보수적으로 기존 로직을 유지하되, 모든 DB 접근은 boundedElastic로 실행하도록 보장
-                        return stream
-                                .doOnNext(chunk -> log.debug("🧩 Gemini 응답 조각: {}", chunk))
-                                .collectList()
-                                .flatMapMany(chunks -> {
-                                    String merged = String.join("", chunks);
-                                    // trySaveTodoAndStepsReactive 내부에서 이미 subscribeOn 을 사용하므로 안전
-                                    return trySaveTodoAndStepsReactive(userId, merged, result.stepIndex())
-                                            .thenMany(Flux.fromIterable(chunks));
-                                })
-                                .thenMany(
-                                        Mono.defer(() -> {
-                                            if (result.stepIndex() == 1) {
-                                                // Step1 완료 후 질문 생성
-                                                return Mono.fromCallable(() -> {
-                                                    Optional<UserConversation> convoOpt = conversationRepo
-                                                            .findByUserId(userId);
-                                                    if (convoOpt.isEmpty())
-                                                        return "";
-                                                    UserConversation convo = convoOpt.get();
-                                                    return ChatbotScript.askStartDate(
-                                                            convo.getContent() != null ? convo.getContent() : "",
-                                                            convo.getTitle() != null ? convo.getTitle() : "");
-                                                })
-                                                        .subscribeOn(Schedulers.boundedElastic());
-                                            } else if (result.stepIndex() == 2) {
-                                                return Mono.fromCallable(() -> {
-                                                    Optional<UserConversation> convoOpt = conversationRepo
-                                                            .findByUserId(userId);
-                                                    if (convoOpt.isEmpty())
-                                                        return "계획 정보를 찾을 수 없습니다 😢";
-                                                    UserConversation convo = convoOpt.get();
-
-                                                    StringBuilder sb = new StringBuilder(
-                                                            ChatbotScript.planSummary(convo));
-
-                                                    if (convo.getPendingPlanJson() != null) {
-                                                        try {
-                                                            TodoStepResponse parsed = objectMapper.readValue(
-                                                                    convo.getPendingPlanJson(), TodoStepResponse.class);
-                                                            sb.append("🪜 세부 계획:\n");
-                                                            for (var step : parsed.steps()) {
-                                                                sb.append("• ").append(step.stepDate())
-                                                                        .append(" — ").append(step.description())
-                                                                        .append("\n");
-                                                                // ✅ Tips 출력 추가
-                                                                if (step.tips() != null && !step.tips().isEmpty()) {
-                                                                    for (String tip : step.tips()) {
-                                                                        sb.append("   💡 ").append(tip).append("\n");
-                                                                    }
-                                                                }
-
-                                                                sb.append("\n"); // step 간 간격
-                                                            }
-                                                        } catch (Exception e) {
-                                                            log.warn("⚠️ Step JSON 파싱 실패: {}", e.getMessage());
-                                                            sb.append("(세부 단계 정보를 불러올 수 없습니다)\n");
-                                                        }
-                                                    } else {
-                                                        sb.append("(세부 단계 정보가 없습니다)\n");
-                                                    }
-
-                                                    sb.append("\n이 계획으로 진행해도 될까?");
-                                                    return sb.toString();
-                                                })
-                                                        .subscribeOn(Schedulers.boundedElastic());
-                                            } else {
-                                                return Mono.empty();
-                                            }
-                                        }));
-                    } else {
+                    if (!result.isStreaming()) {
                         return Flux.just(result.response());
                     }
+                    Flux<String> stream = geminiApiClient.generateStream(result.prompt())
+                            .doOnSubscribe(sub -> log.info("📡 Gemini 스트림 시작 (step={})", result.stepIndex()));
+
+                    // 여긴 보수적으로 기존 로직을 유지하되, 모든 DB 접근은 boundedElastic로 실행하도록 보장
+                    return stream
+                            .doOnNext(chunk -> log.debug("🧩 Gemini 응답 조각: {}", chunk))
+                            .collectList()
+                            .flatMapMany(chunks -> {
+                                String merged = String.join("", chunks);
+                                // trySaveTodoAndStepsReactive 내부에서 이미 subscribeOn 을 사용하므로 안전
+                                return trySaveTodoAndStepsReactive(userId, merged, result.stepIndex())
+                                        .thenMany(Flux.fromIterable(chunks));
+                            })
+                            .thenMany(
+                                    Mono.defer(() -> {
+                                        if (result.stepIndex() == 1) {
+                                            // Step1 완료 후 질문 생성
+                                            return Mono.fromCallable(() -> {
+                                                Optional<UserConversation> convoOpt = conversationRepo
+                                                        .findByUserId(userId);
+                                                if (convoOpt.isEmpty())
+                                                    return "";
+                                                UserConversation convo = convoOpt.get();
+                                                return ChatbotScript.askStartDate(
+                                                        convo.getContent() != null ? convo.getContent() : "",
+                                                        convo.getTitle() != null ? convo.getTitle() : "");
+                                            })
+                                                    .subscribeOn(Schedulers.boundedElastic());
+                                        } else if (result.stepIndex() == 2) {
+                                            return Mono.fromCallable(() -> {
+                                                Optional<UserConversation> convoOpt = conversationRepo
+                                                        .findByUserId(userId);
+                                                if (convoOpt.isEmpty())
+                                                    return "계획 정보를 찾을 수 없습니다 😢";
+                                                UserConversation convo = convoOpt.get();
+
+                                                StringBuilder sb = new StringBuilder(
+                                                        ChatbotScript.planSummary(convo));
+
+                                                if (convo.getPendingPlanJson() != null) {
+                                                    try {
+                                                        TodoStepResponse parsed = objectMapper.readValue(
+                                                                convo.getPendingPlanJson(), TodoStepResponse.class);
+                                                        sb.append("🪜 세부 계획:\n");
+                                                        for (var step : parsed.steps()) {
+                                                            sb.append("• ").append(step.stepDate())
+                                                                    .append(" — ").append(step.description())
+                                                                    .append("\n");
+                                                            // ✅ Tips 출력 추가
+                                                            if (step.tips() != null && !step.tips().isEmpty()) {
+                                                                for (String tip : step.tips()) {
+                                                                    sb.append("   💡 ").append(tip).append("\n");
+                                                                }
+                                                            }
+
+                                                            sb.append("\n"); // step 간 간격
+                                                        }
+                                                    } catch (Exception e) {
+                                                        log.warn("⚠️ Step JSON 파싱 실패: {}", e.getMessage());
+                                                        sb.append("(세부 단계 정보를 불러올 수 없습니다)\n");
+                                                    }
+                                                } else {
+                                                    sb.append("(세부 단계 정보가 없습니다)\n");
+                                                }
+
+                                                sb.append("\n이 계획으로 진행해도 될까?");
+                                                return sb.toString();
+                                            })
+                                                    .subscribeOn(Schedulers.boundedElastic());
+                                        } else {
+                                            return Mono.empty();
+                                        }
+                                    }));
+
                 })
                 .onErrorResume(e -> {
                     log.error("💥 스트림 처리 중 오류", e);

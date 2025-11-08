@@ -115,7 +115,7 @@ class ConversationStateService {
                         // 반환값 활용하도록 변경 권장
                         DayConverter.parseDays(userMessage.trim());
                         convo.setStudyDays(userMessage.trim());
-                        response = "좋아! 하루 공부 시간을 (분 단위로) 알려줘.";
+                        response = "좋아! 한 번 공부할 때 몇 분 정도 할지 숫자만 입력해줘. (예: 30)";
                         convo.setState(ConversationState.ASK_TIME_PER_DAY);
                     } catch (Exception e) {
                         response = "(예: 월,수,금) 형식으로 작성해줘!";
@@ -189,7 +189,7 @@ class ConversationStateService {
 
                 case FINISHED -> {
                     if (userMessage.contains("새로운 계획")) {
-                        convo.setState(ConversationState.ASK_READY);
+                        convo.setState(ConversationState.ASK_TASK);
                         convo.setTitle(null);
                         convo.setContent(null);
                         convo.setPendingPlanJson(null);
@@ -198,7 +198,7 @@ class ConversationStateService {
                         convo.setStudyDays(null);
                         convo.setDailyMinutes(0);
                         convo.setPlanSaved(false);
-                        response = "좋아! 🐸 새로운 공부 계획을 세워보자!";
+                        response = "좋아! 🐸 새로운 공부 계획을 세워보자! 이번에 이루고 싶은 목표가 뭐야? 예를 들어 ‘토익 800점 달성’ 같은 거!";
                     } else {
                         response = "이미 계획이 완성됐어 🎯 '새로운 계획'이라고 말해줘!";
                     }
