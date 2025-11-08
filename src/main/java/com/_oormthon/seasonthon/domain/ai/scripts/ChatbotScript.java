@@ -104,12 +104,14 @@ public class ChatbotScript {
                                  {
                                      "dDay": "D-3",
                                      "title": "영어 수행평가 준비",
+                                     "startDate:"2025-09-02",
                                      "endDate": "2025-09-05",
                                      "progressText": "진행 상황 설명",
                                      "progress": 0,
                                      "steps": [
                                        {
                                          "stepDate": "2025-09-02",
+                                         "day": "TUESDAY",
                                          "stepOrder": 1,
                                          "description": "여행 목적지 정하기 & 일정 개요 구성",
                                          "count": 0,
@@ -123,6 +125,7 @@ public class ChatbotScript {
                                        },
                                 {
                                          "stepDate": "2025-09-03",
+                                         "day": "WEDNESDAY",
                                          "stepOrder": 2,
                                          "description": "필요한 표현과 문장 정리하기",
                                          "count": 0,
@@ -147,7 +150,6 @@ public class ChatbotScript {
         }
 
         public static String planSummary(UserConversation convo) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M월 d일");
 
                 return String.format(
                                 "우와! 정말 구체적인데? 🐸%n" +

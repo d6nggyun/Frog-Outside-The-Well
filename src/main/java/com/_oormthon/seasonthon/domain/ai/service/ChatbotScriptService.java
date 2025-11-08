@@ -1,10 +1,15 @@
 package com._oormthon.seasonthon.domain.ai.service;
 
-// import com._oormthon.seasonthon.domain.ai.repository.UserConversationRepository;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import com._oormthon.seasonthon.domain.ai.repository.UserConversationRepository;
+import com._oormthon.seasonthon.domain.ai.entity.UserConversation;
+import com._oormthon.seasonthon.domain.ai.enums.ConversationState;
+
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
@@ -15,16 +20,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ChatbotScriptService {
 
     private final GeminiChatService geminiChatService;
+    private final UserConversationRepository conversationRepo;
 
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final Map<Long, Disposable> activeStreams = new ConcurrentHashMap<>();
-
-    public ChatbotScriptService(GeminiChatService geminiChatService) {
-        this.geminiChatService = geminiChatService;
-    }
 
     /**
      * ✅ SSE 연결 생성 (프론트가 최초 connect 시 호출)
@@ -113,5 +116,20 @@ public class ChatbotScriptService {
     public void disconnect(Long userId) {
         log.info("🧩 사용자 종료 요청 — userId={}", userId);
         closeExisting(userId);
+        conversationRepo.findByUserId(userId).ifPresent(convo -> {
+            convo.setState(ConversationState.ASK_READY);
+            convo.setUserName(null);
+            convo.setUserAge(null);
+            convo.setTitle(null);
+            convo.setContent(null);
+            convo.setPendingPlanJson(null);
+            convo.setStartDate(null);
+            convo.setEndDate(null);
+            convo.setStudyDays(null);
+            convo.setDailyMinutes(0);
+            convo.setPlanSaved(false);
+            conversationRepo.save(convo);
+            log.info("🧹 UserConversation 초기화 완료 (userId={})", userId);
+        });
     }
 }

@@ -22,6 +22,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                 SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
                     ts.id,
                     ts.stepDate,
+                    ts.day,
                     ts.description,
                     ts.isCompleted,
                     ts.tips
@@ -35,6 +36,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                 SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
                     ts.id,
                     ts.stepDate,
+                    ts.day,
                     ts.description,
                     ts.isCompleted,
                     ts.tips
@@ -57,6 +59,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                 SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
                     ts.id,
                     ts.stepDate,
+                    ts.day,
                     ts.description,
                     ts.isCompleted,
                     ts.tips
@@ -70,6 +73,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                 SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
                     ts.id,
                     ts.stepDate,
+                    ts.day,
                     ts.description,
                     ts.isCompleted,
                     ts.tips
@@ -90,6 +94,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                 SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
                     ts.id,
                     ts.stepDate,
+                    ts.day,
                     ts.description,
                     ts.isCompleted,
                     ts.tips
@@ -106,6 +111,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                 SELECT new com._oormthon.seasonthon.domain.step.dto.res.StepResponse(
                     ts.id,
                     ts.stepDate,
+                    ts.day,
                     ts.description,
                     ts.isCompleted,
                     ts.tips

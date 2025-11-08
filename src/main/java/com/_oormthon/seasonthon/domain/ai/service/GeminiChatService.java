@@ -92,9 +92,9 @@ public class GeminiChatService {
                                                                 convo.getPendingPlanJson(), TodoStepResponse.class);
                                                         sb.append("🪜 세부 계획:\n");
                                                         for (var step : parsed.steps()) {
-                                                            sb.append("• ").append(step.stepDate())
-                                                                    .append(" — ").append(step.description())
-                                                                    .append("\n");
+                                                            sb.append("• ").append(step.stepDate()).append("(")
+                                                                    .append(step.day()).append(") — ")
+                                                                    .append(step.description()).append("\n");
                                                             // ✅ Tips 출력 추가
                                                             if (step.tips() != null && !step.tips().isEmpty()) {
                                                                 for (String tip : step.tips()) {

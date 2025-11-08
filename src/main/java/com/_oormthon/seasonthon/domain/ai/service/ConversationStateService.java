@@ -160,6 +160,7 @@ class ConversationStateService {
                                                 .todoId(todo.getId())
                                                 .userId(userId)
                                                 .stepDate(step.stepDate())
+                                                .day(step.day())
                                                 .description(step.description())
                                                 .isCompleted(step.isCompleted())
                                                 .build())

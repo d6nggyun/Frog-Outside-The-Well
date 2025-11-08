@@ -3,6 +3,7 @@ package com._oormthon.seasonthon.domain.step.domain;
 import com._oormthon.seasonthon.domain.step.dto.req.StepRequest;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequest;
 import com._oormthon.seasonthon.domain.step.dto.req.UpdateStepRequestId;
+import com._oormthon.seasonthon.domain.todo.enums.Day;
 import com._oormthon.seasonthon.global.exception.CustomException;
 import com._oormthon.seasonthon.global.exception.ErrorCode;
 
@@ -38,6 +39,9 @@ public class TodoStep {
     @Column(name = "step_date", nullable = false)
     private LocalDate stepDate;
 
+    @Column(name = "day", nullable = false)
+    private Day day;
+
     @Column(nullable = false, length = 500)
     private String description;
 
@@ -58,11 +62,12 @@ public class TodoStep {
     private List<String> tips;
 
     @Builder
-    private TodoStep(Long todoId, Long userId, LocalDate stepDate, String description, Boolean isCompleted,
+    private TodoStep(Long todoId, Long userId, LocalDate stepDate, Day day, String description, Boolean isCompleted,
             List<String> tips) {
         this.todoId = todoId;
         this.userId = userId;
         this.stepDate = stepDate;
+        this.day = day;
         this.description = description;
         this.isCompleted = isCompleted;
         this.tips = tips;
