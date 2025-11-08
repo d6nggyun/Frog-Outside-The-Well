@@ -60,7 +60,7 @@ class ConversationStateService {
         boolean streaming = false;
         String prompt = null;
         int stepIndex = 0;
-
+        Long createdTodoId = null;
         try {
             switch (convo.getState()) {
                 case ASK_READY -> {
@@ -151,7 +151,9 @@ class ConversationStateService {
                                         .expectedDays(DayConverter.parseDays(convo.getStudyDays()))
                                         .isCompleted(false)
                                         .build();
+
                                 todoRepository.save(todo);
+                                createdTodoId = todo.getId();
 
                                 List<TodoStep> todoSteps = parsed.steps().stream()
                                         .map(step -> TodoStep.builder()
@@ -174,14 +176,14 @@ class ConversationStateService {
                             log.error("❌ CONFIRM_PLAN 단계 저장 중 오류", e);
                         }
 
-                        response = "좋아! 🎉 이 계획으로 진행할게. 화이팅 💪";
+                        response = "좋아! 🎉 이 계획으로 진행할게. 화이팅 💪\n (TodoId=" + createdTodoId + ")";
                         convo.setState(ConversationState.FINISHED);
                     } else if (userMessage.contains("아니") || userMessage.contains("수정")) {
                         convo.setPendingPlanJson(null); // ❌ 기존 계획 삭제
                         response = "괜찮아 😊 어떤 점을 수정할까? 목표부터 다시 정해보자";
                         convo.setState(ConversationState.ASK_TASK);
                     } else {
-                        response = "이 계획으로 진행할까? (좋아 / 응 / 아니 / 수정 / 저장)으로 답해줘줘";
+                        response = "이 계획으로 진행할까? (좋아 / 응 / 아니 / 수정 / 저장)으로 답해줘";
                     }
                 }
 
