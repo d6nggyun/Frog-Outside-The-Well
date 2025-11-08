@@ -2,6 +2,7 @@ package com._oormthon.seasonthon.domain.todo.domain;
 
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoDetailRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.enums.Day;
 import com._oormthon.seasonthon.domain.todo.enums.TodoType;
@@ -62,7 +63,7 @@ public class Todo {
 
     @Builder
     private Todo(Long userId, String title, String content, LocalDate startDate,
-                 LocalDate endDate, Integer progress, List<Day> expectedDays, Boolean isCompleted, TodoType todoType) {
+            LocalDate endDate, Integer progress, List<Day> expectedDays, Boolean isCompleted, TodoType todoType) {
         this.userId = userId;
         this.title = title;
         this.content = content;
@@ -92,6 +93,11 @@ public class Todo {
         this.title = updateTodoRequest.title();
         this.content = updateTodoRequest.content();
         this.endDate = this.endDate.plusDays(updateTodoRequest.addDays());
+    }
+
+    public void updateTodoDetail(UpdateTodoDetailRequest updateTodoDetailRequest) {
+        this.title = updateTodoDetailRequest.title();
+        this.todoType = updateTodoDetailRequest.todoType();
     }
 
     public void updateProgress(int progress) {

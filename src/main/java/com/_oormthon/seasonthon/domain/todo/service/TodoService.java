@@ -6,6 +6,7 @@ import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoDetailRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
 import com._oormthon.seasonthon.domain.todo.enums.TodoText;
@@ -69,6 +70,19 @@ public class TodoService {
         todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
         todo.updateTodo(updateTodoRequest);
+
+        todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
+
+        return TodoResponse.of(todo, randomWarmText(getWarmText()));
+    }
+
+    @Transactional
+    public TodoResponse updateTodoTitleType(User user, Long todoId, UpdateTodoDetailRequest updateTodoDetailRequest) {
+        Todo todo = todoQueryService.getTodoById(todoId);
+
+        todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
+
+        todo.updateTodoDetail(updateTodoDetailRequest);
 
         todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
 

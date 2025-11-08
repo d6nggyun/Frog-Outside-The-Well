@@ -2,6 +2,7 @@ package com._oormthon.seasonthon.domain.todo.controller;
 
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
+import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoDetailRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoResponse;
 import com._oormthon.seasonthon.domain.todo.service.TodoService;
@@ -55,5 +56,13 @@ public class TodoController implements TodoApiSpecification {
             @PathVariable Long todoId,
             @Valid @RequestBody UpdateTodoRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(todoService.updateTodo(user, todoId, request));
+    }
+
+    // ToDo Title, Type 재설정
+    @PutMapping("/detail/{todoId}")
+    public ResponseEntity<TodoResponse> updateTodoTitleType(@AuthenticationPrincipal User user,
+            @PathVariable Long todoId,
+            @Valid @RequestBody UpdateTodoDetailRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.updateTodoTitleType(user, todoId, request));
     }
 }

@@ -123,9 +123,7 @@ public class DailyLogServiceImpl implements DailyLogService {
 
                 // DailyLogBefore 생성 여부 확인
                 dailyLogBeforeRepository.findByUserIdAndCreatedAt(user.getUserId(), date)
-                                .ifPresent(existing -> {
-                                        throw new IllegalStateException(date + "의 일일 로그(Before)이 작성되지 않았습니다.");
-                                });
+                                .orElseThrow(() -> new IllegalStateException(date + "의 일일 로그(Before)가 존재하지 않습니다."));
 
                 // 중복 방지 로직
                 dailyLogAfterRepository.findByUserIdAndCreatedAt(user.getUserId(), date)
