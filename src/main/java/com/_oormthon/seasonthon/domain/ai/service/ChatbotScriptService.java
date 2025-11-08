@@ -45,7 +45,7 @@ public class ChatbotScriptService {
             closeExisting(userId);
         });
 
-        send(emitter, "안녕! 🐸\n나는 함께 공부계획을 세워주는 개구리 ‘꾸꾸’야!\n" +
+        send(emitter, "안녕! 🐸\n나는 함께 공부계획을 세워주는 개구리 ‘Rana’야!\n" +
                 "너가 목표를 세우고 달성할 때마다 나는 우물 밖 세상을 구경할 수 있어.\n" +
                 "나랑 함께 점프해볼래? 준비됐어?");
         return emitter;
