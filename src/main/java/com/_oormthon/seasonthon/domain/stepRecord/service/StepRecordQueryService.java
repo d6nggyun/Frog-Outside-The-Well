@@ -43,4 +43,8 @@ public class StepRecordQueryService {
     public void deleteByStepId(Long stepId) {
         stepRecordRepository.deleteByStepId(stepId);
     }
+
+    public void deleteByStepIds(List<Long> stepIds) {
+        stepRecordRepository.deleteByStepIdIn(stepIds);
+    }
 }
