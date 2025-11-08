@@ -2,6 +2,8 @@ package com._oormthon.seasonthon.domain.todo.dto.res;
 
 import com._oormthon.seasonthon.domain.step.dto.res.StepResponse;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
+import com._oormthon.seasonthon.domain.todo.enums.Day;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
@@ -14,6 +16,10 @@ public record TodoStepResponse(
         @Schema(description = "D-Day", example = "D-10") String dDay,
 
         @Schema(description = "제목", example = "우물밖개구리 프로젝트") String title,
+
+        @Schema(description = "마감 요일 목록", example = "[\"MONDAY\", \"WEDNESDAY\", \"FRIDAY\"]") List<Day> expectedDays,
+
+        @Schema(description = "시작일", example = "2025-09-05") LocalDate startDate,
 
         @Schema(description = "마감일", example = "2025-09-05") LocalDate endDate,
 
@@ -29,6 +35,7 @@ public record TodoStepResponse(
 
         return new TodoStepResponse(
                 dDayValue > 0 ? "D-" + dDayValue : dDayValue == 0 ? "D-DAY" : "D+" + Math.abs(dDayValue),
-                todo.getTitle(), todo.getEndDate(), progressText, todo.getProgress(), stepResponses);
+                todo.getTitle(), todo.getExpectedDays(), todo.getStartDate(), todo.getEndDate(), progressText,
+                todo.getProgress(), stepResponses);
     }
 }
