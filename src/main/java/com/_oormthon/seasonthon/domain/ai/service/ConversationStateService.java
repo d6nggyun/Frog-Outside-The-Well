@@ -188,6 +188,14 @@ class ConversationStateService {
                 case FINISHED -> {
                     if (userMessage.contains("새로운 계획")) {
                         convo.setState(ConversationState.ASK_READY);
+                        convo.setTitle(null);
+                        convo.setContent(null);
+                        convo.setPendingPlanJson(null);
+                        convo.setStartDate(null);
+                        convo.setEndDate(null);
+                        convo.setStudyDays(null);
+                        convo.setDailyMinutes(0);
+                        convo.setPlanSaved(false);
                         response = "좋아! 🐸 새로운 공부 계획을 세워보자!";
                     } else {
                         response = "이미 계획이 완성됐어 🎯 '새로운 계획'이라고 말해줘!";
