@@ -38,7 +38,7 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public DiaryDetailResponse getDiaryDetail(User user, LocalDate date) {
-        DailyLogBefore dailyLogBefore = getDailyLogBefore(user.getUserId(), date);
+        Optional<DailyLogBefore> dailyLogBefore = getDailyLogBefore(user.getUserId(), date);
         Optional<DailyLogAfter> dailyLogAfter = getDailyLogAfter(user.getUserId(), date);
 
         List<TodoDurationGroup> todoDurationGroups = stepRecordQueryService.findTodoDurationGroup(user.getUserId(), date);
@@ -65,7 +65,7 @@ public class DiaryService {
         return DiaryDetailResponse.of(date, todayCompletedTodoResponses, dailyLogBefore, dailyLogAfter);
     }
 
-    private DailyLogBefore getDailyLogBefore(Long userId, LocalDate date) {
+    private Optional<DailyLogBefore> getDailyLogBefore(Long userId, LocalDate date) {
         return diaryQueryService.findDailyLogBefore(userId, date);
     }
 

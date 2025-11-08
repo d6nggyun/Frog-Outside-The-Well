@@ -44,4 +44,6 @@ public interface StepRecordRepository extends JpaRepository<StepRecord, Long> {
     Optional<StepRecordDetailResponse> findStepRecordDetailResponseByUserIdAndStepId(Long userId, Long stepId);
 
     void deleteByStepId(Long stepId);
+
+    void deleteByStepIdIn(List<Long> stepIds);
 }

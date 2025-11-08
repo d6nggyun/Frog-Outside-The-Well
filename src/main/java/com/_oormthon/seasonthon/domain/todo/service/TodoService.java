@@ -4,6 +4,8 @@ import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarQuerySer
 import com._oormthon.seasonthon.domain.member.entity.User;
 import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
+import com._oormthon.seasonthon.domain.stepCalendar.service.StepCalendarService;
+import com._oormthon.seasonthon.domain.stepRecord.service.StepRecordQueryService;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.req.TodoRequest;
 import com._oormthon.seasonthon.domain.todo.dto.req.UpdateTodoDetailRequest;
@@ -35,6 +37,8 @@ public class TodoService {
     private final TodoStepRepository todoStepRepository;
     private final TodoQueryService todoQueryService;
     private final StepCalendarQueryService stepCalendarQueryService;
+    private final StepRecordQueryService stepRecordQueryService;
+    private final StepCalendarService stepCalendarService;
 
     @Transactional(readOnly = true)
     public PageResponse<TodoResponse> findTodos(User user) {
@@ -94,13 +98,22 @@ public class TodoService {
         todoQueryService.getTodoById(todoId);
         todoQueryService.validateTodoOwnership(user.getUserId(), todoId);
 
-        todoRepository.deleteById(todoId);
-
         List<TodoStep> todoStepList = todoStepRepository.findByTodoId(todoId);
 
         stepCalendarQueryService.deleteByTodoSteps(todoStepList);
 
+        List<Long> stepIds = todoStepList.stream().map(TodoStep::getId).toList();
+
+        stepRecordQueryService.deleteByStepIds(stepIds);
+
+        todoStepList.stream()
+                .map(TodoStep::getStepDate)
+                .distinct()
+                .forEach(date -> stepCalendarService.saveAndUpdateStepCalendar(user.getUserId(), date));
+
         todoStepRepository.deleteAll(todoStepList);
+
+        todoRepository.deleteById(todoId);
     }
 
     @Transactional
