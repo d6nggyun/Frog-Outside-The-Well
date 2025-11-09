@@ -71,6 +71,10 @@ class ConversationStateService {
                     response = ChatbotScript.askAge(convo.getUserName());
                     convo.setState(ConversationState.ASK_AGE);
                 }
+                case ASK_AGE_INTRO -> {
+                    response = String.format("좋아, %s! 👋 이제 나이를 알려줄래? (예: 16)", convo.getUserName());
+                    convo.setState(ConversationState.ASK_AGE);
+                }
                 case ASK_AGE -> {
                     try {
                         int age = Integer.parseInt(userMessage.trim());
@@ -81,6 +85,13 @@ class ConversationStateService {
                         response = "숫자로 나이를 입력해줘! 예: 16";
                     }
                 }
+                case ASK_TASK_INTRO -> {
+                    response = String.format(
+                            "좋아, %s! 이제 어떤 목표를 세우고 싶어? 🎯 예를 들어 ‘토익 800점 달성’처럼 말해줘!",
+                            convo.getUserName());
+                    convo.setState(ConversationState.ASK_TASK);
+                }
+
                 case ASK_TASK -> {
                     convo.setTitle(userMessage.trim());
                     prompt = ChatbotScript.planDetail(convo.getUserAge(), userMessage.trim());

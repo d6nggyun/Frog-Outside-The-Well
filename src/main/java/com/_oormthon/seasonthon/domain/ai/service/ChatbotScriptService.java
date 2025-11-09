@@ -117,10 +117,9 @@ public class ChatbotScriptService {
         log.info("🧩 사용자 종료 요청 — userId={}", userId);
         closeExisting(userId);
         conversationRepo.findByUserId(userId).ifPresent(convo -> {
-            convo.setState(ConversationState.ASK_READY);
-            convo.setPlanSaved(false);
-            convo.setUserName(null);
-            convo.setUserAge(null);
+            String userName = convo.getUserName();
+            Integer userAge = convo.getUserAge();
+
             convo.setTitle(null);
             convo.setContent(null);
             convo.setPendingPlanJson(null);
@@ -129,6 +128,18 @@ public class ChatbotScriptService {
             convo.setStudyDays(null);
             convo.setDailyMinutes(0);
             convo.setPlanSaved(false);
+
+            if (userName == null) {
+                convo.setState(ConversationState.ASK_READY);
+                log.info("🧹 이름 없음 → ASK_READY (userId={})", userId);
+            } else if (userName != null && userAge == null) {
+                convo.setState(ConversationState.ASK_AGE_INTRO);
+                log.info("🧹 이름 있음 / 나이 없음 → ASK_AGE_INTRO (userId={})", userId);
+            } else {
+                convo.setState(ConversationState.ASK_TASK_INTRO);
+                log.info("🧹 이름+나이 있음 → ASK_TASK_INTRO (userId={})", userId);
+            }
+
             conversationRepo.saveAndFlush(convo);
             log.info("🧹 UserConversation 초기화 완료 (userId={})", userId);
         });
