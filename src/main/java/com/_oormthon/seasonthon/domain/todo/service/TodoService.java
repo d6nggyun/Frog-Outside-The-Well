@@ -42,7 +42,7 @@ public class TodoService {
 
     @Transactional(readOnly = true)
     public PageResponse<TodoResponse> findTodos(User user) {
-        Pageable pageable = PageRequest.of(0, 10, Sort.by("endDate").ascending());
+        Pageable pageable = PageRequest.of(0, 20, Sort.by("endDate").ascending());
         Page<Todo> todos = todoRepository.findByUserId(user.getUserId(), pageable);
 
         List<String> warmTexts = getWarmText();

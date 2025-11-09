@@ -157,8 +157,6 @@ public class GeminiChatService {
         return Mono.fromRunnable(() -> {
             try {
                 conversationRepo.updateContentByUserId(userId, description);
-                log.info("📘 [Buffered] 계획 설명  (description={})", description);
-                log.info("📘 [Buffered] 계획 설명 저장 완료 (userId={})", userId);
             } catch (Exception e) {
                 log.warn("⚠️ Step1 저장 실패: {}", e.getMessage());
             }
@@ -179,7 +177,6 @@ public class GeminiChatService {
         return Mono.fromCallable(() -> {
             try {
                 conversationRepo.updatePendingPlanJson(userId, jsonBlock);
-                log.info("📝 [Buffered] 계획 JSON 임시 저장 완료 (userId={})", userId);
             } catch (Exception e) {
                 log.warn("⚠️ 임시 저장 실패: {}", e.getMessage());
             }

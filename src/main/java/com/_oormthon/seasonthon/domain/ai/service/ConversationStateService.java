@@ -42,7 +42,6 @@ class ConversationStateService {
                         uc.setState(ConversationState.ASK_READY);
                         uc.setPlanSaved(false);
                         UserConversation saved = conversationRepo.saveAndFlush(uc);
-                        log.info("🆕 새 대화 생성 (userId={})", userId);
                         return saved;
                     } catch (DataIntegrityViolationException e) {
                         log.warn("⚠️ 동시 생성 경합 발생 (userId={}) → 재조회 수행", userId);
@@ -170,8 +169,6 @@ class ConversationStateService {
                                 convo.setPlanSaved(true);
                                 convo.setPendingPlanJson(null); // ✅ 임시 JSON 제거
                                 conversationRepo.save(convo);
-
-                                log.info("💾 CONFIRM_PLAN 단계에서 Todo 및 Steps 최종 저장 완료 (userId={})", userId);
                             }
                         } catch (Exception e) {
                             log.error("❌ CONFIRM_PLAN 단계 저장 중 오류", e);
