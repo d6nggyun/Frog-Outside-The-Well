@@ -118,6 +118,7 @@ public class ChatbotScriptService {
         closeExisting(userId);
         conversationRepo.findByUserId(userId).ifPresent(convo -> {
             convo.setState(ConversationState.ASK_READY);
+            convo.setPlanSaved(false);
             convo.setUserName(null);
             convo.setUserAge(null);
             convo.setTitle(null);
@@ -128,7 +129,7 @@ public class ChatbotScriptService {
             convo.setStudyDays(null);
             convo.setDailyMinutes(0);
             convo.setPlanSaved(false);
-            conversationRepo.save(convo);
+            conversationRepo.saveAndFlush(convo);
             log.info("🧹 UserConversation 초기화 완료 (userId={})", userId);
         });
     }
