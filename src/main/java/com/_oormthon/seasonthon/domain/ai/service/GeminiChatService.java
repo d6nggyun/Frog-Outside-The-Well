@@ -5,6 +5,7 @@ import com._oormthon.seasonthon.domain.ai.entity.UserConversation;
 import com._oormthon.seasonthon.domain.ai.repository.UserConversationRepository;
 import com._oormthon.seasonthon.domain.ai.scripts.ChatbotScript;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
+import com._oormthon.seasonthon.domain.todo.enums.Day;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +94,7 @@ public class GeminiChatService {
                                                         sb.append("🪜 세부 계획:\n");
                                                         for (var step : parsed.steps()) {
                                                             sb.append("• ").append(step.stepDate()).append("(")
-                                                                    .append(step.day()).append(") — ")
+                                                                    .append(Day.toKorean(step.day())).append(")\n — ")
                                                                     .append(step.description()).append("\n");
                                                             // ✅ Tips 출력 추가
                                                             if (step.tips() != null && !step.tips().isEmpty()) {
