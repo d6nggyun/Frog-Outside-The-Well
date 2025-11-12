@@ -64,4 +64,20 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage() != null ? ex.getMessage() : "이미 존재하는 데이터입니다.";
         return ErrorResponseEntity.toResponseEntity(errorCode, message, null);
     }
+
+    @ExceptionHandler(S3ImageException.class)
+    public ResponseEntity<ErrorResponseEntity> handleS3ImageException(S3ImageException ex) {
+        String message = ex.getMessage();
+
+        // 메시지 내용에 따라 업로드/다운로드 구분
+        ErrorCode errorCode;
+        if (message != null && message.contains("다운로드")) {
+            errorCode = ErrorCode.S3_DOWNLOAD_FAILED;
+        } else {
+            errorCode = ErrorCode.S3_UPLOAD_FAILED;
+        }
+
+        String finalMessage = message != null ? message : errorCode.getMessage();
+        return ErrorResponseEntity.toResponseEntity(errorCode, finalMessage, null);
+    }
 }
