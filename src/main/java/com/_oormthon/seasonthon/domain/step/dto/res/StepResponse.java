@@ -28,6 +28,6 @@ public record StepResponse(
     public static StepResponse of(TodoStep todoStep) {
         return new StepResponse(
                 todoStep.getId(), todoStep.getStepDate(), todoStep.getDay(),
-                todoStep.getDescription(), todoStep.getIsCompleted(), todoStep.getTips());
+                todoStep.getDescription(), todoStep.isCompleted(), todoStep.getTips());
     }
 }
