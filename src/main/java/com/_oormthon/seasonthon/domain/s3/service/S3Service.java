@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com._oormthon.seasonthon.domain.member.dto.res.UserResponse;
 import com._oormthon.seasonthon.domain.member.service.UserService;
+import com._oormthon.seasonthon.domain.s3.dto.PresignedUrlResponse;
 
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -30,23 +31,17 @@ public class S3Service {
     /**
      * S3 Presigned URL (PUT) 발급
      */
-    public String generateUploadPresignedUrl(Long userId) {
+    public PresignedUrlResponse generateUploadPresignedUrl(Long userId, String fileName, String fileType) {
         UserResponse user = userService.getUserById(userId);
 
-        // URL에서 파일명만 추출
-        String profileImageName = extractFileNameFromUrl(user.profileImage());
-
         // 고유한 S3 키 생성 (닉네임/UUID-파일명)
-        String key = user.nickname() + "/" + UUID.randomUUID() + "-" + profileImageName;
-
-        // 확장자 기반 Content-Type 결정
-        String contentType = determineContentTypeFromKey(profileImageName);
+        String key = user.nickname() + "/" + UUID.randomUUID() + "-" + fileName;
 
         // Presigned URL 발급용 요청 생성
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
-                .contentType(contentType)
+                .contentType(fileType)
                 .build();
 
         // Presigned URL 생성
@@ -54,18 +49,16 @@ public class S3Service {
                 r -> r.putObjectRequest(objectRequest)
                         .signatureDuration(Duration.ofMinutes(10)));
 
-        return presignedRequest.url().toString();
+        // JSON 형태로 리턴
+        return new PresignedUrlResponse(presignedRequest.url().toString(), key);
     }
 
     /**
      * S3 객체 삭제
      */
-    public void deleteFile(Long userId) {
-        UserResponse user = userService.getUserById(userId);
+    public void deleteFile(Long userId, String fileName) {
 
-        // URL에서 파일명만 추출
-        String profileImageName = extractFileNameFromUrl(user.profileImage());
-        String key = user.nickname() + "/" + profileImageName;
+        String key = userService.getUserById(userId).nickname() + "/" + fileName;
 
         S3Client s3 = S3Client.builder()
                 .region(Region.AP_NORTHEAST_2)
@@ -81,37 +74,37 @@ public class S3Service {
     /**
      * 파일명에서 Content-Type 추론
      */
-    private String determineContentTypeFromKey(String key) {
-        if (key == null)
-            return "application/octet-stream"; // 기본값
+    // private String determineContentTypeFromKey(String key) {
+    // if (key == null)
+    // return "application/octet-stream"; // 기본값
 
-        String lowerKey = key.toLowerCase();
+    // String lowerKey = key.toLowerCase();
 
-        if (lowerKey.endsWith(".jpg") || lowerKey.endsWith(".jpeg"))
-            return "image/jpeg";
-        if (lowerKey.endsWith(".png"))
-            return "image/png";
-        if (lowerKey.endsWith(".gif"))
-            return "image/gif";
-        if (lowerKey.endsWith(".webp"))
-            return "image/webp";
-        if (lowerKey.endsWith(".svg"))
-            return "image/svg+xml";
+    // if (lowerKey.endsWith(".jpg") || lowerKey.endsWith(".jpeg"))
+    // return "image/jpeg";
+    // if (lowerKey.endsWith(".png"))
+    // return "image/png";
+    // if (lowerKey.endsWith(".gif"))
+    // return "image/gif";
+    // if (lowerKey.endsWith(".webp"))
+    // return "image/webp";
+    // if (lowerKey.endsWith(".svg"))
+    // return "image/svg+xml";
 
-        return "application/octet-stream"; // 모르는 확장자일 경우
-    }
+    // return "application/octet-stream"; // 모르는 확장자일 경우
+    // }
 
     /**
      * URL에서 파일명만 추출
      * 예: https://t1.kakaocdn.net/account_images/default_profile.jpeg →
      * default_profile.jpeg
      */
-    private String extractFileNameFromUrl(String url) {
-        if (url == null)
-            return "unknown";
-        int lastSlash = url.lastIndexOf('/');
-        if (lastSlash == -1 || lastSlash == url.length() - 1)
-            return "unknown";
-        return url.substring(lastSlash + 1);
-    }
+    // private String extractFileNameFromUrl(String url) {
+    // if (url == null)
+    // return "unknown";
+    // int lastSlash = url.lastIndexOf('/');
+    // if (lastSlash == -1 || lastSlash == url.length() - 1)
+    // return "unknown";
+    // return url.substring(lastSlash + 1);
+    // }
 }
