@@ -57,6 +57,7 @@ public class StepRecordService {
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
 
         stepRecord.pauseStep(request.endTime(), request.duration());
+        todoStep.pauseStep();
         todoStep.updateTotalDuration(request.duration());
 
         Boolean isCompletedTodaySteps = checkAllStepsCompletedToday(user);
@@ -90,7 +91,10 @@ public class StepRecordService {
     private void completeStep(TodoStep todoStep, LocalDateTime endTime) {
         if (todoStep.isCompleted())
             return;
-        todoStep.completeStep(endTime);
+
+        boolean isOnTime = !endTime.toLocalDate().isAfter(todoStep.getStepDate());
+
+        todoStep.completeStep(endTime, isOnTime);
 
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
@@ -114,6 +118,6 @@ public class StepRecordService {
 
     private Boolean checkAllStepsCompletedToday(User user) {
         List<TodoStep> todoSteps = stepQueryService.findAllByStepDateAndUserId(LocalDate.now(), user.getUserId());
-        return todoSteps.stream().allMatch(TodoStep::getIsCompleted);
+        return todoSteps.stream().allMatch(TodoStep::isCompleted);
     }
 }

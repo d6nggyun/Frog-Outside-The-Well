@@ -46,7 +46,13 @@ public class TodoStep {
     private String description;
 
     @Column(name = "is_completed", nullable = false)
-    private Boolean isCompleted = false;
+    private boolean isCompleted = false;
+
+    @Column(name = "is_paused", nullable = false)
+    private boolean isPaused = false;
+
+    @Column(name = "is_completed_on_time", nullable = false)
+    private boolean isCompletedOnTime = false;
 
     @Column(name = "completed_date")
     private LocalDate completedDate;
@@ -62,14 +68,12 @@ public class TodoStep {
     private List<String> tips;
 
     @Builder
-    private TodoStep(Long todoId, Long userId, LocalDate stepDate, Day day, String description, Boolean isCompleted,
-            List<String> tips) {
+    private TodoStep(Long todoId, Long userId, LocalDate stepDate, Day day, String description, List<String> tips) {
         this.todoId = todoId;
         this.userId = userId;
         this.stepDate = stepDate;
         this.day = day;
         this.description = description;
-        this.isCompleted = isCompleted;
         this.tips = tips;
     }
 
@@ -79,7 +83,6 @@ public class TodoStep {
                 .userId(userId)
                 .stepDate(stepRequest.stepDate())
                 .description(stepRequest.description())
-                .isCompleted(false)
                 .tips(stepRequest.tips())
                 .build();
     }
@@ -92,13 +95,15 @@ public class TodoStep {
         this.description = updateStepRequestId.description();
     }
 
-    public Boolean isCompleted() {
-        return this.isCompleted;
-    }
-
-    public void completeStep(LocalDateTime endTime) {
+    public void completeStep(LocalDateTime endTime, boolean isOnTime) {
         this.completedDate = LocalDate.from(endTime);
         this.isCompleted = true;
+        this.isPaused = false;
+        this.isCompletedOnTime = isOnTime;
+    }
+
+    public void pauseStep() {
+        this.isPaused = true;
     }
 
     public void updateTotalDuration(Long duration) {

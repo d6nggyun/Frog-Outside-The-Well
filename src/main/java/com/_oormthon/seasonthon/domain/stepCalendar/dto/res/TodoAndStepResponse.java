@@ -29,6 +29,6 @@ public record TodoAndStepResponse(
 ) {
     public static TodoAndStepResponse of(Todo todo, TodoStep todoStep) {
         return new TodoAndStepResponse(todo.getId(), todo.getTitle(),
-                todoStep.getId(), todoStep.getStepDate(), todoStep.getDescription(), todoStep.getIsCompleted());
+                todoStep.getId(), todoStep.getStepDate(), todoStep.getDescription(), todoStep.isCompleted());
     }
 }

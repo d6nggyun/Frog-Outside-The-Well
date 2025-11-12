@@ -131,7 +131,6 @@ public class GeminiService {
                                                         .userId(user.getUserId())
                                                         .stepDate(step.stepDate())
                                                         .description(step.description())
-                                                        .isCompleted(step.isCompleted())
                                                         .tips(step.tips())
                                                         .build())
                                         .toList();

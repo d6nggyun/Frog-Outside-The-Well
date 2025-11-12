@@ -1,13 +1,5 @@
 package com._oormthon.seasonthon.domain.ai.service;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com._oormthon.seasonthon.domain.ai.entity.UserConversation;
 import com._oormthon.seasonthon.domain.ai.enums.ConversationState;
 import com._oormthon.seasonthon.domain.ai.repository.UserConversationRepository;
@@ -18,9 +10,15 @@ import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -172,7 +170,6 @@ class ConversationStateService {
                                                 .stepDate(step.stepDate())
                                                 .day(step.day())
                                                 .description(step.description())
-                                                .isCompleted(false)
                                                 .build())
                                         .toList();
                                 todoStepRepository.saveAll(todoSteps);
