@@ -59,7 +59,8 @@ public class GeminiApiClient {
     }
 
     private String cleanJsonResponse(String response) {
-        if (response == null) return "";
+        if (response == null)
+            return "";
         return response
                 .replaceAll("(?s)```json", "")
                 .replaceAll("(?s)```", "")
@@ -71,8 +72,7 @@ public class GeminiApiClient {
      */
     public Flux<String> generateStream(String prompt) {
         Map<String, Object> requestBody = Map.of(
-                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt))))
-        );
+                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))));
 
         log.info("🚀 Gemini SSE 요청 시작: {}", prompt);
 
@@ -87,35 +87,46 @@ public class GeminiApiClient {
                         .build())
                 .bodyValue(requestBody)
                 .accept(MediaType.TEXT_EVENT_STREAM)
-                .exchangeToFlux(response -> response.bodyToFlux(String.class))
+                .exchangeToFlux(response -> {
+                    if (response.statusCode().is5xxServerError()) {
+                        log.warn("⚠️ Gemini 서버 오류: {}", response.statusCode());
+                        return Flux.error(new RuntimeException("Gemini overloaded (503)"));
+                    }
+                    return response.bodyToFlux(String.class);
+                })
                 .retryWhen(
-                        Retry.fixedDelay(3, Duration.ofSeconds(2))
-                                .filter(throwable -> {
-                                    log.warn("⚠️ Gemini SSE 재시도: {}", throwable.toString());
-                                    return true;
-                                })
-                )
+                        Retry.backoff(5, Duration.ofSeconds(2)) // 지수 백오프
+                                .maxBackoff(Duration.ofSeconds(30))
+                                .filter(e -> e.getMessage().contains("Gemini overloaded"))
+                                .onRetryExhaustedThrow(
+                                        (spec, signal) -> new RuntimeException("❌ Gemini API 재시도 실패: 모델 과부하 지속")))
                 .onErrorResume(e -> {
                     log.error("💥 Gemini SSE 오류 발생 — 연결 조기 종료: {}", e.getMessage());
-                    return Flux.empty();
+                    return Flux.just("⚠️ Gemini 모델이 과부하 상태입니다. 잠시 후 다시 시도해주세요.");
                 })
                 .flatMap(line -> {
-                    if (line == null || line.isBlank()) return Flux.empty();
-
+                    if (line == null || line.isBlank())
+                        return Flux.empty();
                     buffer.append(line.trim());
                     for (char c : line.toCharArray()) {
-                        if (c == '{') curly.incrementAndGet();
-                        else if (c == '}') curly.decrementAndGet();
-                        else if (c == '[') square.incrementAndGet();
-                        else if (c == ']') square.decrementAndGet();
+                        if (c == '{')
+                            curly.incrementAndGet();
+                        else if (c == '}')
+                            curly.decrementAndGet();
+                        else if (c == '[')
+                            square.incrementAndGet();
+                        else if (c == ']')
+                            square.decrementAndGet();
                     }
 
-                    if (curly.get() > 0 || square.get() > 0) return Flux.empty();
+                    if (curly.get() > 0 || square.get() > 0)
+                        return Flux.empty();
 
                     String json = buffer.toString();
                     buffer.setLength(0);
                     curly.set(0);
                     square.set(0);
+                    log.info("📡 Json : {}", json);
 
                     try {
                         JsonNode node = mapper.readTree(json);
@@ -131,11 +142,13 @@ public class GeminiApiClient {
                 })
                 .doOnSubscribe(s -> log.info("📡 Gemini SSE 연결됨"))
                 .doFinally(signal -> log.info("✅ Gemini SSE 스트림 종료 (signal: {})", signal));
+
     }
 
     private Flux<String> extractText(JsonNode node) {
         JsonNode textNode = node.at("/candidates/0/content/parts/0/text");
-        if (textNode.isMissingNode()) return Flux.empty();
+        if (textNode.isMissingNode())
+            return Flux.empty();
         String cleaned = cleanJsonResponse(textNode.asText());
         log.info("🧩 Gemini 응답 텍스트 조각: {}", cleaned);
         return Flux.just(cleaned);

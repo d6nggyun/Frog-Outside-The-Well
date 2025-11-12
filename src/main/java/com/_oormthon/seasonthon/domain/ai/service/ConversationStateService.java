@@ -188,11 +188,47 @@ class ConversationStateService {
                         response = "좋아! 🎉 이 계획으로 진행할게. 화이팅 💪\n (TodoId=" + createdTodoId + ")";
                         convo.setState(ConversationState.FINISHED);
                     } else if (userMessage.contains("아니") || userMessage.contains("수정")) {
-                        convo.setPendingPlanJson(null); // ❌ 기존 계획 삭제
-                        response = "괜찮아 😊 어떤 점을 수정할까? 목표부터 다시 정해보자";
-                        convo.setState(ConversationState.ASK_TASK);
+                        convo.setPendingPlanJson(null);
+                        convo.setState(ConversationState.CHECK_MODIFY); // ✅ 수정 선택 단계로 이동
+                        response = """
+                                괜찮아 😊 어떤 부분을 수정할까?
+                                - 목표
+                                - 시작일
+                                - 마감일
+                                - 공부시간(요일)
+                                중에서 말해줘!
+                                """;
                     } else {
                         response = "이 계획으로 진행할까? (좋아 / 응 / 아니 / 수정 / 저장)으로 답해줘";
+                    }
+                }
+                case CHECK_MODIFY -> {
+                    if (userMessage.contains("목표")) {
+                        convo.setState(ConversationState.ASK_TASK);
+                        response = "좋아! 🎯 새 목표를 알려줘.";
+                    } else if (userMessage.contains("시작") || userMessage.contains("시작일")) {
+                        convo.setState(ConversationState.ASK_START_DATE);
+                        response = "언제부터 시작할까? (예: 2025-11-10)";
+                    } else if (userMessage.contains("마감") || userMessage.contains("종료") || userMessage.contains("끝")) {
+                        convo.setState(ConversationState.ASK_END_DATE);
+                        response = "언제까지 목표를 이루고 싶어? (예: 2025-12-31)";
+                    } else if (userMessage.contains("요일")) {
+                        convo.setState(ConversationState.ASK_DAYS);
+                        response = "공부할 요일을 다시 알려줄래? (예: 월,수,금)";
+                    } else if (userMessage.contains("시간")) {
+                        convo.setState(ConversationState.ASK_TIME_PER_DAY);
+                        response = "공부 시간을 다시 숫자로 입력해줘! 예: 90";
+                    } else {
+                        convo.setState(ConversationState.CHECK_MODIFY); // 🔁 반복 대기
+                        response = """
+                                괜찮아 😊 어떤 부분을 수정할까?
+                                - 목표
+                                - 시작일
+                                - 마감일
+                                - 공부요일
+                                - 하루 학습 시간
+                                중에서 말해줘!
+                                """;
                     }
                 }
 

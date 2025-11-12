@@ -88,8 +88,6 @@ public class TodoService {
 
         todo.updateTodoDetail(updateTodoDetailRequest);
 
-        todoStepRepository.deleteAll(todoStepRepository.findByTodoId(todoId));
-
         return TodoResponse.of(todo, randomWarmText(getWarmText()));
     }
 

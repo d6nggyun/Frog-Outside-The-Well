@@ -15,5 +15,6 @@ public enum ConversationState {
     ASK_TIME_PER_DAY, // 하루 공부 시간 묻기
     SHOW_PLAN, // 계획 생성 및 확인
     CONFIRM_PLAN, // 계획 확정 여부 묻기
+    CHECK_MODIFY,
     FINISHED // 완료
 }
