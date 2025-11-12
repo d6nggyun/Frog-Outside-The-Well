@@ -20,6 +20,7 @@ public class S3Controller implements S3ApiSpecification {
      * 업로드용 Presigned URL 발급
      * 프론트에서 파일 업로드 전에 요청
      */
+    @Override
     @PostMapping("/presigned")
     public ResponseEntity<PresignedUrlResponse> getPresignedUploadUrl(
             @AuthenticationPrincipal User user,
@@ -30,9 +31,20 @@ public class S3Controller implements S3ApiSpecification {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    @PostMapping("/presigned_type")
+    public ResponseEntity<PresignedUrlResponse> getPresignedUploadUrlWithoutFileType(
+            @AuthenticationPrincipal User user,
+            @RequestParam String fileName) {
+
+        PresignedUrlResponse response = s3Service.generateUploadPresignedUrlWithoutFileType(user.getUserId(), fileName);
+        return ResponseEntity.ok(response);
+    }
+
     /**
      * 이미지 삭제 (서버가 직접 삭제 요청)
      */
+    @Override
     @DeleteMapping("/file")
     public ResponseEntity<Void> deleteImage(@AuthenticationPrincipal User user, @RequestParam String fileName) {
         s3Service.deleteFile(user.getUserId(), fileName);
