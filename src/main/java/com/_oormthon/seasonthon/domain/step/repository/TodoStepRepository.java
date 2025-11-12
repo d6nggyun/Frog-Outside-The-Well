@@ -25,6 +25,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                     ts.day,
                     ts.description,
                     ts.isCompleted,
+                    ts.isPaused,
                     ts.tips
                 )
                 FROM TodoStep ts
@@ -39,6 +40,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                     ts.day,
                     ts.description,
                     ts.isCompleted,
+                    ts.isPaused,
                     ts.tips
                 )
                 FROM TodoStep ts
@@ -62,6 +64,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                     ts.day,
                     ts.description,
                     ts.isCompleted,
+                    ts.isPaused,
                     ts.tips
                 )
                 FROM TodoStep ts
@@ -76,6 +79,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                     ts.day,
                     ts.description,
                     ts.isCompleted,
+                    ts.isPaused,
                     ts.tips
                 )
                 FROM TodoStep ts
@@ -97,6 +101,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                     ts.day,
                     ts.description,
                     ts.isCompleted,
+                    ts.isPaused,
                     ts.tips
                 )
                 FROM TodoStep ts
@@ -114,6 +119,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                     ts.day,
                     ts.description,
                     ts.isCompleted,
+                    ts.isPaused,
                     ts.tips
                 )
                 FROM TodoStep ts

@@ -24,10 +24,10 @@ public record StepResponse(
         String description,
 
         @Schema(description = "완료 여부", example = "false")
-        Boolean isCompleted,
+        boolean isCompleted,
 
         @Schema(description = "일시정지 여부", example = "false")
-        Boolean isPaused,
+        boolean isPaused,
 
         @Schema(description = "tips", example = "tips")
         List<String> tips
