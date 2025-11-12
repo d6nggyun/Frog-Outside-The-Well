@@ -12,7 +12,7 @@ import com._oormthon.seasonthon.domain.s3.service.S3Service;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/s3")
-public class S3Controller {
+public class S3Controller implements S3ApiSpecification {
 
     private final S3Service s3Service;
 
