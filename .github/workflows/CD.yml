@@ -26,12 +26,12 @@ jobs:
           port: ${{ secrets.AWS_EC2_PORT }}
           script: |
             cd /home/ubuntu
-            
+
             APP_NAME=${{ secrets.DOCKER_REPO }}
             IMAGE=${{ secrets.DOCKER_USERNAME }}/${{secrets.DOCKER_REPO}}
-            
+
             COLOR_FILE=/home/ubuntu/deploy_color
-            
+
             # 현재 색 / 다음 색/ 포트 결정
             if [ -f "$COLOR_FILE" ] && [ "$(cat $COLOR_FILE)" = "blue" ]; then
               CURRENT_COLOR=blue
@@ -44,21 +44,21 @@ jobs:
               CURRENT_PORT=8081
               NEW_PORT=8080
             fi
-            
+
             echo "Current color: $CURRENT_COLOR"
             echo "New color: $NEW_COLOR"
-            
+
             docker pull $IMAGE
-            
+
             NEW_CONTAINER_NAME=${APP_NAME}-${NEW_COLOR}
             OLD_CONTAINER_NAME=${APP_NAME}-${CURRENT_COLOR}
-            
+
             # 새 컨테이너 자리에 기존 게 있으면 정리
             if [ "$(docker ps -aq -f name=$NEW_CONTAINER_NAME)" ]; then
               docker stop $NEW_CONTAINER_NAME || true
               docker rm $NEW_CONTAINER_NAME || true
             fi
-            
+
             # 새 컨테이너 먼저 실행
             docker run -d \
               --name $NEW_CONTAINER_NAME \
@@ -74,42 +74,46 @@ jobs:
               --env KAKAO_CLIENT_REDIRECT_URI=${{ secrets.KAKAO_CLIENT_REDIRECT_URI }} \
               --env GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
               --env GEMINI_MODEL=${{ secrets.GEMINI_MODEL }} \
+              --env AWS_ACCESS_KEY= ${{secrets.AWS_ACCESS_KEY}}\
+              --env AWS_SECRET_KEY= ${{secrets.AWS_SECRET_KEY}}\
+              --env AWS_REGION= ${{secrets.AWS_REGION}}\
+              --env S3_BUCKET= ${{secrets.S3_BUCKET}}\
               -p ${NEW_PORT}:8080 \
               $IMAGE
-            
+
             HEALTH_PATH="/api/test/jwt"
-            
+
             # 새 컨테이너 상태 확인
             echo "Health check for new container..."
             for i in {1..20}; do
               sleep 5
               STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${NEW_PORT}${HEALTH_PATH}" || echo "000")
               echo "Health check status: $STATUS_CODE"
-            
+
               if [ "$STATUS_CODE" = "200" ]; then
                    echo "New version is healthy!"
                    break
               fi
-            
+
               if [ "$i" -eq 20 ]; then
                   echo "New version did not become healthy in time. Aborting."
                   docker logs $NEW_CONTAINER_NAME || true
                   exit 1
               fi
             done
-            
+
             # 캐디 포트 전환
             echo "Switching traffic to new container..."
-            
+
             sudo sed -i "s/reverse_proxy localhost:[0-9]\\+/reverse_proxy localhost:${NEW_PORT}/" /etc/caddy/Caddyfile
             sudo systemctl reload caddy
-            
+
             if [ "$(docker ps -q -f name=$OLD_CONTAINER_NAME)" ]; then
               echo "Stopping old container..."
               docker stop $OLD_CONTAINER_NAME || true
               docker rm $OLD_CONTAINER_NAME || true
             fi
-            
+
             docker image prune -f
-            
+
             echo $NEW_COLOR > $COLOR_FILE
