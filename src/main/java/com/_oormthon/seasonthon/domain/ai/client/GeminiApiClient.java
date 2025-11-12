@@ -34,8 +34,6 @@ public class GeminiApiClient {
     private String apiKey;
 
     public GeminiApiClient(WebClient.Builder builder) {
-
-        // ✅ 안정적인 커넥션 풀 구성
         ConnectionProvider provider = ConnectionProvider.builder("gemini-conn-pool")
                 .maxConnections(20)
                 .maxIdleTime(Duration.ofSeconds(20))
@@ -61,19 +59,59 @@ public class GeminiApiClient {
     private String cleanJsonResponse(String response) {
         if (response == null)
             return "";
-        return response
-                .replaceAll("(?s)```json", "")
+        return response.replaceAll("(?s)```json", "")
                 .replaceAll("(?s)```", "")
                 .trim();
     }
 
+    private Map<String, Object> buildRequestBody(String prompt) {
+        return Map.of(
+                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))));
+    }
+
     /**
-     * ✅ 안정적인 Gemini SSE 요청
+     * ✅ 단일 텍스트 생성 (동기, fallback 포함)
+     */
+    public String generateText(String prompt) {
+        try {
+            String response = webClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/gemini-2.5-flash:generateContent") // 모델명 업데이트
+                            .queryParam("key", apiKey)
+                            .build())
+                    .bodyValue(buildRequestBody(prompt))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(15)) // timeout 확장
+                    .block();
+
+            if (response == null || response.isBlank()) {
+                log.warn("⚠️ Gemini 응답이 비어 있음");
+                return null;
+            }
+
+            JsonNode node = mapper.readTree(response);
+            JsonNode textNode = node.at("/candidates/0/content/parts/0/text");
+            if (textNode.isMissingNode()) {
+                log.warn("⚠️ Gemini 응답에서 텍스트 누락");
+                return null;
+            }
+
+            String result = cleanJsonResponse(textNode.asText());
+            log.info("✨ Gemini 생성 결과: {}", result);
+            return result;
+
+        } catch (Exception e) {
+            log.error("💥 Gemini 호출 실패: {}", e.getMessage());
+            return null; // 실패 시 안전하게 null 반환
+        }
+    }
+
+    /**
+     * ✅ SSE 스트림 생성 (fallback 포함)
      */
     public Flux<String> generateStream(String prompt) {
-        Map<String, Object> requestBody = Map.of(
-                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))));
-
         log.info("🚀 Gemini SSE 요청 시작: {}", prompt);
 
         StringBuilder buffer = new StringBuilder();
@@ -85,24 +123,25 @@ public class GeminiApiClient {
                         .path("/gemini-2.5-flash:streamGenerateContent")
                         .queryParam("key", apiKey)
                         .build())
-                .bodyValue(requestBody)
+                .bodyValue(buildRequestBody(prompt))
                 .accept(MediaType.TEXT_EVENT_STREAM)
-                .exchangeToFlux(response -> {
-                    if (response.statusCode().is5xxServerError()) {
-                        log.warn("⚠️ Gemini 서버 오류: {}", response.statusCode());
+                .exchangeToFlux(resp -> {
+                    if (resp.statusCode().is5xxServerError()) {
+                        log.warn("⚠️ Gemini 서버 오류: {}", resp.statusCode());
                         return Flux.error(new RuntimeException("Gemini overloaded (503)"));
                     }
-                    return response.bodyToFlux(String.class);
+                    if (resp.statusCode().is4xxClientError()) {
+                        log.warn("⚠️ Gemini 4xx 오류: {}", resp.statusCode());
+                        return Flux.error(new RuntimeException("Gemini client error (4xx)"));
+                    }
+                    return resp.bodyToFlux(String.class);
                 })
-                .retryWhen(
-                        Retry.backoff(5, Duration.ofSeconds(2)) // 지수 백오프
-                                .maxBackoff(Duration.ofSeconds(30))
-                                .filter(e -> e.getMessage().contains("Gemini overloaded"))
-                                .onRetryExhaustedThrow(
-                                        (spec, signal) -> new RuntimeException("❌ Gemini API 재시도 실패: 모델 과부하 지속")))
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .maxBackoff(Duration.ofSeconds(10))
+                        .onRetryExhaustedThrow((spec, signal) -> new RuntimeException("❌ Gemini SSE 재시도 실패")))
                 .onErrorResume(e -> {
-                    log.error("💥 Gemini SSE 오류 발생 — 연결 조기 종료: {}", e.getMessage());
-                    return Flux.just("⚠️ Gemini 모델이 과부하 상태입니다. 잠시 후 다시 시도해주세요.");
+                    log.error("💥 Gemini SSE 오류 발생: {}", e.getMessage());
+                    return Flux.just("⚠️ Gemini 모델 호출 실패, fallback 사용");
                 })
                 .flatMap(line -> {
                     if (line == null || line.isBlank())
@@ -126,15 +165,13 @@ public class GeminiApiClient {
                     buffer.setLength(0);
                     curly.set(0);
                     square.set(0);
-                    log.info("📡 Json : {}", json);
 
                     try {
                         JsonNode node = mapper.readTree(json);
-                        if (node.isArray()) {
+                        if (node.isArray())
                             return Flux.fromIterable(node).flatMap(this::extractText);
-                        } else {
+                        else
                             return extractText(node);
-                        }
                     } catch (Exception e) {
                         log.warn("⚠️ SSE 파싱 실패: {}", json, e);
                         return Flux.empty();
@@ -142,45 +179,6 @@ public class GeminiApiClient {
                 })
                 .doOnSubscribe(s -> log.info("📡 Gemini SSE 연결됨"))
                 .doFinally(signal -> log.info("✅ Gemini SSE 스트림 종료 (signal: {})", signal));
-    }
-
-    public String generateText(String prompt) {
-        Map<String, Object> requestBody = Map.of(
-                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))));
-
-        try {
-            String response = webClient.post()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/gemini-2.0-pro:generateContent")
-                            .queryParam("key", apiKey)
-                            .build())
-                    .bodyValue(requestBody)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .timeout(Duration.ofSeconds(10))
-                    .block();
-
-            if (response == null || response.isBlank()) {
-                log.warn("⚠️ Gemini 응답이 비어 있음");
-                return null;
-            }
-
-            JsonNode node = mapper.readTree(response);
-            JsonNode textNode = node.at("/candidates/0/content/parts/0/text");
-            if (textNode.isMissingNode()) {
-                log.warn("⚠️ Gemini 응답에서 텍스트 노드 누락");
-                return null;
-            }
-
-            String result = cleanJsonResponse(textNode.asText());
-            log.info("✨ Gemini 생성 결과: {}", result);
-            return result;
-
-        } catch (Exception e) {
-            log.error("💥 Gemini 호출 실패: {}", e.getMessage());
-            return null; // 실패 시 null 반환
-        }
     }
 
     private Flux<String> extractText(JsonNode node) {

@@ -42,6 +42,17 @@ oauth:
 jwt:
   secret: ${JWT_SECRET}
 
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+
+    region:
+      static: ${AWS_REGION}
+  s3:
+    bucket: ${S3_BUCKET}
+
 gemini:
   api-key: ${GEMINI_API_KEY}
   model-name: ${GEMINI_MODEL}

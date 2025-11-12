@@ -1,112 +1,117 @@
 package com._oormthon.seasonthon.domain.s3.service;
 
-import com._oormthon.seasonthon.domain.member.entity.User;
-import com._oormthon.seasonthon.global.exception.S3ImageException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import com._oormthon.seasonthon.domain.member.dto.res.UserResponse;
+import com._oormthon.seasonthon.domain.member.service.UserService;
+
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.*;
+
+import java.time.Duration;
 import java.util.UUID;
 
 @Service
-@Slf4j
+@RequiredArgsConstructor
 public class S3Service {
-    private final AmazonS3 amazonS3;
 
-    @Value("${spring.cloud.aws.s3.bucket}")
+    private final S3Presigner s3Presigner;
+    private final UserService userService;
+
+    @Value("${cloud.s3.bucket}")
     private String bucket;
 
-    @Value("${spring.cloud.aws.region.static}")
-    private String region;
+    /**
+     * S3 Presigned URL (PUT) 발급
+     */
+    public String generateUploadPresignedUrl(Long userId) {
+        UserResponse user = userService.getUserById(userId);
 
-    public S3Service(AmazonS3 amazonS3) {
-        this.amazonS3 = amazonS3;
+        // URL에서 파일명만 추출
+        String profileImageName = extractFileNameFromUrl(user.profileImage());
+
+        // 고유한 S3 키 생성 (닉네임/UUID-파일명)
+        String key = user.nickname() + "/" + UUID.randomUUID() + "-" + profileImageName;
+
+        // 확장자 기반 Content-Type 결정
+        String contentType = determineContentTypeFromKey(profileImageName);
+
+        // Presigned URL 발급용 요청 생성
+        PutObjectRequest objectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(contentType)
+                .build();
+
+        // Presigned URL 생성
+        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(
+                r -> r.putObjectRequest(objectRequest)
+                        .signatureDuration(Duration.ofMinutes(10)));
+
+        return presignedRequest.url().toString();
     }
 
     /**
-     * S3에 이미지 업로드 하기
+     * S3 객체 삭제
      */
-    @Transactional
-    public String uploadImage(MultipartFile image, User user) {
-        if (user.getProfileImage() != null) {
-            try {
-                amazonS3.deleteObject(bucket, getImageKey(user.getProfileImage()));
-            } catch (Exception e) {
-                log.warn("기존 프로필 이미지를 삭제하지 못했습니다: {}", e.getMessage());
-            }
-        }
+    public void deleteFile(Long userId) {
+        UserResponse user = userService.getUserById(userId);
 
-        String extension = getImageExtension(image);
-        String fileName = UUID.randomUUID() + "_" + user.getUserId() + "_profile" + extension;
+        // URL에서 파일명만 추출
+        String profileImageName = extractFileNameFromUrl(user.profileImage());
+        String key = user.nickname() + "/" + profileImageName;
 
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType(image.getContentType());
-        metadata.setContentLength(image.getSize());
+        S3Client s3 = S3Client.builder()
+                .region(Region.AP_NORTHEAST_2)
+                .credentialsProvider(DefaultCredentialsProvider.builder().build())
+                .build();
 
-        try {
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, fileName, image.getInputStream(),
-                    metadata);
-            amazonS3.putObject(putObjectRequest);
-        } catch (IOException e) {
-            log.error("이미지 업로드 실패: {}", e.getMessage(), e);
-            throw new S3ImageException("이미지 업로드 중 오류가 발생했습니다: " + e.getMessage(), e);
-        }
-
-        String publicUrl = getPublicUrl(fileName);
-        user.setProfileImage(publicUrl);
-        return publicUrl;
+        s3.deleteObject(DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build());
     }
 
     /**
-     * S3에서 이미지 다운로드드
+     * 파일명에서 Content-Type 추론
      */
-    @Transactional(readOnly = true)
-    public S3Object getFile(String keyName) {
-        try {
-            log.info("S3에서 파일 다운로드 시도: {}", keyName);
+    private String determineContentTypeFromKey(String key) {
+        if (key == null)
+            return "application/octet-stream"; // 기본값
 
-            if (!amazonS3.doesObjectExist(bucket, keyName)) {
-                log.error("S3에서 파일을 찾을 수 없습니다: {}", keyName);
-                throw new S3ImageException("존재하지 않는 파일입니다: " + keyName);
-            }
+        String lowerKey = key.toLowerCase();
 
-            S3Object s3Object = amazonS3.getObject(new GetObjectRequest(bucket, keyName));
-            log.info("S3 파일 다운로드 성공: {}", keyName);
-            return s3Object;
+        if (lowerKey.endsWith(".jpg") || lowerKey.endsWith(".jpeg"))
+            return "image/jpeg";
+        if (lowerKey.endsWith(".png"))
+            return "image/png";
+        if (lowerKey.endsWith(".gif"))
+            return "image/gif";
+        if (lowerKey.endsWith(".webp"))
+            return "image/webp";
+        if (lowerKey.endsWith(".svg"))
+            return "image/svg+xml";
 
-        } catch (S3ImageException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("S3 파일 다운로드 중 오류 발생: {}", e.getMessage(), e);
-            throw new S3ImageException("이미지 다운로드 중 오류가 발생했습니다.", e);
-        }
+        return "application/octet-stream"; // 모르는 확장자일 경우
     }
 
-    private String getImageExtension(MultipartFile image) {
-        String extension = "";
-        String originalFilename = image.getOriginalFilename();
-
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-        }
-        return extension;
+    /**
+     * URL에서 파일명만 추출
+     * 예: https://t1.kakaocdn.net/account_images/default_profile.jpeg →
+     * default_profile.jpeg
+     */
+    private String extractFileNameFromUrl(String url) {
+        if (url == null)
+            return "unknown";
+        int lastSlash = url.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == url.length() - 1)
+            return "unknown";
+        return url.substring(lastSlash + 1);
     }
-
-    private String getPublicUrl(String imageName) {
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, imageName);
-    }
-
-    private String getImageKey(String imageUrl) {
-        return imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-    }
-
 }
