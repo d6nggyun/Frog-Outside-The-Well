@@ -142,7 +142,45 @@ public class GeminiApiClient {
                 })
                 .doOnSubscribe(s -> log.info("📡 Gemini SSE 연결됨"))
                 .doFinally(signal -> log.info("✅ Gemini SSE 스트림 종료 (signal: {})", signal));
+    }
 
+    public String generateText(String prompt) {
+        Map<String, Object> requestBody = Map.of(
+                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))));
+
+        try {
+            String response = webClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/gemini-2.0-pro:generateContent")
+                            .queryParam("key", apiKey)
+                            .build())
+                    .bodyValue(requestBody)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .block();
+
+            if (response == null || response.isBlank()) {
+                log.warn("⚠️ Gemini 응답이 비어 있음");
+                return null;
+            }
+
+            JsonNode node = mapper.readTree(response);
+            JsonNode textNode = node.at("/candidates/0/content/parts/0/text");
+            if (textNode.isMissingNode()) {
+                log.warn("⚠️ Gemini 응답에서 텍스트 노드 누락");
+                return null;
+            }
+
+            String result = cleanJsonResponse(textNode.asText());
+            log.info("✨ Gemini 생성 결과: {}", result);
+            return result;
+
+        } catch (Exception e) {
+            log.error("💥 Gemini 호출 실패: {}", e.getMessage());
+            return null; // 실패 시 null 반환
+        }
     }
 
     private Flux<String> extractText(JsonNode node) {
