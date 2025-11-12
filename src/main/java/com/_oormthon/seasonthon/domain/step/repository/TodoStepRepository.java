@@ -121,6 +121,7 @@ public interface TodoStepRepository extends JpaRepository<TodoStep, Long> {
                 AND ts.todoId =:todoId
                 AND ts.stepDate < :now AND ts.isCompleted = true
                 AND ts.completedDate BETWEEN :yesterday AND :now
+                AND ts.isCompletedOnTime = false
             """)
     List<StepResponse> findAllCompletedMissedStepResponseByUserIdAndStepDateAndTodoId(Long userId, Long todoId,
             LocalDate yesterday, LocalDate now);

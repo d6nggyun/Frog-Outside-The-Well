@@ -51,6 +51,9 @@ public class TodoStep {
     @Column(name = "is_paused", nullable = false)
     private boolean isPaused = false;
 
+    @Column(name = "is_completed_on_time", nullable = false)
+    private boolean isCompletedOnTime = false;
+
     @Column(name = "completed_date")
     private LocalDate completedDate;
 
@@ -92,10 +95,11 @@ public class TodoStep {
         this.description = updateStepRequestId.description();
     }
 
-    public void completeStep(LocalDateTime endTime) {
+    public void completeStep(LocalDateTime endTime, boolean isOnTime) {
         this.completedDate = LocalDate.from(endTime);
         this.isCompleted = true;
         this.isPaused = false;
+        this.isCompletedOnTime = isOnTime;
     }
 
     public void pauseStep() {

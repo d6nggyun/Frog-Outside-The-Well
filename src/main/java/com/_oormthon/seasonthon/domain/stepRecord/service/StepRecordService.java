@@ -91,7 +91,10 @@ public class StepRecordService {
     private void completeStep(TodoStep todoStep, LocalDateTime endTime) {
         if (todoStep.isCompleted())
             return;
-        todoStep.completeStep(endTime);
+
+        boolean isOnTime = !endTime.toLocalDate().isAfter(todoStep.getStepDate());
+
+        todoStep.completeStep(endTime, isOnTime);
 
         Todo todo = todoQueryService.getTodoById(todoStep.getTodoId());
         List<TodoStep> todoSteps = todoStepRepository.findByTodoId(todo.getId());
