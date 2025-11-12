@@ -170,6 +170,7 @@ class ConversationStateService {
                                                 .stepDate(step.stepDate())
                                                 .day(step.day())
                                                 .description(step.description())
+                                                .tips(step.tips())
                                                 .build())
                                         .toList();
                                 todoStepRepository.saveAll(todoSteps);

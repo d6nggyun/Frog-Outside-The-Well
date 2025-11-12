@@ -37,7 +37,7 @@ public class UserController implements UserApiSpecification {
 
     @PutMapping("/my-page")
     public ResponseEntity<UserResponse> updateMyPage(@AuthenticationPrincipal User user,
-                                                     @RequestBody UpdateMypageRequest request) {
+            @RequestBody UpdateMypageRequest request) {
         return ResponseEntity.ok(userService.updateMyPage(user.getUserId(), request));
     }
 }
