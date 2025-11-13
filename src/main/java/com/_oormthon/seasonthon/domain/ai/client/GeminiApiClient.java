@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @Slf4j
 @Component
@@ -118,34 +119,43 @@ public class GeminiApiClient {
         AtomicInteger curly = new AtomicInteger(0);
         AtomicInteger square = new AtomicInteger(0);
 
-        return webClient.post()
+        // 1️⃣ 내부 함수로 모델 호출 로직을 분리
+        Function<String, Flux<String>> callGeminiModel = (model) -> webClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/gemini-2.5-flash:streamGenerateContent")
+                        .path("/" + model + ":streamGenerateContent")
                         .queryParam("key", apiKey)
                         .build())
                 .bodyValue(buildRequestBody(prompt))
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .exchangeToFlux(resp -> {
                     if (resp.statusCode().is5xxServerError()) {
-                        log.warn("⚠️ Gemini 서버 오류: {}", resp.statusCode());
+                        log.warn("⚠️ Gemini 서버 오류 ({}): {}", model, resp.statusCode());
                         return Flux.error(new RuntimeException("Gemini overloaded (503)"));
                     }
                     if (resp.statusCode().is4xxClientError()) {
-                        log.warn("⚠️ Gemini 4xx 오류: {}", resp.statusCode());
+                        log.warn("⚠️ Gemini 클라이언트 오류 ({}): {}", model, resp.statusCode());
                         return Flux.error(new RuntimeException("Gemini client error (4xx)"));
                     }
                     return resp.bodyToFlux(String.class);
+                });
+
+        // 2️⃣ 기본 모델 → 503 발생 시 fallback 모델 호출
+        return callGeminiModel.apply("gemini-2.5-flash")
+                .onErrorResume(e -> {
+                    if (e.getMessage().contains("503") || e.getMessage().contains("overloaded")) {
+                        log.warn("🔁 Gemini 2.5-flash 과부하, gemini-2.0-flash로 재시도...");
+                        return callGeminiModel.apply("gemini-2.0-flash");
+                    }
+                    log.error("💥 Gemini SSE 오류 발생: {}", e.getMessage());
+                    return Flux.just("⚠️ Gemini 모델 호출 실패, fallback 사용");
                 })
                 .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
                         .maxBackoff(Duration.ofSeconds(10))
                         .onRetryExhaustedThrow((spec, signal) -> new RuntimeException("❌ Gemini SSE 재시도 실패")))
-                .onErrorResume(e -> {
-                    log.error("💥 Gemini SSE 오류 발생: {}", e.getMessage());
-                    return Flux.just("⚠️ Gemini 모델 호출 실패, fallback 사용");
-                })
                 .flatMap(line -> {
                     if (line == null || line.isBlank())
                         return Flux.empty();
+
                     buffer.append(line.trim());
                     for (char c : line.toCharArray()) {
                         if (c == '{')
