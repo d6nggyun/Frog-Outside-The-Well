@@ -53,6 +53,7 @@ public class DiaryService {
                 .map(tdg -> {
                     Long secs = tdg.getTotalDuration() == null ? 0L : tdg.getTotalDuration();
                     Double ratio = (total == 0) ? 0.0 : (double) secs / total;
+
                     return TodayCompletedTodoResponse.of(
                             tdg.getTodoId(),
                             tdg.getTodoTitle(),

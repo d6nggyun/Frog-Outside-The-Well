@@ -66,7 +66,9 @@ public class StepRecord {
     }
 
     public void startStep(LocalDateTime startTime) {
-        this.startTime = startTime;
+        if (this.startTime == null) {
+            this.startTime = startTime;
+        }
         this.endTime = null;
     }
 
