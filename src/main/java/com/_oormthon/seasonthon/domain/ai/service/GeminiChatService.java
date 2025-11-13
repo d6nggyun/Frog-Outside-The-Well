@@ -153,10 +153,21 @@ public class GeminiChatService {
         };
     }
 
-    private Mono<Void> savePlanDescriptionBuffered(Long userId, String description) {
+    private Mono<Void> savePlanDescriptionBuffered(Long userId, String fullContent) {
         return Mono.fromRunnable(() -> {
             try {
-                conversationRepo.updateContentByUserId(userId, description);
+                // JSON 파싱
+                JsonNode jsonNode = objectMapper.readTree(fullContent);
+                String title = jsonNode.path("title").asText(null);
+                String content = jsonNode.path("content").asText(null);
+
+                if (title != null) {
+                    conversationRepo.updateTitleByUserId(userId, title);
+                }
+                if (content != null) {
+                    conversationRepo.updateContentByUserId(userId, content);
+                }
+
             } catch (Exception e) {
                 log.warn("⚠️ Step1 저장 실패: {}", e.getMessage());
             }

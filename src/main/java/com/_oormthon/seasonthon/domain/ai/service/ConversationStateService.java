@@ -85,13 +85,12 @@ class ConversationStateService {
                 }
                 case ASK_TASK_INTRO -> {
                     response = String.format(
-                            "좋아, %s! 이제 어떤 목표를 세우고 싶어? 🎯 예를 들어 ‘토익 800점 달성’처럼 말해줘!",
+                            "좋아, %s! 이제 어떤 목표를 세우고 싶어? 자세하게 말해줄수록 너를 돕기 쉬워지니까 잘 알려줘 :)🎯 예를 들어 ‘토익 800점 달성’처럼 말해줘!",
                             convo.getUserName());
                     convo.setState(ConversationState.ASK_TASK);
                 }
 
                 case ASK_TASK -> {
-                    convo.setTitle(userMessage.trim());
                     prompt = ChatbotScript.planDetail(convo.getUserAge(), userMessage.trim());
                     stepIndex = 1;
                     streaming = true;

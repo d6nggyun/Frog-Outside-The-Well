@@ -16,6 +16,11 @@ public interface UserConversationRepository extends JpaRepository<UserConversati
     @Query("UPDATE UserConversation u SET u.content = :content, u.planSaved = false WHERE u.userId = :userId")
     void updateContentByUserId(@Param("userId") Long userId, @Param("content") String content);
 
+    @Transactional
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE UserConversation u SET u.title = :title, u.planSaved = false WHERE u.userId = :userId")
+    void updateTitleByUserId(@Param("userId") Long userId, @Param("title") String title);
+
     // ✅ 임시 계획 JSON 저장용
     @Transactional
     @Modifying(clearAutomatically = true, flushAutomatically = true)
