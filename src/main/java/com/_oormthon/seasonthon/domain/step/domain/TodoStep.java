@@ -65,6 +65,7 @@ public class TodoStep {
     private LocalDateTime createdAt;
 
     @Column(columnDefinition = "TEXT", name = "tips")
+    @Convert(converter = StringListConverter.class)
     private List<String> tips;
 
     @Builder

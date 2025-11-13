@@ -169,6 +169,7 @@ class ConversationStateService {
                                                 .userId(userId)
                                                 .stepDate(step.stepDate())
                                                 .day(step.day())
+                                                .tips(step.tips())
                                                 .description(step.description())
                                                 .build())
                                         .toList();
