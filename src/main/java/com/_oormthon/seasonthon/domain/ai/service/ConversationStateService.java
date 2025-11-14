@@ -101,6 +101,16 @@ class ConversationStateService {
                     try {
                         LocalDate start = LocalDate.parse(userMessage.trim(),
                                 DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+                        if (start.isBefore(LocalDate.now())) {
+                            response = String.format(
+                                    "시작일은 오늘(%s) 이후여야 해! 다시 입력해줘 😊 (예: %s)",
+                                    LocalDate.now(),
+                                    LocalDate.now());
+                            convo.setState(ConversationState.ASK_START_DATE);
+                            break;
+                        }
+
                         convo.setStartDate(start);
                         response = ChatbotScript.askEndDate(start);
                         convo.setState(ConversationState.ASK_END_DATE);
