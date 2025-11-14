@@ -90,8 +90,10 @@ public class StatisticsService {
 
             int week = FixedWeeks.getWeekIndex(stepDate);
 
-            if (minDuration[week] == null || duration < minDuration[week]) {
-                minDuration[week] = duration;
+            if (duration > 0) {
+                if (minDuration[week] == null || duration < minDuration[week]) {
+                    minDuration[week] = duration;
+                }
             }
             if (maxDuration[week] == null || duration > maxDuration[week]) {
                 maxDuration[week] = duration;
