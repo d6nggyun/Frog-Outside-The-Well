@@ -8,6 +8,7 @@ import com._oormthon.seasonthon.domain.step.domain.TodoStep;
 import com._oormthon.seasonthon.domain.step.repository.TodoStepRepository;
 import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.dto.res.TodoStepResponse;
+import com._oormthon.seasonthon.domain.todo.enums.Day;
 import com._oormthon.seasonthon.domain.todo.repository.TodoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -110,6 +111,13 @@ class ConversationStateService {
                 case ASK_END_DATE -> {
                     try {
                         LocalDate end = LocalDate.parse(userMessage.trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+                        if (end.isBefore(convo.getStartDate())) {
+                            response = "마감일은 시작일과 같거나 이후여야 해! 다시 입력해줘 😄 (예: 2025-12-31)";
+                            convo.setState(ConversationState.ASK_END_DATE); // 다시 마감일 입력 대기
+                            break;
+                        }
+
                         convo.setEndDate(end);
                         response = ChatbotScript.askStudyDays(convo.getStartDate(), convo.getEndDate());
                         convo.setState(ConversationState.ASK_DAYS);
@@ -119,9 +127,35 @@ class ConversationStateService {
                 }
                 case ASK_DAYS -> {
                     try {
-                        // 반환값 활용하도록 변경 권장
-                        DayConverter.parseDays(userMessage.trim());
-                        convo.setStudyDays(userMessage.trim());
+                        // 입력한 요일들 파싱
+                        List<Day> selectedDays = DayConverter.parseDays(userMessage.trim());
+
+                        LocalDate start = convo.getStartDate();
+                        LocalDate end = convo.getEndDate();
+
+                        // 기간 내 존재하는 요일 목록 계산
+                        List<Day> availableDays = DayConverter.daysBetween(start, end);
+
+                        // 입력된 요일 중 실제 기간에 존재하는 요일이 있는지 확인
+                        boolean hasValid = selectedDays.stream().anyMatch(availableDays::contains);
+
+                        if (!hasValid) {
+                            // 사용자가 입력한 요일이 기간에 하나도 없음 → 안내 메시지
+                            String availableLabel = DayConverter.formatDays(availableDays);
+
+                            response = String.format(
+                                    "😮 이 기간(%s ~ %s)에는 네가 입력한 요일이 없어!\n" +
+                                            "가능한 요일은 👉 %s \n" +
+                                            "다시 입력해줘! (예: 월,수,금)",
+                                    start, end, availableLabel);
+
+                            convo.setState(ConversationState.ASK_DAYS);
+                            break;
+                        }
+
+                        String formattedDays = DayConverter.formatDays(selectedDays);
+                        convo.setStudyDays(formattedDays);
+
                         response = "좋아! 한 번 공부할 때 몇 분 정도 할지 숫자만 입력해줘. (예: 30)";
                         convo.setState(ConversationState.ASK_TIME_PER_DAY);
                     } catch (Exception e) {
