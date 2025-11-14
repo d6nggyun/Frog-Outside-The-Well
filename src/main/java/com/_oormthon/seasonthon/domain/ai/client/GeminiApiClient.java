@@ -19,6 +19,7 @@ import reactor.netty.resources.ConnectionProvider;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,47 +66,104 @@ public class GeminiApiClient {
                 .trim();
     }
 
+    private String cleanJsonWarmMsgResponse(String text) {
+
+        if (text == null)
+            return "[]";
+
+        String cleaned = text.trim();
+
+        // 1) 코드블록 제거
+        cleaned = cleaned.replaceAll("```json", "")
+                .replaceAll("```", "")
+                .trim();
+
+        // 2) 배열을 문자열로 감싼 경우
+        // "['a','b']" 또는 "[\"a\", \"b\"]"
+        if (cleaned.startsWith("\"[") && cleaned.endsWith("]\"")) {
+            cleaned = cleaned.substring(1, cleaned.length() - 1);
+        }
+
+        // 3) 이스케이프 복구
+        cleaned = cleaned.replace("\\\"", "\"");
+
+        // 4) 줄바꿈/공백 정리
+        cleaned = cleaned.replace("\n", "")
+                .replace("\r", "")
+                .trim();
+
+        // 5) JSON 배열이 아닌 경우를 대비
+        // 하나의 문자열만 온 경우 → 배열로 감싸기
+        if (!cleaned.startsWith("[") || !cleaned.endsWith("]")) {
+            cleaned = "[\"" + cleaned + "\"]";
+        }
+
+        return cleaned;
+    }
+
     private Map<String, Object> buildRequestBody(String prompt) {
         return Map.of(
                 "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))));
     }
 
     /**
-     * ✅ 단일 텍스트 생성 (동기, fallback 포함)
+     * ✅ warm message 생성
      */
-    public String generateText(String prompt) {
+    public List<String> generateText(String prompt) {
+        // 1차 모델
+        String primaryModel = "/gemini-2.5-flash:generateContent";
+
+        List<String> result = callGeminiModel(prompt, primaryModel);
+
+        if (result != null)
+            return result;
+
+        log.warn("⚠️ 1차 모델 실패 → gemini-2.0-flash 로 fallback 시도");
+
+        // 2차 모델 fallback
+        String fallbackModel = "/gemini-2.0-flash:generateContent";
+
+        return callGeminiModel(prompt, fallbackModel);
+    }
+
+    private List<String> callGeminiModel(String prompt, String modelPath) {
         try {
             String response = webClient.post()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/gemini-2.5-flash:generateContent") // 모델명 업데이트
+                            .path(modelPath)
                             .queryParam("key", apiKey)
                             .build())
                     .bodyValue(buildRequestBody(prompt))
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(String.class)
-                    .timeout(Duration.ofSeconds(15)) // timeout 확장
+                    .timeout(Duration.ofSeconds(15))
                     .block();
 
             if (response == null || response.isBlank()) {
-                log.warn("⚠️ Gemini 응답이 비어 있음");
                 return null;
             }
 
             JsonNode node = mapper.readTree(response);
             JsonNode textNode = node.at("/candidates/0/content/parts/0/text");
+
             if (textNode.isMissingNode()) {
-                log.warn("⚠️ Gemini 응답에서 텍스트 누락");
                 return null;
             }
 
-            String result = cleanJsonResponse(textNode.asText());
-            log.info("✨ Gemini 생성 결과: {}", result);
-            return result;
+            String json = cleanJsonWarmMsgResponse(textNode.asText());
+            JsonNode arr = mapper.readTree(json);
+
+            List<String> list = new ArrayList<>();
+            if (arr.isArray()) {
+                arr.forEach(n -> list.add(n.asText()));
+            }
+
+            return list;
 
         } catch (Exception e) {
-            log.error("💥 Gemini 호출 실패: {}", e.getMessage());
-            return null; // 실패 시 안전하게 null 반환
+            log.error("💥 Gemini 모델 호출 실패: {}", e.getMessage());
+            return null;
         }
     }
 
