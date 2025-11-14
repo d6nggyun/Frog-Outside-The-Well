@@ -4,6 +4,7 @@ import com._oormthon.seasonthon.domain.todo.domain.Todo;
 import com._oormthon.seasonthon.domain.todo.enums.TodoType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,6 +15,8 @@ import java.util.Optional;
 public interface TodoRepository extends JpaRepository<Todo, Long> {
 
   Page<Todo> findByUserId(Long userId, Pageable pageable);
+
+  Slice<Todo> findSliceByUserId(Long userId, Pageable pageable);
 
   Optional<Todo> findByUserIdAndTitle(Long userId, String title);
 

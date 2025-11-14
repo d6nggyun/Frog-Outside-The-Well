@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -44,23 +47,50 @@ public class TodoService {
     private final StepCalendarService stepCalendarService;
     private final GeminiApiClient geminiApiClient;
 
+    private final Map<String, List<String>> warmMsgCache = new ConcurrentHashMap<>();
+
     @Transactional(readOnly = true)
     public PageResponse<TodoResponse> findTodos(User user) {
         Pageable pageable = PageRequest.of(0, 20, Sort.by("endDate").ascending());
-        Page<Todo> todos = todoRepository.findByUserId(user.getUserId(), pageable);
+
+        Slice<Todo> todos = todoRepository.findSliceByUserId(user.getUserId(), pageable);
         List<Todo> todoList = todos.getContent();
 
-        List<String> messages = generateBulkWarmMessagesForTodos(todoList);
+        if (todoList.isEmpty()) {
+            return PageResponse.from(1, 0, List.of());
+        }
 
-        List<TodoResponse> responseList = new ArrayList<>();
+        // 캐시 적용
+        String cacheKey = buildWarmCacheKey(user.getUserId(), todoList);
+        List<String> messages = warmMsgCache.get(cacheKey);
+
+        if (messages == null) {
+            messages = generateBulkWarmMessagesForTodos(todoList);
+            warmMsgCache.put(cacheKey, messages);
+        }
+
+        // 메시지 보정
+        List<String> fallback = getWarmText();
+        while (messages.size() < todoList.size()) {
+            messages.add(randomWarmText(fallback));
+        }
+
+        List<TodoResponse> responseList = new ArrayList<>(todoList.size());
         for (int i = 0; i < todoList.size(); i++) {
             responseList.add(TodoResponse.of(todoList.get(i), messages.get(i)));
         }
 
         return PageResponse.from(
-                todos.getTotalPages(),
-                todos.getTotalElements(),
+                todos.hasNext() ? 2 : 1,
+                todoList.size(),
                 responseList);
+    }
+
+    private String buildWarmCacheKey(Long userId, List<Todo> todoList) {
+        StringBuilder sb = new StringBuilder(userId.toString());
+        for (Todo t : todoList)
+            sb.append('|').append(t.getTitle());
+        return "warm:" + sb.toString().hashCode();
     }
 
     @Transactional
@@ -174,29 +204,8 @@ public class TodoService {
         if (messages == null)
             messages = new ArrayList<>();
 
-        // 1) 개수 보정
-        List<String> fallback = getWarmText();
-        while (messages.size() < todoList.size()) {
-            messages.add(randomWarmText(fallback));
-        }
-
         return messages;
 
-    }
-
-    private String getRandomWarmTextFallback(List<String> usedTexts, List<String> allTexts) {
-        List<String> availableTexts = new ArrayList<>(allTexts);
-        availableTexts.removeAll(usedTexts);
-
-        if (availableTexts.isEmpty()) {
-            usedTexts.clear();
-            availableTexts = new ArrayList<>(allTexts);
-        }
-
-        String selectedText = availableTexts.get(ThreadLocalRandom.current().nextInt(availableTexts.size()));
-        usedTexts.add(selectedText);
-
-        return selectedText;
     }
 
     private String randomWarmText(List<String> warmTexts) {
