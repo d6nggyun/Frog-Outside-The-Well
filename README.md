@@ -1,7 +1,7 @@
 # [2025 kakao X groom] 시즌톤 36팀 '우물밖개구리' BE 레포지토리입니다
 #### 우물밖개구리 – 하나의 큰 과제를 실행 가능한 과제로 세분화하여 무기력, 우울감, 번아웃을 느끼는 사람들의 회복을 돕는 자기효능감 회복 투두리스트 서비스
 
-<img width="626" height="354" alt="스크린샷 2025-11-02 오전 12 00 38" src="https://github.com/user-attachments/assets/ffce6c16-4caa-469d-86d0-19aa7248e249" />
+<img width="1981" height="1069" alt="Component 2" src="https://github.com/user-attachments/assets/4132b37d-9d44-461e-a862-e701213232e9" />
 <br><br>
 “작은 한 발자국이 모여 큰 걸음을 만듭니다.” <Br>
 AI 챗봇 Rana가 사용자의 상황을 분석해 실행 가능한 학습 계획을 함께 구성하고, 하루 감정 기록과 그래프 기반 진행도 시각화를 통해 학습 과정 전반을 체계적으로 지원합니다. <br>
@@ -10,7 +10,7 @@ AI 챗봇 Rana가 사용자의 상황을 분석해 실행 가능한 학습 계�
 <br><br>
 
 # 아키텍처
-<img width="1914" height="1199" alt="Component 8" src="https://github.com/user-attachments/assets/4d27c282-c60b-4c1c-a565-c05aab020919" />
+<img width="1914" height="1199" alt="Component 8" src="https://github.com/user-attachments/assets/95b59d10-0662-4672-8fc6-02f2188dfc65" />
 
 ---
 
